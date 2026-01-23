@@ -2,6 +2,9 @@
 
 # dependencies
 node_modules/
+# Ignore Windows reserved device file
+nul
+
 
 # Expo
 .expo/
