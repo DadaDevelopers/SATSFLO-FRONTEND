@@ -1,56 +1,40 @@
 import React from 'react';
-import {
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  type TouchableOpacityProps,
-} from 'react-native';
-import { SignupColors } from '@/constants/signup-theme';
+import { Text, TouchableOpacity, type TouchableOpacityProps } from 'react-native';
+import { cn } from '@/lib/utils';
 
 type PrimaryButtonProps = TouchableOpacityProps & {
   title: string;
+  className?: string;
+  fullWidth?: boolean;
 };
 
-export function PrimaryButton({ title, style, disabled, ...props }: PrimaryButtonProps) {
+export function PrimaryButton({
+  title,
+  className,
+  disabled,
+  fullWidth = false,
+  ...props
+}: PrimaryButtonProps) {
   return (
     <TouchableOpacity
-      style={[styles.button, disabled && styles.buttonDisabled, style]}
+      className={cn(
+        'flex-row justify-center items-center py-4 px-6 h-14 bg-signup-button-bg border-[0.5px] border-signup-button-border rounded-full',
+        fullWidth ? 'w-full' : 'w-full max-w-[280px]',
+        disabled && 'opacity-70',
+        className
+      )}
       disabled={disabled}
       activeOpacity={0.8}
       {...props}
     >
-      <Text style={[styles.buttonText, disabled && styles.buttonTextDisabled]}>
+      <Text
+        className={cn(
+          'text-[15px] font-medium leading-[18px] text-center text-signup-title',
+          disabled && 'opacity-80'
+        )}
+      >
         {title}
       </Text>
     </TouchableOpacity>
   );
 }
-
-const styles = StyleSheet.create({
-  button: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingVertical: 16,
-    paddingHorizontal: 10,
-    width: 250,
-    height: 56,
-    backgroundColor: SignupColors.buttonBackground,
-    borderWidth: 0.5,
-    borderColor: SignupColors.buttonBorder,
-    borderRadius: 1000,
-  },
-  buttonDisabled: {
-    opacity: 0.7,
-  },
-  buttonText: {
-    fontSize: 15,
-    fontWeight: '500',
-    lineHeight: 18,
-    textAlign: 'center',
-    color: SignupColors.titleText,
-  },
-  buttonTextDisabled: {
-    opacity: 0.8,
-  },
-});

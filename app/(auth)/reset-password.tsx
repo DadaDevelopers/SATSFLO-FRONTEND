@@ -1,21 +1,16 @@
 import React, { useState } from 'react';
-import {
-  StyleSheet,
-  View,
-  Text,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-} from 'react-native';
+import { View, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
-import { SignupColors } from '@/constants/signup-theme';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { InputField } from '@/components/signup/input-field';
 import { PrimaryButton } from '@/components/signup/primary-button';
 import { BackButton } from '@/components/signup/back-button';
-import { CustomStatusBar } from '@/components/signup/custom-status-bar';
+import { HomeIndicatorArea } from '@/components/signup/home-indicator-area';
+import { TitleSection } from '@/components/signup/title-section';
 
 export default function ResetPasswordScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
@@ -26,133 +21,76 @@ export default function ResetPasswordScreen() {
 
   const handleSavePassword = () => {
     if (isFormValid) {
-      // Navigate to login screen after password reset
       router.replace('/(auth)/login');
     }
   };
 
   return (
-    <View style={styles.container}>
-      {/* Custom Status Bar */}
-      <CustomStatusBar />
-
+    <View className="flex-1 bg-signup-bg" style={{ paddingTop: insets.top }}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={styles.keyboardView}
+        className="flex-1"
       >
         <ScrollView
-          style={styles.scrollView}
-          contentContainerStyle={styles.scrollContent}
+          className="flex-1"
+          contentContainerStyle={{
+            flexGrow: 1,
+            paddingHorizontal: 20,
+            justifyContent: 'center',
+          }}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
-          {/* Back Button */}
-          <View style={styles.header}>
+          {/* Back Button - positioned at top */}
+          <View className="absolute top-4 left-0">
             <BackButton />
           </View>
 
-          {/* Title Section */}
-          <View style={styles.titleSection}>
-            <Text style={styles.title}>Reset Password</Text>
-            <Text style={styles.subtitle}>
-              Provide a new password to secure access to your account.
-            </Text>
-          </View>
-
-          {/* Form Section */}
-          <View style={styles.formSection}>
-            <InputField
-              placeholder="Password"
-              value={password}
-              onChangeText={setPassword}
-              showPasswordToggle
-              autoCapitalize="none"
-              autoComplete="new-password"
+          {/* Center content */}
+          <View className="w-full py-16">
+            {/* Title Section */}
+            <TitleSection
+              title="Reset Password"
+              subtitle="Provide a new password to secure access to your account."
+              className="mb-6"
             />
 
-            <InputField
-              placeholder="Confirm Password"
-              value={confirmPassword}
-              onChangeText={setConfirmPassword}
-              showPasswordToggle
-              autoCapitalize="none"
-              autoComplete="new-password"
-            />
+            {/* Form Section */}
+            <View className="gap-4">
+              <InputField
+                placeholder="Password"
+                value={password}
+                onChangeText={setPassword}
+                showPasswordToggle
+                autoCapitalize="none"
+                autoComplete="new-password"
+              />
+
+              <InputField
+                placeholder="Confirm Password"
+                value={confirmPassword}
+                onChangeText={setConfirmPassword}
+                showPasswordToggle
+                autoCapitalize="none"
+                autoComplete="new-password"
+              />
+            </View>
           </View>
         </ScrollView>
 
-        {/* Bottom Section */}
-        <View style={styles.bottomSection}>
-          <PrimaryButton
-            title="Save New Password"
-            onPress={handleSavePassword}
-            disabled={!isFormValid}
-          />
+        {/* Bottom Section - Fixed at bottom */}
+        <View className="px-5 pb-3 pt-2">
+          <View className="items-center">
+            <PrimaryButton
+              title="Save New Password"
+              onPress={handleSavePassword}
+              disabled={!isFormValid}
+            />
+          </View>
         </View>
 
-        {/* Home Indicator Area */}
-        <View style={styles.homeIndicatorArea}>
-          <View style={styles.homeIndicator} />
-        </View>
+        <HomeIndicatorArea />
       </KeyboardAvoidingView>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: SignupColors.background,
-  },
-  keyboardView: {
-    flex: 1,
-  },
-  scrollView: {
-    flex: 1,
-  },
-  scrollContent: {
-    paddingHorizontal: 20,
-    paddingBottom: 20,
-  },
-  header: {
-    paddingTop: 16,
-    paddingBottom: 24,
-  },
-  titleSection: {
-    gap: 4,
-    marginBottom: 20,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: '600',
-    lineHeight: 29,
-    color: SignupColors.titleText,
-  },
-  subtitle: {
-    fontSize: 14,
-    fontWeight: '400',
-    lineHeight: 17,
-    color: SignupColors.bodyText,
-  },
-  formSection: {
-    gap: 20,
-  },
-  bottomSection: {
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingBottom: 8,
-  },
-  homeIndicatorArea: {
-    height: 34,
-    backgroundColor: SignupColors.homeIndicatorBackground,
-    justifyContent: 'flex-end',
-    alignItems: 'center',
-    paddingBottom: 8,
-  },
-  homeIndicator: {
-    width: 134,
-    height: 5,
-    backgroundColor: SignupColors.homeIndicator,
-    borderRadius: 100,
-  },
-});

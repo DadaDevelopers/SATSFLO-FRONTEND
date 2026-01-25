@@ -1,12 +1,6 @@
 import React, { useState } from 'react';
-import {
-  StyleSheet,
-  View,
-  Text,
-  TouchableOpacity,
-  useWindowDimensions,
-} from 'react-native';
-import { SignupColors } from '@/constants/signup-theme';
+import { View, Text, TouchableOpacity } from 'react-native';
+import { cn } from '@/lib/utils';
 
 type CalendarPickerProps = {
   selectedDate: Date | null;
@@ -25,15 +19,10 @@ export function CalendarPicker({
   onDateSelect,
   periodLength = 4,
 }: CalendarPickerProps) {
-  const { width } = useWindowDimensions();
   const [currentMonth, setCurrentMonth] = useState(selectedDate || new Date());
 
   const year = currentMonth.getFullYear();
   const month = currentMonth.getMonth();
-
-  // Calculate responsive sizes
-  const calendarWidth = Math.min(width - 40, 353); // Max 353px, with 20px padding on each side
-  const cellSize = Math.floor((calendarWidth - 32) / 7); // Account for padding
 
   // Get first day of month and number of days
   const firstDayOfMonth = new Date(year, month, 1).getDay();
@@ -90,71 +79,81 @@ export function CalendarPicker({
   }
 
   return (
-    <View style={styles.container}>
+    <View className="bg-[#FFF0F5] rounded-2xl p-3 border-[0.5px] border-signup-input-border w-full">
       {/* Month Header */}
-      <View style={styles.header}>
+      <View className="flex-row justify-between items-center mb-3 px-2">
         <TouchableOpacity
           onPress={goToPreviousMonth}
-          style={styles.navButton}
+          className="p-2 -ml-2"
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         >
-          <Text style={styles.navArrow}>{'<'}</Text>
+          <Text className="text-lg font-semibold text-[#333333]">{'<'}</Text>
         </TouchableOpacity>
-        <Text style={styles.monthTitle}>{MONTHS[month]}</Text>
+        <Text className="text-base font-semibold text-[#333333]">{MONTHS[month]}</Text>
         <TouchableOpacity
           onPress={goToNextMonth}
-          style={styles.navButton}
+          className="p-2 -mr-2"
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         >
-          <Text style={styles.navArrow}>{'>'}</Text>
+          <Text className="text-lg font-semibold text-[#333333]">{'>'}</Text>
         </TouchableOpacity>
       </View>
 
       {/* Day Headers */}
-      <View style={styles.dayHeaders}>
+      <View className="flex-row mb-1">
         {DAYS_OF_WEEK.map((day) => (
-          <View key={day} style={[styles.dayHeaderCell, { width: cellSize }]}>
-            <Text style={styles.dayHeaderText}>{day}</Text>
+          <View key={day} className="flex-1 items-center py-1">
+            <Text className="text-[11px] font-medium text-[#666666]">{day}</Text>
           </View>
         ))}
       </View>
 
       {/* Calendar Grid */}
-      <View style={styles.calendarGrid}>
+      <View className="gap-0.5">
         {weeks.map((week, weekIndex) => (
-          <View key={weekIndex} style={styles.weekRow}>
+          <View key={weekIndex} className="flex-row">
             {week.map((day, dayIndex) => (
-              <View key={dayIndex} style={[styles.dayCell, { width: cellSize }]}>
+              <View key={dayIndex} className="flex-1 items-center py-0.5">
                 {day !== null ? (
                   <TouchableOpacity
-                    style={styles.dayButton}
+                    className="items-center w-full"
                     onPress={() => handleDatePress(day)}
                     activeOpacity={0.7}
                   >
-                    <View style={[
-                      styles.dayCircle,
-                      isSelected(day) && styles.selectedDayCircle,
-                    ]}>
-                      <Text style={[
-                        styles.dayText,
-                        isSelected(day) && styles.selectedDayText,
-                        isPeriodDay(day) && styles.periodDayText,
-                      ]}>
+                    <View
+                      className={cn(
+                        'w-8 h-8 rounded-full justify-center items-center',
+                        isSelected(day) && 'bg-signup-bg'
+                      )}
+                    >
+                      <Text
+                        className={cn(
+                          'text-[13px] font-medium text-[#333333]',
+                          isSelected(day) && 'text-white font-semibold',
+                          isPeriodDay(day) && 'text-signup-bg font-semibold'
+                        )}
+                      >
                         {day}
                       </Text>
                     </View>
                     {/* Indicator dot below the date */}
-                    <View style={styles.indicatorContainer}>
+                    <View className="h-1.5 justify-center items-center">
                       {isPeriodDay(day) ? (
-                        <View style={styles.periodIndicator} />
+                        <View className="w-1 h-1 rounded-full bg-signup-bg" />
                       ) : isSelected(day) ? null : (
-                        <View style={styles.normalIndicator} />
+                        <View className="w-1 h-1 rounded-full border border-[#CCCCCC]" />
                       )}
                     </View>
                   </TouchableOpacity>
                 ) : (
-                  <View style={styles.emptyDay} />
+                  <View className="w-8 h-[38px]" />
                 )}
+              </View>
+            ))}
+            {/* Fill remaining cells if week is incomplete */}
+            {week.length < 7 && Array.from({ length: 7 - week.length }).map((_, i) => (
+              <View key={`empty-${i}`} className="flex-1 items-center py-0.5">
+                <View className="w-8 h-[38px]" />
               </View>
             ))}
           </View>
@@ -163,107 +162,3 @@ export function CalendarPicker({
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    backgroundColor: '#FFF0F5',
-    borderRadius: 16,
-    paddingHorizontal: 12,
-    paddingVertical: 16,
-    borderWidth: 0.5,
-    borderColor: SignupColors.inputBorder,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 16,
-    paddingHorizontal: 4,
-  },
-  navButton: {
-    padding: 8,
-  },
-  navArrow: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#333333',
-  },
-  monthTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#333333',
-  },
-  dayHeaders: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    marginBottom: 8,
-  },
-  dayHeaderCell: {
-    alignItems: 'center',
-  },
-  dayHeaderText: {
-    fontSize: 12,
-    fontWeight: '500',
-    color: '#666666',
-  },
-  calendarGrid: {
-    gap: 4,
-  },
-  weekRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-  },
-  dayCell: {
-    alignItems: 'center',
-    paddingVertical: 2,
-  },
-  dayButton: {
-    alignItems: 'center',
-  },
-  dayCircle: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  selectedDayCircle: {
-    backgroundColor: SignupColors.background,
-  },
-  dayText: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#333333',
-  },
-  selectedDayText: {
-    color: '#FFFFFF',
-    fontWeight: '600',
-  },
-  periodDayText: {
-    color: SignupColors.background,
-    fontWeight: '600',
-  },
-  indicatorContainer: {
-    height: 6,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: 1,
-  },
-  periodIndicator: {
-    width: 5,
-    height: 5,
-    borderRadius: 2.5,
-    backgroundColor: SignupColors.background,
-  },
-  normalIndicator: {
-    width: 5,
-    height: 5,
-    borderRadius: 2.5,
-    borderWidth: 1,
-    borderColor: '#CCCCCC',
-  },
-  emptyDay: {
-    width: 28,
-    height: 35,
-  },
-});

@@ -1,12 +1,12 @@
 import React, { useRef, useState } from 'react';
 import {
-  StyleSheet,
   View,
   TextInput,
   NativeSyntheticEvent,
   TextInputKeyPressEventData,
+  useWindowDimensions,
 } from 'react-native';
-import { SignupColors } from '@/constants/signup-theme';
+import { cn } from '@/lib/utils';
 
 type OtpInputProps = {
   length?: number;
@@ -15,8 +15,15 @@ type OtpInputProps = {
 };
 
 export function OtpInput({ length = 4, value, onChange }: OtpInputProps) {
+  const { width } = useWindowDimensions();
   const inputRefs = useRef<(TextInput | null)[]>([]);
   const [focusedIndex, setFocusedIndex] = useState<number | null>(null);
+
+  // Calculate responsive size based on screen width
+  // Leave space for padding (32px total) and gaps between inputs
+  const availableWidth = width - 64; // 32px padding on each side
+  const gapWidth = 12 * (length - 1); // 12px gap between inputs
+  const boxSize = Math.min(Math.floor((availableWidth - gapWidth) / length), 64);
 
   const handleChange = (text: string, index: number) => {
     // Only allow digits
@@ -62,19 +69,20 @@ export function OtpInput({ length = 4, value, onChange }: OtpInputProps) {
   };
 
   return (
-    <View style={styles.container}>
+    <View className="flex-row justify-center items-center gap-3 w-full">
       {Array.from({ length }).map((_, index) => (
         <View
           key={index}
-          style={[
-            styles.inputContainer,
-            focusedIndex === index && styles.inputContainerFocused,
-            value[index] && styles.inputContainerFilled,
-          ]}
+          className={cn(
+            'rounded-xl bg-signup-input-bg border border-signup-input-border justify-center items-center',
+            focusedIndex === index && 'border-2 border-signup-title',
+            value[index] && 'bg-[#FFE0EB]'
+          )}
+          style={{ width: boxSize, height: boxSize }}
         >
           <TextInput
             ref={(ref) => (inputRefs.current[index] = ref)}
-            style={styles.input}
+            className="text-xl font-semibold text-signup-bg text-center w-full h-full"
             value={value[index] || ''}
             onChangeText={(text) => handleChange(text, index)}
             onKeyPress={(e) => handleKeyPress(e, index)}
@@ -89,36 +97,3 @@ export function OtpInput({ length = 4, value, onChange }: OtpInputProps) {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: 16,
-  },
-  inputContainer: {
-    width: 60,
-    height: 60,
-    borderRadius: 12,
-    backgroundColor: SignupColors.inputBackground,
-    borderWidth: 1,
-    borderColor: SignupColors.inputBorder,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  inputContainerFocused: {
-    borderColor: SignupColors.titleText,
-    borderWidth: 2,
-  },
-  inputContainerFilled: {
-    backgroundColor: '#FFE0EB',
-  },
-  input: {
-    fontSize: 24,
-    fontWeight: '600',
-    color: SignupColors.background,
-    textAlign: 'center',
-    width: '100%',
-    height: '100%',
-  },
-});

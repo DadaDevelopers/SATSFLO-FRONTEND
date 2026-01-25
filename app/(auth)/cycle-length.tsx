@@ -1,16 +1,18 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, Text } from 'react-native';
+import { View } from 'react-native';
 import { useRouter } from 'expo-router';
-import { SignupColors } from '@/constants/signup-theme';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { PrimaryButton } from '@/components/signup/primary-button';
 import { BackButton } from '@/components/signup/back-button';
 import { DayPicker } from '@/components/signup/day-picker';
-import { CustomStatusBar } from '@/components/signup/custom-status-bar';
+import { HomeIndicatorArea } from '@/components/signup/home-indicator-area';
+import { TitleSection } from '@/components/signup/title-section';
 
 const CYCLE_LENGTH_OPTIONS = Array.from({ length: 15 }, (_, i) => i + 21); // 21-35 days
 
 export default function CycleLengthScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const [selectedLength, setSelectedLength] = useState(27);
 
   const handleNext = () => {
@@ -18,27 +20,23 @@ export default function CycleLengthScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      {/* Custom Status Bar */}
-      <CustomStatusBar />
-
-      <View style={styles.content}>
-        {/* Back Button */}
-        <View style={styles.header}>
+    <View className="flex-1 bg-signup-bg" style={{ paddingTop: insets.top }}>
+      <View className="flex-1 px-5">
+        {/* Back Button - positioned at top */}
+        <View className="pt-4 pb-4">
           <BackButton />
         </View>
 
         {/* Title Section */}
-        <View style={styles.titleSection}>
-          <View style={styles.titleRow}>
-            <Text style={styles.title}>Tell us about your cycle</Text>
-            <Text style={styles.stepIndicator}>1/3</Text>
-          </View>
-          <Text style={styles.subtitle}>What is your cycle length?</Text>
-        </View>
+        <TitleSection
+          title="Tell us about your cycle"
+          subtitle="What is your cycle length?"
+          stepIndicator="1/3"
+          className="mb-6"
+        />
 
-        {/* Picker Section */}
-        <View style={styles.pickerSection}>
+        {/* Picker Section - centered vertically */}
+        <View className="flex-1 justify-center">
           <DayPicker
             values={CYCLE_LENGTH_OPTIONS}
             selectedValue={selectedLength}
@@ -48,78 +46,14 @@ export default function CycleLengthScreen() {
         </View>
       </View>
 
-      {/* Bottom Section */}
-      <View style={styles.bottomSection}>
-        <PrimaryButton title="Next" onPress={handleNext} />
+      {/* Bottom Section - Fixed at bottom */}
+      <View className="px-5 pb-3 pt-2">
+        <View className="items-center">
+          <PrimaryButton title="Next" onPress={handleNext} />
+        </View>
       </View>
 
-      {/* Home Indicator Area */}
-      <View style={styles.homeIndicatorArea}>
-        <View style={styles.homeIndicator} />
-      </View>
+      <HomeIndicatorArea />
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: SignupColors.background,
-  },
-  content: {
-    flex: 1,
-    paddingHorizontal: 20,
-  },
-  header: {
-    paddingTop: 16,
-    paddingBottom: 24,
-  },
-  titleSection: {
-    gap: 4,
-    marginBottom: 40,
-  },
-  titleRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: '600',
-    lineHeight: 29,
-    color: SignupColors.titleText,
-  },
-  stepIndicator: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: SignupColors.titleText,
-  },
-  subtitle: {
-    fontSize: 14,
-    fontWeight: '400',
-    lineHeight: 17,
-    color: SignupColors.bodyText,
-  },
-  pickerSection: {
-    flex: 1,
-    paddingTop: 20,
-  },
-  bottomSection: {
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingBottom: 8,
-  },
-  homeIndicatorArea: {
-    height: 34,
-    backgroundColor: SignupColors.homeIndicatorBackground,
-    justifyContent: 'flex-end',
-    alignItems: 'center',
-    paddingBottom: 8,
-  },
-  homeIndicator: {
-    width: 134,
-    height: 5,
-    backgroundColor: SignupColors.homeIndicator,
-    borderRadius: 100,
-  },
-});

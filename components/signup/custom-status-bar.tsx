@@ -1,7 +1,6 @@
 import React from 'react';
-import { StyleSheet, View, Text, Platform } from 'react-native';
+import { View, Text, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { SignupColors } from '@/constants/signup-theme';
 
 export function CustomStatusBar() {
   const insets = useSafeAreaInsets();
@@ -12,175 +11,49 @@ export function CustomStatusBar() {
   }
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top - 37 }]}>
+    <View
+      className="flex-row justify-center items-end h-[59px] bg-white"
+      style={{ paddingTop: insets.top - 37 }}
+    >
       {/* Left Side - Time */}
-      <View style={styles.leftSide}>
-        <Text style={styles.time}>9:41</Text>
+      <View className="flex-1 items-center justify-center pl-2.5 pb-[3px]">
+        <Text className="text-base font-semibold tracking-[-0.32px] text-[#090909]">
+          9:41
+        </Text>
       </View>
 
       {/* Center - Dynamic Island */}
-      <View style={styles.centerSide}>
-        <View style={styles.dynamicIsland} />
+      <View className="flex-1 items-center justify-center">
+        <View className="w-[125px] h-[37px] bg-signup-home-indicator rounded-[100px]" />
       </View>
 
       {/* Right Side - Icons */}
-      <View style={styles.rightSide}>
-        <View style={styles.iconsContainer}>
+      <View className="flex-1 flex-row justify-center items-center pr-[11px]">
+        <View className="flex-row items-center gap-2">
           {/* Signal Bars */}
-          <View style={styles.signalContainer}>
-            <View style={[styles.signalBar, styles.signalBar1]} />
-            <View style={[styles.signalBar, styles.signalBar2]} />
-            <View style={[styles.signalBar, styles.signalBar3]} />
-            <View style={[styles.signalBar, styles.signalBar4]} />
+          <View className="flex-row items-end gap-[1px] h-3">
+            <View className="w-[3px] h-1 bg-[#090909] rounded-[1px]" />
+            <View className="w-[3px] h-1.5 bg-[#090909] rounded-[1px]" />
+            <View className="w-[3px] h-[9px] bg-[#090909] rounded-[1px]" />
+            <View className="w-[3px] h-3 bg-[#090909] rounded-[1px]" />
           </View>
 
           {/* WiFi */}
-          <View style={styles.wifiContainer}>
-            <View style={styles.wifiArc1} />
-            <View style={styles.wifiArc2} />
-            <View style={styles.wifiDot} />
+          <View className="w-[17px] h-3 justify-end items-center">
+            <View className="absolute top-0 w-[17px] h-[9px] rounded-tl-[10px] rounded-tr-[10px] border-2 border-b-0 border-[#090909]" />
+            <View className="absolute top-1 w-[11px] h-1.5 rounded-tl-[7px] rounded-tr-[7px] border-2 border-b-0 border-[#090909]" />
+            <View className="w-1 h-1 rounded-full bg-[#090909]" />
           </View>
 
           {/* Battery */}
-          <View style={styles.batteryContainer}>
-            <View style={styles.batteryOutline}>
-              <View style={styles.batteryFill} />
+          <View className="flex-row items-center">
+            <View className="w-[25px] h-[13px] rounded border border-[rgba(9,9,9,0.35)] p-0.5 justify-center">
+              <View className="flex-1 bg-[#090909] rounded-sm" />
             </View>
-            <View style={styles.batteryTip} />
+            <View className="w-[1.4px] h-1 bg-[rgba(9,9,9,0.4)] ml-[1px] rounded-[1px]" />
           </View>
         </View>
       </View>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'flex-end',
-    height: 59,
-    backgroundColor: '#FFFFFF',
-  },
-  leftSide: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingLeft: 10,
-    paddingBottom: 3,
-  },
-  time: {
-    fontSize: 16,
-    fontWeight: '600',
-    letterSpacing: -0.32,
-    color: '#090909',
-  },
-  centerSide: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  dynamicIsland: {
-    width: 125,
-    height: 37,
-    backgroundColor: SignupColors.homeIndicator,
-    borderRadius: 100,
-  },
-  rightSide: {
-    flex: 1,
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingRight: 11,
-  },
-  iconsContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  // Signal bars
-  signalContainer: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    gap: 1,
-    height: 12,
-  },
-  signalBar: {
-    width: 3,
-    backgroundColor: '#090909',
-    borderRadius: 1,
-  },
-  signalBar1: {
-    height: 4,
-  },
-  signalBar2: {
-    height: 6,
-  },
-  signalBar3: {
-    height: 9,
-  },
-  signalBar4: {
-    height: 12,
-  },
-  // WiFi
-  wifiContainer: {
-    width: 17,
-    height: 12,
-    justifyContent: 'flex-end',
-    alignItems: 'center',
-  },
-  wifiArc1: {
-    position: 'absolute',
-    top: 0,
-    width: 17,
-    height: 9,
-    borderTopLeftRadius: 10,
-    borderTopRightRadius: 10,
-    borderWidth: 2,
-    borderBottomWidth: 0,
-    borderColor: '#090909',
-  },
-  wifiArc2: {
-    position: 'absolute',
-    top: 4,
-    width: 11,
-    height: 6,
-    borderTopLeftRadius: 7,
-    borderTopRightRadius: 7,
-    borderWidth: 2,
-    borderBottomWidth: 0,
-    borderColor: '#090909',
-  },
-  wifiDot: {
-    width: 4,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: '#090909',
-  },
-  // Battery
-  batteryContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  batteryOutline: {
-    width: 25,
-    height: 13,
-    borderRadius: 4,
-    borderWidth: 1,
-    borderColor: 'rgba(9, 9, 9, 0.35)',
-    padding: 2,
-    justifyContent: 'center',
-  },
-  batteryFill: {
-    flex: 1,
-    backgroundColor: '#090909',
-    borderRadius: 2,
-  },
-  batteryTip: {
-    width: 1.4,
-    height: 4,
-    backgroundColor: 'rgba(9, 9, 9, 0.4)',
-    marginLeft: 1,
-    borderRadius: 1,
-  },
-});
