@@ -4,7 +4,7 @@ import { Image, Pressable, Text, View } from 'react-native';
 
 export default function OnboardingScreen3() {
   const handleGetStarted = () => {
-    router.replace('/');
+    router.replace('/'); // to include signup screen
   };
 
   return (
@@ -22,7 +22,7 @@ export default function OnboardingScreen3() {
       {/* Bottom Section with Content */}
       <View className="">
         <TopWave />
-        <View className="bg-[#FFDBE7] rounded-t-[40px] px-8 pb-8 pt-20 -mt-20 ">
+        <View className="bg-[#FFDBE7] rounded-t-[40px] px-8 pb-8 pt-20 -mt-10 ">
           {/* Title */}
           <Text className="text-2xl font-poppins font-semibold text-[#212121] text-center mb-8 leading-8">
             Simple, Secure, and {'\n'}Supportive!

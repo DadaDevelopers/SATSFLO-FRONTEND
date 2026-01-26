@@ -14,19 +14,19 @@ export default function OnboardingScreen() {
   return (
     <View className="flex-1 bg-[#FF4081]">
       {/* Top Section with Phone Mockup */}
-      <View className="flex-1 items-center justify-center pt-12 mt-0 pb-2">
+      <View className="flex-1 items-center justify-center pt-20 mt-16 pb-2">
         {/* Phone mockup using image */}
         <Image
           source={require('../../assets/images/miniscreen.png')}
-          className="w-[90%] h-[90%]"
+          className="w-[85%] h-[85%]"
           resizeMode="contain"
         />
       </View>
 
       {/* Bottom Section with Content */}
       <View className="">
-        <TopWave />
-      <View className="bg-[#FFDBE7] rounded-t-[40px] px-8 pb-8 pt-10 -mt-20 mb-8">
+        <TopWave  />
+      <View className="bg-[#FFDBE7] rounded-t-[40px] px-8 pb-6 pt-10 -mt-20 mb-8">
         {/* Title */}
         <Text className="text-2xl font-poppins font-semibold text-[#212121] text-center mb-6 leading-8">
           Empower Your Wellness{'\n'}Journey!
