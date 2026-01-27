@@ -1,22 +1,19 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { router } from 'expo-router';
+import { Href, router } from 'expo-router';
 import { useEffect } from 'react';
 import { Image, Text, View } from 'react-native';
 
 export default function SplashScreen() {
   useEffect(() => {
     const checkFirstLaunch = async () => {
-      // Clear for testing - remove this line later
-      await AsyncStorage.removeItem('hasLaunched');
-
       const hasLaunched = await AsyncStorage.getItem('hasLaunched');
 
       setTimeout(async () => {
         if (!hasLaunched) {
           await AsyncStorage.setItem('hasLaunched', 'true');
-          router.replace('/onboarding');
+          router.replace('/onboarding' as Href);
         } else {
-          router.replace('/(tabs)');
+          router.replace('/(tabs)' as Href);
         }
       }, 2000);
     };

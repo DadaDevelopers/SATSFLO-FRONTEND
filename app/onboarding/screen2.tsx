@@ -14,26 +14,28 @@ export default function OnboardingScreen2() {
   return (
     <View className="flex-1 bg-[#FF4081]">
       {/* Top Section with Calendar Image */}
-      <View className="flex-1 items-center justify-center pt-20 mt-24 pb-4">
+      <View className="items-center pt-16">
         {/* Calendar mockup using image */}
         <Image
           source={require('../../assets/images/Calendar.png')}
-          className="w-80 h-80"
+          className="w-[70%] aspect-[9/12] -mt-[4%] z-10"
           resizeMode="contain"
         />
       </View>
 
       {/* Bottom Section with Content */}
-      <View className="">
+      <View className="relative items-center pt-10">
+      <View className="absolute -top-24 w-full">
         <TopWave />
-        <View className="bg-[#FFDBE7] rounded-t-[40px] px-8 pb-8 pt-20 -mt-20">
+        </View>
+        <View className="bg-[#FFDBE7] rounded-t-[40px] pb-10 pt-4 -mt-12">
           {/* Title */}
           <Text className="text-2xl font-poppins font-semibold text-[#212121] text-center mb-6 leading-8">
             Insights Tailored to Your {'\n'} Cycle!
           </Text>
 
           {/* Description */}
-          <Text className="text-md font-inter text-[#666666] text-center mb-8 leading-5">
+          <Text className="text-md font-inter text-[#666666] text-center mb-10 leading-5">
             Receive accurate cycle predictions and personalised {'\n'}health tips designed to fit your lifestyle.
           </Text>
 
