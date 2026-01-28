@@ -1,11 +1,13 @@
-import { Poppins_400Regular, Poppins_600SemiBold, useFonts as usePoppins } from '@expo-google-fonts/poppins';
 import { Inter_400Regular, useFonts as useInter } from '@expo-google-fonts/inter';
+import { Poppins_400Regular, Poppins_600SemiBold, useFonts as usePoppins } from '@expo-google-fonts/poppins';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 import '../global.css';
 
-SplashScreen.preventAutoHideAsync();
+export const unstable_settings = {
+  anchor: '(auth)',
+};
 
 export default function RootLayout() {
   const [poppinsLoaded] = usePoppins({

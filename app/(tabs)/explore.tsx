@@ -1,11 +1,11 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
-
 import { ExternalLink } from '@/components/external-link';
 import ParallaxScrollView from '@/components/parallax-scroll-view';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Collapsible } from '@/components/ui/collapsible';
+import { Image } from 'expo-image';
+import { Platform } from 'react-native';
+
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Fonts } from '@/constants/theme';
 
@@ -18,15 +18,16 @@ export default function TabTwoScreen() {
           size={310}
           color="#808080"
           name="chevron.left.forwardslash.chevron.right"
-          style={styles.headerImage}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText
-          type="title"
           style={{
-            fontFamily: Fonts.rounded,
-          }}>
+            position: 'absolute',
+            bottom: -90,
+            left: -35,
+          }}
+        />
+      }
+    >
+      <ThemedView className="flex-row gap-2">
+        <ThemedText type="title" style={{ fontFamily: Fonts.rounded }}>
           Explore
         </ThemedText>
       </ThemedView>
@@ -58,8 +59,8 @@ export default function TabTwoScreen() {
           different screen densities
         </ThemedText>
         <Image
-          source={require('@/assets/images/logo-icon.png')}
-          style={{ width: 100, height: 100, alignSelf: 'center' }}
+          source={require('@/assets/images/react-logo.png')}
+          className="w-[100px] h-[100px] self-center"
         />
         <ExternalLink href="https://reactnative.dev/docs/images">
           <ThemedText type="link">Learn more</ThemedText>
@@ -97,16 +98,3 @@ export default function TabTwoScreen() {
     </ParallaxScrollView>
   );
 }
-
-const styles = StyleSheet.create({
-  headerImage: {
-    color: '#808080',
-    bottom: -90,
-    left: -35,
-    position: 'absolute',
-  },
-  titleContainer: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-});
