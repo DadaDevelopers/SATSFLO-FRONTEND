@@ -14,11 +14,11 @@ export default function OnboardingScreen2() {
   return (
     <View className="flex-1 bg-[#FF4081]">
       {/* Top Section with Calendar Image */}
-      <View className="items-center pt-16">
+      <View className="items-center pt-28 pb-2">
         {/* Calendar mockup using image */}
         <Image
           source={require('../../assets/images/Calendar.png')}
-          className="w-[70%] aspect-[9/12] -mt-[4%] z-10"
+          className="w-[85%] aspect-[9/12] -mt-[4%] z-10"
           resizeMode="contain"
         />
       </View>
@@ -28,7 +28,7 @@ export default function OnboardingScreen2() {
       <View className="absolute -top-24 w-full">
         <TopWave />
         </View>
-        <View className="bg-[#FFDBE7] rounded-t-[40px] pb-10 pt-4 -mt-12">
+        <View className="bg-[#FFDBE7] rounded-t-[40px] px-8 pb-10 pt-4 -mt-12">
           {/* Title */}
           <Text className="text-2xl font-poppins font-semibold text-[#212121] text-center mb-6 leading-8">
             Insights Tailored to Your {'\n'} Cycle!

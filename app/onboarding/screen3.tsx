@@ -1,6 +1,7 @@
 import TopWave from '@/components/TopWave';
 import { router } from 'expo-router';
 import { Image, Pressable, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function OnboardingScreen3() {
   const handleGetStarted = () => {
@@ -8,24 +9,24 @@ export default function OnboardingScreen3() {
   };
 
   return (
-    <View className="flex-1 bg-[#FF4081]">
+    <SafeAreaView className="flex-1 bg-[#FF4081]">
       {/* Top Section with Gift Token Image */}
-      <View className="items-center pt-16">
+      <View className="items-center pt-28 pb-6">
         {/* Gift token SATS image */}
         <Image
           source={require('../../assets/images/Gift Token SATS.png')}
-          className="w-[85%] aspect-[9/16] -mt-[6%] z-10"
+          className="w-[85%] aspect-[9/16] -mt-[4%] z-10"
           resizeMode="contain"
         />
       </View>
 
       {/* Bottom Section with Content */}
       <View className="relative items-center pt-8">
-        <View className="absolute -bottom-14 w-full">
+        <View className="absolute -bottom-14 left-0 right-0 overflow-hidden w-full">
         <TopWave />
         </View>
         <View className="flex-1 justify-end">
-        <View className="bg-[#FFDBE7] rounded-t-[40px] pb-10 pt-4 -mt-12">
+        <View className="bg-[#FFDBE7] rounded-t-[40px] px-8 pb-10 pt-4 -mt-12">
           {/* Title */}
           <Text className="text-2xl font-poppins font-semibold text-[#212121] text-center mb-8 leading-8">
             Simple, Secure, and {'\n'}Supportive!
@@ -53,6 +54,6 @@ export default function OnboardingScreen3() {
         </View>
         </View>
       </View>
-    </View>
+    </SafeAreaView>
   );
 }
