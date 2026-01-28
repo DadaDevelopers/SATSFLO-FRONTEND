@@ -1,15 +1,15 @@
+import { HomeIndicatorArea } from '@/components/signup/home-indicator-area';
 import TopWave from '@/components/TopWave';
 import { router } from 'expo-router';
 import { Image, Pressable, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function OnboardingScreen3() {
   const handleGetStarted = () => {
-    router.replace('/'); // to include signup screen
+    router.replace('/(auth)/signup');
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-[#FF4081]">
+    <View className="flex-1 bg-[#FF4081]">
       {/* Top Section with Gift Token Image */}
       <View className="items-center pt-28 pb-6">
         {/* Gift token SATS image */}
@@ -54,6 +54,10 @@ export default function OnboardingScreen3() {
         </View>
         </View>
       </View>
-    </SafeAreaView>
+      {/* Home Indicator at bottom */}
+      <View className="absolute bottom-0 left-0 right-0">
+        <HomeIndicatorArea />
+      </View>
+    </View>
   );
 }

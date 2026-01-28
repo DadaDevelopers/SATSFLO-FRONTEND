@@ -1,3 +1,4 @@
+import { HomeIndicatorArea } from '@/components/signup/home-indicator-area';
 import TopWave from '@/components/TopWave';
 import { router } from 'expo-router';
 import { Image, Pressable, Text, View } from 'react-native';
@@ -8,7 +9,7 @@ export default function OnboardingScreen2() {
   };
 
   const handleSkip = () => {
-    router.replace('/(tabs)');
+    router.replace('/(auth)/signup');
   };
 
   return (
@@ -65,6 +66,10 @@ export default function OnboardingScreen2() {
             </Pressable>
           </View>
         </View>
+      </View>
+      {/* Home Indicator at bottom */}
+      <View className="absolute bottom-0 left-0 right-0">
+        <HomeIndicatorArea />
       </View>
     </View>
   );

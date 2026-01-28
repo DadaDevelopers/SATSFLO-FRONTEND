@@ -4,15 +4,7 @@ module.exports = {
     "./app/**/*.{js,jsx,ts,tsx}",
     "./components/**/*.{js,jsx,ts,tsx}",
   ],
-<<<<<<< HEAD
   presets: [require('nativewind/preset')],
-  theme: {
-    extend: {
-      fontFamily: {
-        poppins: ['Poppins', 'sans-serif'],
-        inter: ['Inter', 'sans-serif'],
-=======
-  presets: [require("nativewind/preset")],
   theme: {
     extend: {
       colors: {
@@ -36,7 +28,8 @@ module.exports = {
         },
       },
       fontFamily: {
-        // Add custom fonts if needed
+        poppins: ['Poppins', 'sans-serif'],
+        inter: ['Inter', 'sans-serif'],
       },
       fontSize: {
         'title': ['24px', { lineHeight: '29px', fontWeight: '600' }],
@@ -54,13 +47,8 @@ module.exports = {
       borderRadius: {
         'input': '12px',
         'button': '1000px',
->>>>>>> anne-signup
       },
     },
   },
   plugins: [],
-<<<<<<< HEAD
-}
-=======
 };
->>>>>>> anne-signup
