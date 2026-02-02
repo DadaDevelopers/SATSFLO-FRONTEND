@@ -16,7 +16,7 @@ export default function OnboardingScreen() {
   return (
     <View className="flex-1 bg-[#FF4081]">
       {/* Top Section with Phone Mockup */}
-      <View className="items-center" style={{ paddingTop: verticalScale(100), paddingBottom: verticalScale(70) }}>
+      <View className="items-center pt-28 pb-6">
         {/* Phone mockup using image */}
         <Image
           source={require('../../assets/images/miniscreen.png')}
@@ -26,14 +26,14 @@ export default function OnboardingScreen() {
       </View>
 
       {/* Bottom Section with Content */}
-      <View className="relative items-center" style={{ paddingTop: verticalScale(4) }}>
-        <View className="absolute -bottom-14 w-full">
+      <View className="relative items-center pt-8">
+        <View className="absolute -bottom-14 left-0 right-0 overflow-hidden w-full">
           <TopWave />
         </View>
         <View className="flex-1 justify-end">
-          <View className="bg-[#FFDBE7] rounded-t-[40px]" style={{ paddingHorizontal: scale(24), paddingBottom: verticalScale(20), paddingTop: verticalScale(8), marginTop: verticalScale(-24) }}>
+          <View className="bg-[#FFDBE7] rounded-t-[40px] px-8 pb-10 pt-4 -mt-12">
             {/* Title */}
-            <Text className="text-2xl font-poppins font-semibold text-[#212121] text-center leading-8" style={{ marginBottom: verticalScale(16) }}>
+            <Text className="text-2xl font-poppins font-semibold text-[#212121] text-center leading-8 mb-8">
               Empower Your Wellness{'\n'}Journey!
             </Text>
 

@@ -22,7 +22,7 @@ function DropIcon() {
 
 export function HomeHeader({ onNotificationPress, onLogoPress }: HomeHeaderProps) {
   return (
-    <View className="flex-row justify-between items-center px-5 py-4">
+    <View className="flex-row justify-between items-center px-5 py-4 pt-8">
       {/* Logo with dashed border */}
       <TouchableOpacity
         onPress={onLogoPress}
@@ -34,7 +34,7 @@ export function HomeHeader({ onNotificationPress, onLogoPress }: HomeHeaderProps
       </TouchableOpacity>
 
       {/* App title */}
-      <Text className="text-white text-2xl font-medium tracking-tight">
+      <Text className="text-white text-2xl font-medium font-inter tracking-tight">
         SatsFlo
       </Text>
 

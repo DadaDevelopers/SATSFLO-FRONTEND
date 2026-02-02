@@ -6,12 +6,14 @@ import { HomeHeader } from '@/components/home/home-header';
 import { CycleWheel } from '@/components/home/cycle-wheel';
 import { PhaseLegend } from '@/components/home/phase-legend';
 import { BottomNavigation } from '@/components/home/bottom-navigation';
+import { MenstrualPhaseModal } from '@/components/home/menstrual-phase-modal';
 
 type TabName = 'home' | 'calendar' | 'add' | 'chat' | 'settings';
 
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const [activeTab, setActiveTab] = useState<TabName>('home');
+  const [showMenstrualModal, setShowMenstrualModal] = useState(false);
 
   // Sample data - in a real app, this would come from user's data/state
   const cycleData = {
@@ -89,7 +91,7 @@ export default function HomeScreen() {
         </View>
 
         {/* Phase Legend */}
-        <PhaseLegend />
+        <PhaseLegend onMenstrualPhasePress={() => setShowMenstrualModal(true)} />
 
         {/* Divider */}
         <View className="h-[0.5px] bg-home-card-border my-6" />
@@ -114,6 +116,12 @@ export default function HomeScreen() {
       <BottomNavigation
         activeTab={activeTab}
         onTabPress={handleTabPress}
+      />
+
+      {/* Menstrual Phase Modal */}
+      <MenstrualPhaseModal
+        visible={showMenstrualModal}
+        onClose={() => setShowMenstrualModal(false)}
       />
     </View>
   );

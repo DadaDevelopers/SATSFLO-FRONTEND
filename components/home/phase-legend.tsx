@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text } from 'react-native';
+import { View, Text, TouchableOpacity } from 'react-native';
 import Svg, { Circle, Defs, LinearGradient, Stop } from 'react-native-svg';
 import { Feather } from '@expo/vector-icons';
 
@@ -9,11 +9,12 @@ interface PhaseItemProps {
   gradientColors: { start: string; end: string };
   startPercent?: string;
   endPercent?: string;
+  onPress?: () => void;
 }
 
-function PhaseItem({ label, gradientId, gradientColors, startPercent = '0%', endPercent = '100%' }: PhaseItemProps) {
+function PhaseItem({ label, gradientId, gradientColors, startPercent = '0%', endPercent = '100%', onPress }: PhaseItemProps) {
   return (
-    <View className="flex-row items-center gap-1">
+    <TouchableOpacity onPress={onPress} activeOpacity={0.7} className="flex-row items-center gap-1">
       <Svg width={18} height={18}>
         <Defs>
           <LinearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="100%">
@@ -25,11 +26,15 @@ function PhaseItem({ label, gradientId, gradientColors, startPercent = '0%', end
       </Svg>
       <Text className="text-white text-[13px] font-medium">{label}</Text>
       <Feather name="info" size={9} color="#FAFAFA" />
-    </View>
+    </TouchableOpacity>
   );
 }
 
-export function PhaseLegend() {
+interface PhaseLegendProps {
+  onMenstrualPhasePress?: () => void;
+}
+
+export function PhaseLegend({ onMenstrualPhasePress }: PhaseLegendProps) {
   return (
     <View className="flex-row flex-wrap justify-between px-4 mt-6">
       {/* Left column */}
@@ -40,6 +45,7 @@ export function PhaseLegend() {
           gradientColors={{ start: '#F43B3B', end: '#8E2222' }}
           startPercent="26.79%"
           endPercent="69.67%"
+          onPress={onMenstrualPhasePress}
         />
         <PhaseItem
           label="Ovulation Phase"

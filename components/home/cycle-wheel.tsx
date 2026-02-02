@@ -188,7 +188,7 @@ export function CycleWheel({
         </Svg>
 
         {/* Center content overlay */}
-        <View style={[styles.centerContent, {
+        <View className='bg-[#FF4081] font-inter' style={[styles.centerContent, {
           top: 70,
           left: 70,
           width: size - 80,
