@@ -60,24 +60,23 @@ export default function OtpVerificationScreen() {
           className="flex-1"
           contentContainerStyle={{
             flexGrow: 1,
-            paddingHorizontal: 20,
-            justifyContent: 'center',
+            paddingHorizontal: 24,
           }}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
           {/* Back Button - positioned at top */}
-          <View className="absolute top-4 left-0">
+          <View className="pt-4 pb-2">
             <BackButton />
           </View>
 
-          {/* Center content */}
-          <View className="w-full py-16">
+          {/* Content */}
+          <View className="w-full pt-8 pb-8">
             {/* Title Section */}
             <TitleSection
               title="Enter OTP Code"
               subtitle="Enter the 4 digits code that was sent to your email address."
-              className="mb-8"
+              className="mb-10"
             />
 
             {/* OTP Input Section */}
@@ -104,7 +103,7 @@ export default function OtpVerificationScreen() {
         </ScrollView>
 
         {/* Bottom Section - Fixed at bottom */}
-        <View className="px-5 pb-3 pt-2">
+        <View className="px-6 pb-4 pt-4">
           <View className="items-center">
             <PrimaryButton title="Verify Password" onPress={handleVerify} disabled={!isFormValid} />
           </View>
