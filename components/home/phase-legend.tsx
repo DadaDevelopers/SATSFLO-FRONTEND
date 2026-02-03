@@ -32,9 +32,17 @@ function PhaseItem({ label, gradientId, gradientColors, startPercent = '0%', end
 
 interface PhaseLegendProps {
   onMenstrualPhasePress?: () => void;
+  onFollicularPhasePress?: () => void;
+  onOvulationPhasePress?: () => void;
+  onLutealPhasePress?: () => void;
 }
 
-export function PhaseLegend({ onMenstrualPhasePress }: PhaseLegendProps) {
+export function PhaseLegend({
+  onMenstrualPhasePress,
+  onFollicularPhasePress,
+  onOvulationPhasePress,
+  onLutealPhasePress
+}: PhaseLegendProps) {
   return (
     <View className="flex-row flex-wrap justify-between px-4 mt-6">
       {/* Left column */}
@@ -53,6 +61,7 @@ export function PhaseLegend({ onMenstrualPhasePress }: PhaseLegendProps) {
           gradientColors={{ start: '#FFFF00', end: '#FF8800' }}
           startPercent="13.59%"
           endPercent="92.99%"
+          onPress={onOvulationPhasePress}
         />
       </View>
 
@@ -64,6 +73,7 @@ export function PhaseLegend({ onMenstrualPhasePress }: PhaseLegendProps) {
           gradientColors={{ start: '#EC59C0', end: '#F7D5FF' }}
           startPercent="9.32%"
           endPercent="89.06%"
+          onPress={onFollicularPhasePress}
         />
         <PhaseItem
           label="Luteal Phase"
@@ -71,6 +81,7 @@ export function PhaseLegend({ onMenstrualPhasePress }: PhaseLegendProps) {
           gradientColors={{ start: '#F0F0F1', end: '#70A9FE' }}
           startPercent="10.58%"
           endPercent="90.95%"
+          onPress={onLutealPhasePress}
         />
       </View>
     </View>

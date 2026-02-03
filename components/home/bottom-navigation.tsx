@@ -1,6 +1,6 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, Platform } from 'react-native';
 import { Feather } from '@expo/vector-icons';
+import React from 'react';
+import { Platform, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Path } from 'react-native-svg';
 
@@ -13,7 +13,7 @@ interface BottomNavigationProps {
 
 function HouseIcon({ color }: { color: string }) {
   return (
-    <Svg width={20} height={20} viewBox="0 0 20 20" fill="none">
+    <Svg width={30} height={30} viewBox="0 0 20 20" fill="none">
       <Path
         d="M2.5 8.33333L10 2.5L17.5 8.33333V16.6667C17.5 17.1087 17.3244 17.5326 17.0118 17.8452C16.6993 18.1577 16.2754 18.3333 15.8333 18.3333H4.16667C3.72464 18.3333 3.30072 18.1577 2.98816 17.8452C2.67559 17.5326 2.5 17.1087 2.5 16.6667V8.33333Z"
         fill={color}
@@ -24,7 +24,7 @@ function HouseIcon({ color }: { color: string }) {
 
 function SettingsIcon({ color }: { color: string }) {
   return (
-    <Svg width={20} height={20} viewBox="0 0 20 20" fill="none">
+    <Svg width={30} height={30} viewBox="0 0 20 20" fill="none">
       <Path
         d="M10 12.5C11.3807 12.5 12.5 11.3807 12.5 10C12.5 8.61929 11.3807 7.5 10 7.5C8.61929 7.5 7.5 8.61929 7.5 10C7.5 11.3807 8.61929 12.5 10 12.5Z"
         fill={color}
@@ -55,7 +55,7 @@ function TabItem({ icon, label, isActive, onPress }: TabItemProps) {
     >
       {icon}
       <Text
-        className="text-[8px] font-medium text-center tracking-tight"
+        className="text-[12px] font-medium text-center tracking-tight"
         style={{ color }}
       >
         {label}
@@ -70,7 +70,7 @@ export function BottomNavigation({ activeTab, onTabPress }: BottomNavigationProp
 
   return (
     <View className="bg-home-nav-bg">
-      <View className="flex-row justify-between items-center px-5 py-2">
+      <View className="flex-row justify-between items-center px-6 py-4">
         {/* Home */}
         <TabItem
           icon={<HouseIcon color={activeTab === 'home' ? '#FFF0F5' : '#FF99BC'} />}
@@ -78,10 +78,11 @@ export function BottomNavigation({ activeTab, onTabPress }: BottomNavigationProp
           isActive={activeTab === 'home'}
           onPress={() => onTabPress('home')}
         />
+        
 
         {/* Calendar */}
         <TabItem
-          icon={<Feather name="calendar" size={20} color={activeTab === 'calendar' ? '#FFF0F5' : '#FF99BC'} />}
+          icon={<Feather name="calendar" size={30} color={activeTab === 'calendar' ? '#FFF0F5' : '#FF99BC'} />}
           label="Calendar"
           isActive={activeTab === 'calendar'}
           onPress={() => onTabPress('calendar')}
@@ -98,7 +99,7 @@ export function BottomNavigation({ activeTab, onTabPress }: BottomNavigationProp
 
         {/* Chat */}
         <TabItem
-          icon={<Feather name="message-circle" size={20} color={activeTab === 'chat' ? '#FFF0F5' : '#FF99BC'} />}
+          icon={<Feather name="message-circle" size={30} color={activeTab === 'chat' ? '#FFF0F5' : '#FF99BC'} />}
           label="Chat"
           isActive={activeTab === 'chat'}
           onPress={() => onTabPress('chat')}
