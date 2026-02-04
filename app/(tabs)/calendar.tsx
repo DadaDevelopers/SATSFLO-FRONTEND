@@ -211,12 +211,10 @@ export default function CalendarScreen() {
       </ScrollView>
 
       {/* Bottom Navigation */}
-      <View className="pt-10">
         <BottomNavigation
           activeTab={activeTab}
           onTabPress={handleTabPress}
         />
-      </View>
     </View>
   );
 }
