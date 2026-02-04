@@ -21,6 +21,34 @@ export default function TabLayout() {
           href: null, // Hide from navigation for now
         }}
       />
+      <Tabs.Screen
+        name="journal"
+        options={{
+          title: 'Journal',
+          href: null, // Accessed via home screen button
+        }}
+      />
+      <Tabs.Screen
+        name="add-entry"
+        options={{
+          title: 'Add Entry',
+          href: null, // Accessed via journal screen button
+        }}
+      />
+      <Tabs.Screen
+        name="gift-token"
+        options={{
+          title: 'Gift Token',
+          href: null, // Accessed via home screen button
+        }}
+      />
+      <Tabs.Screen
+        name="calendar"
+        options={{
+          title: 'Calendar',
+          href: null, // Accessed via edit period button
+        }}
+      />
     </Tabs>
   );
 }
