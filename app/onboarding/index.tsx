@@ -2,6 +2,8 @@ import { HomeIndicatorArea } from '@/components/signup/home-indicator-area';
 import TopWave from '@/components/TopWave';
 import { router } from 'expo-router';
 import { Image, Pressable, Text, View } from 'react-native';
+import { scale, verticalScale } from 'react-native-size-matters';
+
 export default function OnboardingScreen() {
   const handleContinue = () => {
     router.push('/onboarding/screen2');
@@ -25,30 +27,30 @@ export default function OnboardingScreen() {
 
       {/* Bottom Section with Content */}
       <View className="relative items-center pt-8">
-        <View className="absolute -bottom-14 w-full">
+        <View className="absolute -bottom-14 left-0 right-0 overflow-hidden w-full">
           <TopWave />
         </View>
         <View className="flex-1 justify-end">
-          <View className="bg-[#FFDBE7] px-8 pb-10 pt-4 -mt-12 rounded-t-[40px]">
+          <View className="bg-[#FFDBE7] rounded-t-[40px] px-8 pb-10 pt-4 -mt-12">
             {/* Title */}
-            <Text className="text-2xl font-poppins font-semibold text-[#212121] text-center mb-8 leading-8">
+            <Text className="text-2xl font-poppins font-semibold text-[#212121] text-center leading-8 mb-8">
               Empower Your Wellness{'\n'}Journey!
             </Text>
 
             {/* Description */}
-            <Text className="text-sm font-inter text-[#666666] text-center mb-6 px-4 leading-5">
+            <Text className="text-sm font-inter text-[#666666] text-center leading-5" style={{ marginBottom: verticalScale(12), paddingHorizontal: scale(16) }}>
               Log your cycle, track your symptoms, and monitor your moods in one seamless experience.
             </Text>
 
             {/* Page indicator dots */}
-            <View className="flex-row justify-center mb-6">
+            <View className="flex-row justify-center" style={{ marginBottom: verticalScale(12) }}>
               <View className="w-3 h-[5px] rounded-full bg-[#FF4081] mx-[1.5px]" />
               <View className="w-[5px] h-[5px] rounded-full bg-[#FFE9F1] mx-[1.5px]" />
               <View className="w-[5px] h-[5px] rounded-full bg-[#FFE9F1] mx-[1.5px]" />
             </View>
         
         {/* Buttons */}
-        <View className="flex-row w-full gap-3 mb-6">
+        <View className="flex-row w-full gap-3" style={{ marginBottom: verticalScale(12) }}>
           {/* Skip button */}
           <Pressable
             onPress={handleSkip}

@@ -26,6 +26,31 @@ module.exports = {
           'home-indicator-bg': '#FF3378',
           'home-indicator': '#FF99BC',
         },
+        // Home screen color palette
+        home: {
+          bg: '#FF4081',
+          'nav-bg': '#FF3378',
+          'nav-active': '#FFF0F5',
+          'nav-inactive': '#FF99BC',
+          'center-btn': '#FF669A',
+          'card-border': '#FF669A',
+          'gift-border': '#FFB4CD',
+          'text-primary': '#FFFFFF',
+          'text-secondary': '#FAFAFA',
+          'text-muted': '#7D7D7D',
+        },
+        // Phase gradient colors
+        phase: {
+          'menstrual-start': '#F43B3B',
+          'menstrual-end': '#8E2222',
+          'ovulation-start': '#FFFF00',
+          'ovulation-end': '#FF8800',
+          'follicular-start': '#EC59C0',
+          'follicular-end': '#F7D5FF',
+          'luteal-start': '#F0F0F1',
+          'luteal-end': '#70A9FE',
+          'current-day': '#EC59C0',
+        },
       },
       fontFamily: {
         poppins: ['Poppins', 'sans-serif'],
