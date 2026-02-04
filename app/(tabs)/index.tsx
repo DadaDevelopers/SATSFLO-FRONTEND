@@ -7,6 +7,7 @@ import { MenstrualPhaseModal } from '@/components/home/menstrual-phase-modal';
 import { OvulationPhaseModal } from '@/components/home/ovulation-phase-modal';
 import { PhaseLegend } from '@/components/home/phase-legend';
 import { Feather } from '@expo/vector-icons';
+import { router } from 'expo-router';
 import React, { useState } from 'react';
 import { Image, ScrollView, StatusBar, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -35,7 +36,7 @@ export default function HomeScreen() {
     // Navigate to respective screens
     switch (tab) {
       case 'calendar':
-        // router.push('/calendar');
+        router.push('/calendar');
         break;
       case 'add':
         // Open add modal or navigate to add screen
@@ -52,8 +53,7 @@ export default function HomeScreen() {
   };
 
   const handleEditPeriod = () => {
-    // Navigate to edit period screen
-    // router.push('/edit-period');
+    router.push('/calendar');
   };
 
   const handleNotificationPress = () => {
@@ -62,13 +62,11 @@ export default function HomeScreen() {
   };
 
   const handleGiftTokenPress = () => {
-    // Navigate to gift token screen
-    // router.push('/gift-token');
+    router.push('/gift-token');
   };
 
   const handleJournalPress = () => {
-    // Navigate to journal screen
-    // router.push('/journal');
+    router.push('/journal');
   };
 
   return (
