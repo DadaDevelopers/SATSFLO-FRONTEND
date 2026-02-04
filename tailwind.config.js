@@ -6,7 +6,17 @@ module.exports = {
   ],
   presets: [require('nativewind/preset')],
   theme: {
+    screens: {
+      'sm': '640px',
+      'md': '768px',
+      'lg': '1024px',
+      'xl': '1280px',
+    },
     extend: {
+      maxWidth: {
+        'mobile': '480px',
+        'tablet': '768px',
+      },
       colors: {
         // Signup flow color palette from SignupColors
         signup: {

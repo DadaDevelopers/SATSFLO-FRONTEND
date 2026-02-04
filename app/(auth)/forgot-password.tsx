@@ -31,28 +31,27 @@ export default function ForgotPasswordScreen() {
           className="flex-1"
           contentContainerStyle={{
             flexGrow: 1,
-            paddingHorizontal: 20,
-            justifyContent: 'center',
+            paddingHorizontal: 24,
           }}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
           {/* Back Button - positioned at top */}
-          <View className="absolute top-4 left-0">
+          <View className="pt-4 pb-2">
             <BackButton />
           </View>
 
-          {/* Center content */}
-          <View className="w-full py-16">
+          {/* Content */}
+          <View className="w-full pt-8 pb-8">
             {/* Title Section */}
             <TitleSection
               title="Forgot Password"
               subtitle="Please, enter email address registered with this account to request for a new password."
-              className="mb-6"
+              className="mb-10"
             />
 
             {/* Form Section */}
-            <View className="gap-4">
+            <View className="gap-5">
               <InputField
                 placeholder="Email"
                 value={email}
@@ -66,7 +65,7 @@ export default function ForgotPasswordScreen() {
         </ScrollView>
 
         {/* Bottom Section - Fixed at bottom */}
-        <View className="px-5 pb-3 pt-2">
+        <View className="px-6 pb-4 pt-4">
           <View className="items-center">
             <PrimaryButton
               title="Recover Password"
