@@ -39,7 +39,7 @@ export default function HomeScreen() {
         router.push('/calendar');
         break;
       case 'add':
-        // Open add modal or navigate to add screen
+        router.push('/add-log');
         break;
       case 'chat':
         // router.push('/chat');
