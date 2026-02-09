@@ -53,7 +53,7 @@ export default function HomeScreen() {
   };
 
   const handleEditPeriod = () => {
-    router.push('/calendar');
+    router.push('/edit-period');
   };
 
   const handleNotificationPress = () => {
