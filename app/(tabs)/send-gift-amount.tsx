@@ -1,0 +1,365 @@
+import { Feather } from '@expo/vector-icons';
+import { BarCodeScanner } from 'expo-barcode-scanner';
+import * as Clipboard from 'expo-clipboard';
+import { router } from 'expo-router';
+import React, { useEffect, useState } from 'react';
+import { Alert, Modal, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
+type CurrencyType = 'USD' | 'EUR' | 'KES' | 'NGN';
+
+// Dummy conversion rates (SATS per unit of currency)
+const conversionRates: Record<CurrencyType, number> = {
+  USD: 1056,  // 1 USD = 1056 SATS
+  EUR: 1150,  // 1 EUR = 1150 SATS
+  KES: 8,     // 1 KES = 8 SATS
+  NGN: 0.7,   // 1 NGN = 0.7 SATS
+};
+
+export default function SendGiftAmountScreen() {
+  const insets = useSafeAreaInsets();
+  const [destination, setDestination] = useState('');
+  const [amount, setAmount] = useState('');
+  const [note, setNote] = useState('');
+  const [currency, setCurrency] = useState<CurrencyType>('USD');
+  const [showCurrencyDropdown, setShowCurrencyDropdown] = useState(false);
+  const [showQRScanner, setShowQRScanner] = useState(false);
+  const [hasPermission, setHasPermission] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    (async () => {
+      const { status } = await BarCodeScanner.requestPermissionsAsync();
+      setHasPermission(status === 'granted');
+    })();
+  }, []);
+
+  const handleBack = () => {
+    // Navigate back to send gift token screen
+    if (router.canGoBack()) {
+      router.push('/(tabs)/send-gift-token');
+    }
+  };
+
+  const handleScanQR = async () => {
+    if (hasPermission === null) {
+      Alert.alert('Camera Permission', 'Requesting camera permission...');
+      return;
+    }
+    if (hasPermission === false) {
+      Alert.alert('No Camera Access', 'Please grant camera permission in your device settings to scan QR codes');
+      return;
+    }
+    setShowQRScanner(true);
+  };
+
+  const handleBarCodeScanned = ({ type, data }: { type: string; data: string }) => {
+    setShowQRScanner(false);
+    setDestination(data);
+    Alert.alert('QR Code Scanned', `Destination set to: ${data}`);
+  };
+
+  const handlePaste = async () => {
+    try {
+      const text = await Clipboard.getStringAsync();
+      if (text) {
+        setDestination(text);
+        Alert.alert('Pasted', `Destination set to: ${text}`);
+      } else {
+        Alert.alert('Clipboard Empty', 'No text found in clipboard');
+      }
+    } catch (error) {
+      console.error('Paste error:', error);
+      Alert.alert('Error', 'Failed to paste from clipboard');
+    }
+  };
+
+  const toggleCurrency = () => {
+    setShowCurrencyDropdown(!showCurrencyDropdown);
+  };
+
+  const selectCurrency = (curr: CurrencyType) => {
+    setCurrency(curr);
+    setShowCurrencyDropdown(false);
+  };
+
+  // Calculate SATS equivalent
+  const calculateSatsEquivalent = (): string => {
+    const amountValue = parseFloat(amount);
+    if (isNaN(amountValue) || amountValue <= 0) {
+      return '0';
+    }
+    const satsEquivalent = amountValue * conversionRates[currency];
+    return Math.round(satsEquivalent).toLocaleString();
+  };
+
+  const handleProceed = () => {
+    console.log('Proceed button clicked');
+    console.log('Destination:', destination);
+    console.log('Amount:', amount);
+
+    if (!destination || !amount) {
+      console.log('Please fill in required fields');
+      Alert.alert('Required Fields', 'Please fill in Destination and Amount to continue');
+      return;
+    }
+
+    // Navigate to select wallet screen
+    console.log('Proceeding with:', { destination, amount, currency, note });
+    console.log('Navigating to select-wallet screen...');
+    router.push('/(tabs)/select-wallet');
+  };
+
+  return (
+    <View className="flex-1 bg-[#FF4081]">
+      
+      {/* Main Content */}
+      <View className="flex-1 bg-[#FF4081]">
+        {/* Header */}
+        <View className="flex-row items-center px-5 py-6 gap-[85px]">
+          {/* Back Button */}
+          <Pressable onPress={handleBack} className="p-1">
+            <Feather name="arrow-left" size={24} color="#FAFAFA" />
+          </Pressable>
+
+          {/* Title */}
+          <Text className="text-xl font-inter font-medium text-white tracking-tight">
+            Send Gift token
+          </Text>
+
+          {/* Calendar Icon (hidden as per design) */}
+          <View className="w-6 h-6 opacity-0">
+            <Feather name="calendar" size={24} color="#666666" />
+          </View>
+        </View>
+
+        {/* Instruction Text */}
+        <View className="px-5 mt-6">
+          <Text className="text-sm font-inter text-[#FAFAFA] tracking-tight">
+            Input the amount you want to send.
+          </Text>
+        </View>
+
+        {/* Form Fields */}
+        <View className="px-5 mt-4 gap-4">
+          {/* Destination */}
+          <View className="gap-2.5">
+            <Text className="text-sm font-inter text-white" style={{ fontWeight: '500' }}>
+              Destination
+            </Text>
+            <View className="flex-row justify-between items-center px-4 py-4 border border-[#FF99BC] rounded-lg">
+              <TextInput
+                className="flex-1 text-sm font-inter text-white"
+                style={{ fontWeight: '500' }}
+                placeholder="Sarahabraham@blink.sv"
+                placeholderTextColor="#FAFAFA"
+                value={destination}
+                onChangeText={setDestination}
+                autoCapitalize="none"
+                keyboardType="email-address"
+              />
+              <View className="flex-row gap-2">
+                <Pressable onPress={handleScanQR}>
+                  <Feather name="maximize" size={16} color="#FAFAFA" />
+                </Pressable>
+                <Pressable onPress={handlePaste}>
+                  <Feather name="copy" size={16} color="#FAFAFA" />
+                </Pressable>
+              </View>
+            </View>
+          </View>
+
+          {/* Amount */}
+          <View className="gap-2.5 relative z-10">
+            <Text className="text-sm font-inter text-white" style={{ fontWeight: '500' }}>
+              Amount
+            </Text>
+            <View className="flex-row items-center px-4 py-4 border border-[#FF99BC] rounded-lg gap-4">
+              {/* Currency Selector Button */}
+              <Pressable
+                onPress={toggleCurrency}
+                className="flex-row items-center gap-1 px-3 py-1.5 bg-[#FF669A] rounded"
+              >
+                <Text className="text-sm font-inter text-white font-semibold">
+                  {currency}
+                </Text>
+                <Feather name="chevron-down" size={14} color="#FFFFFF" />
+              </Pressable>
+
+              {/* Amount Input */}
+              <TextInput
+                className="flex-1 text-sm font-inter text-white"
+                style={{ fontWeight: '500' }}
+                placeholder="10.00"
+                placeholderTextColor="#FAFAFA"
+                value={amount}
+                onChangeText={setAmount}
+                keyboardType="decimal-pad"
+              />
+            </View>
+
+            {/* Currency Dropdown - appears below */}
+            {showCurrencyDropdown && (
+              <View className="absolute top-[75px] left-0 right-0 bg-[#FF669A] rounded-lg border-2 border-[#FF99BC] overflow-hidden shadow-lg z-20">
+                {/* USD Option */}
+                <Pressable
+                  onPress={() => selectCurrency('USD')}
+                  className="px-4 py-3 border-b border-[#FF99BC] active:bg-[#FF4081]"
+                >
+                  <View className="flex-row justify-between items-center">
+                    <View>
+                      <Text className="text-white font-inter font-semibold text-base">
+                        USD
+                      </Text>
+                      <Text className="text-white/80 font-inter text-md mt-0.5">
+                        US Dollar
+                      </Text>
+                    </View>
+                    {currency === 'USD' && (
+                      <Feather name="check-circle" size={18} color="#4DC721" />
+                    )}
+                  </View>
+                </Pressable>
+
+                {/* EUR Option */}
+                <Pressable
+                  onPress={() => selectCurrency('EUR')}
+                  className="px-4 py-3 border-b border-[#FF99BC] active:bg-[#FF4081]"
+                >
+                  <View className="flex-row justify-between items-center">
+                    <View>
+                      <Text className="text-white font-inter font-semibold text-base">
+                        EUR
+                      </Text>
+                      <Text className="text-white/80 font-inter text-xs mt-0.5">
+                        Euro
+                      </Text>
+                    </View>
+                    {currency === 'EUR' && (
+                      <Feather name="check-circle" size={18} color="#4DC721" />
+                    )}
+                  </View>
+                </Pressable>
+
+                {/* KES Option */}
+                <Pressable
+                  onPress={() => selectCurrency('KES')}
+                  className="px-4 py-3 border-b border-[#FF99BC] active:bg-[#FF4081]"
+                >
+                  <View className="flex-row justify-between items-center">
+                    <View>
+                      <Text className="text-white font-inter font-semibold text-base">
+                        KES
+                      </Text>
+                      <Text className="text-white/80 font-inter text-xs mt-0.5">
+                        Kenyan Shilling
+                      </Text>
+                    </View>
+                    {currency === 'KES' && (
+                      <Feather name="check-circle" size={18} color="#4DC721" />
+                    )}
+                  </View>
+                </Pressable>
+
+                {/* NGN Option */}
+                <Pressable
+                  onPress={() => selectCurrency('NGN')}
+                  className="px-4 py-3 active:bg-[#FF4081]"
+                >
+                  <View className="flex-row justify-between items-center">
+                    <View>
+                      <Text className="text-white font-inter font-semibold text-base">
+                        NGN
+                      </Text>
+                      <Text className="text-white/80 font-inter text-xs mt-0.5">
+                        Nigerian Naira
+                      </Text>
+                    </View>
+                    {currency === 'NGN' && (
+                      <Feather name="check-circle" size={18} color="#4DC721" />
+                    )}
+                  </View>
+                </Pressable>
+              </View>
+            )}
+
+            {/* SATS Conversion Display */}
+            {amount && parseFloat(amount) > 0 && (
+              <View className="mt-2 px-2">
+                <Text className="text-[10px] font-inter font-medium text-[#EFEFEF] leading-[14px]">
+                  {currency} {amount} ≈ {calculateSatsEquivalent()} SATS
+                </Text>
+              </View>
+            )}
+          </View>
+
+          {/* Note */}
+          <View className="gap-2.5">
+            <Text className="text-sm font-inter text-white" style={{ fontWeight: '500' }}>
+              Note
+            </Text>
+            <View className="flex-row items-center px-4 py-4 border border-[#FF99BC] rounded-lg">
+              <TextInput
+                className="flex-1 text-sm font-inter text-[#FAFAFA]"
+                style={{ fontWeight: '500' }}
+                placeholder="For flowers"
+                placeholderTextColor="#FAFAFA"
+                value={note}
+                onChangeText={setNote}
+              />
+            </View>
+          </View>
+        </View>
+      </View>
+
+      {/* QR Scanner Modal */}
+      {showQRScanner && (
+        <Modal
+          visible={showQRScanner}
+          transparent={false}
+          animationType="slide"
+        >
+          <View className="flex-1 bg-black">
+            <BarCodeScanner
+              onBarCodeScanned={handleBarCodeScanned}
+              style={StyleSheet.absoluteFillObject}
+            />
+            {/* Close Button */}
+            <Pressable
+              onPress={() => setShowQRScanner(false)}
+              className="absolute top-12 right-4 bg-white/90 p-3 rounded-full z-10"
+            >
+              <Feather name="x" size={24} color="#000" />
+            </Pressable>
+            {/* Instructions */}
+            <View className="absolute bottom-20 left-0 right-0 items-center">
+              <Text className="text-white text-base font-inter font-medium bg-black/70 px-6 py-3 rounded-lg">
+                Point camera at QR code
+              </Text>
+            </View>
+          </View>
+        </Modal>
+      )}
+
+      {/* Bottom Section */}
+      <View
+        className="items-center pb-0"
+        style={{ paddingBottom: insets.bottom }}
+      >
+        {/* Proceed Button */}
+        <Pressable
+          onPress={handleProceed}
+          className="w-[250px] py-4 bg-[#FF82AD] rounded-full items-center justify-center active:opacity-80 border-[0.5px] border-[#FF669A] mb-5"
+        >
+          <Text className="text-white font-inter font-medium text-[15px]">
+            Proceed
+          </Text>
+        </Pressable>
+
+        {/* Home Indicator Area */}
+        <View className="w-full h-[34px] bg-[#FF3378] items-center justify-center">
+          <View className="w-[134px] h-[5px] bg-[#FF99BC] rounded-full" />
+        </View>
+      </View>
+    </View>
+  );
+}
