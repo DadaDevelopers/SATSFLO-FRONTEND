@@ -3,8 +3,28 @@ import { router } from 'expo-router';
 import React, { useState } from 'react';
 import { Alert, Pressable, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import Svg, { Path } from 'react-native-svg';
 
 type OptionType = 'send' | 'receive' | null;
+
+const CheckmarkIcon = () => (
+  <Svg width="19" height="18" viewBox="0 0 19 18" fill="none">
+    <Path
+      d="M17.641 8.67238V9.35128C17.64 10.9426 17.0961 12.4909 16.0904 13.7654C15.0847 15.0399 13.671 15.9723 12.0603 16.4235C10.4495 16.8747 8.72796 16.8205 7.15236 16.269C5.57676 15.7176 4.23153 14.6984 3.31732 13.3634C2.4031 12.0285 1.96887 10.4494 2.07938 8.86153C2.1899 7.27369 2.83925 5.76224 3.93058 4.55259C5.02191 3.34293 6.49675 2.4999 8.13514 2.14921C9.77353 1.79852 11.4877 1.95896 13.022 2.60662"
+      stroke="#4DC721"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <Path
+      d="M17.6377 3.44775L9.84849 10.8344L7.51172 8.62063"
+      stroke="#4DC721"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </Svg>
+);
 
 export default function GiftTokenWalletScreen() {
   const insets = useSafeAreaInsets();
@@ -85,9 +105,7 @@ export default function GiftTokenWalletScreen() {
             <Text className="text-sm font-inter text-[#FAFAFA]" style={{ fontWeight: '500' }}>
               Send Gift Token
             </Text>
-            {selectedOption === 'send' && (
-              <Feather name="plus-circle" size={18} color="#4DC721" />
-            )}
+            {selectedOption === 'send' && <CheckmarkIcon />}
           </Pressable>
 
           {/* Receive Gift Token */}
@@ -98,9 +116,7 @@ export default function GiftTokenWalletScreen() {
             <Text className="text-sm font-inter text-[#FAFAFA]" style={{ fontWeight: '500' }}>
               Receive Gift Token
             </Text>
-            {selectedOption === 'receive' && (
-              <Feather name="plus-circle" size={18} color="#4DC721" />
-            )}
+            {selectedOption === 'receive' && <CheckmarkIcon />}
           </Pressable>
         </View>
       </View>
