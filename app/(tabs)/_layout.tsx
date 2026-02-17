@@ -105,6 +105,13 @@ export default function TabLayout() {
           href: null, // Accessed via edit period button
         }}
       />
+      <Tabs.Screen
+        name="notifications"
+        options={{
+          title: 'Notifications',
+          href: null, // Accessed via notification icon
+        }}
+      />
     </Tabs>
   );
 }
