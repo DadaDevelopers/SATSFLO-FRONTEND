@@ -58,7 +58,7 @@ export default function HomeScreen() {
 
   const handleNotificationPress = () => {
     // Navigate to notifications
-    // router.push('/notifications');
+    router.push('/(tabs)/notifications');
   };
 
   const handleGiftTokenPress = () => {
