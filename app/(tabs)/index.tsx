@@ -70,8 +70,8 @@ export default function HomeScreen() {
   };
 
   return (
-    <View className="flex-1 bg-home-bg" style={{ paddingTop: insets.top }}>
-      <StatusBar barStyle="dark-content" backgroundColor="#FF4081" />
+    <View className="flex-1" style={{ paddingTop: insets.top, backgroundColor: '#FF4081' }}>
+      <StatusBar barStyle="light-content" backgroundColor="#FF4081" />
 
       {/* Header */}
       <HomeHeader
@@ -113,7 +113,8 @@ export default function HomeScreen() {
         <View className="items-center pt-20 pb-10">
           <TouchableOpacity
             onPress={handleGiftTokenPress}
-            className="flex-row items-center justify-center px-4 py-3 bg-home-bg border border-home-gift-border rounded-full"
+            className="flex-row items-center justify-center px-4 py-3 rounded-full"
+            style={{ backgroundColor: '#FF4081', borderWidth: 1, borderColor: '#FFB4CD' }}
             activeOpacity={0.8}
           >
             <Feather name="gift" size={24} color="#FFFFFF" />
@@ -133,7 +134,8 @@ export default function HomeScreen() {
           />
           <TouchableOpacity
             onPress={handleJournalPress}
-            className="mt-4 px-5 py-4 bg-home-bg border border-home-gift-border rounded-full"
+            className="mt-4 px-5 py-4 rounded-full"
+            style={{ backgroundColor: '#FF4081', borderWidth: 1, borderColor: '#FFB4CD' }}
             activeOpacity={0.8}
           >
             <Text className="text-white text-sm">My SatsFlow Journal</Text>
