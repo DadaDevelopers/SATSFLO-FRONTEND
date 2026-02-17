@@ -62,7 +62,7 @@ export default function HomeScreen() {
   };
 
   const handleGiftTokenPress = () => {
-    router.push('/gift-token');
+    router.push('/(tabs)/gift-token');
   };
 
   const handleJournalPress = () => {

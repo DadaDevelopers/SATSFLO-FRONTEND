@@ -1,13 +1,13 @@
-import React, { useState } from 'react';
+import { useRouter } from "expo-router";
+import React, { useState } from "react";
 import {
-  View,
   Text,
   TouchableOpacity,
   useWindowDimensions,
-} from 'react-native';
-import { useRouter } from 'expo-router';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Svg, { Path, Circle } from 'react-native-svg';
+  View,
+} from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import Svg, { Circle, Path } from "react-native-svg";
 
 const MAX_CONTENT_WIDTH = 480;
 
@@ -40,7 +40,7 @@ const CheckIcon = () => (
   </Svg>
 );
 
-type GiftTokenAction = 'send' | 'receive' | null;
+type GiftTokenAction = "send" | "receive" | null;
 
 export default function GiftTokenScreen() {
   const router = useRouter();
@@ -51,11 +51,10 @@ export default function GiftTokenScreen() {
   const [selectedAction, setSelectedAction] = useState<GiftTokenAction>(null);
 
   const handleProceed = () => {
-    if (selectedAction === 'receive') {
-      router.push('/gift-token/receive');
-    } else if (selectedAction === 'send') {
-      // TODO: Navigate to send gift token flow
-      router.push('/gift-token/receive'); // Placeholder
+    if (selectedAction === "receive") {
+      router.push("/gift-token/receive");
+    } else if (selectedAction === "send") {
+      router.push("/gift-token/send-category");
     }
   };
 
@@ -63,18 +62,22 @@ export default function GiftTokenScreen() {
     <View
       className="flex-1"
       style={{
-        backgroundColor: '#FF4081',
+        backgroundColor: "#FF4081",
         paddingTop: insets.top,
       }}
     >
       {/* Desktop wrapper */}
       <View
         className="flex-1"
-        style={isDesktop ? {
-          maxWidth: MAX_CONTENT_WIDTH,
-          width: '100%',
-          alignSelf: 'center',
-        } : undefined}
+        style={
+          isDesktop
+            ? {
+                maxWidth: MAX_CONTENT_WIDTH,
+                width: "100%",
+                alignSelf: "center",
+              }
+            : undefined
+        }
       >
         {/* Header */}
         <View className="flex-row items-center px-4 py-4">
@@ -94,41 +97,44 @@ export default function GiftTokenScreen() {
 
           {/* Send Gift Token Option */}
           <TouchableOpacity
-            onPress={() => setSelectedAction('send')}
+            onPress={() => setSelectedAction("send")}
             className="rounded-xl mb-4 px-4 py-5 flex-row items-center justify-between"
             style={{
-              backgroundColor: selectedAction === 'send' ? '#FFB6C1' : '#FF6B9D',
-              borderWidth: selectedAction === 'send' ? 2 : 0,
-              borderColor: '#FFFFFF',
+              backgroundColor: "#FF6B9D",
             }}
           >
-            <Text className="text-white text-base font-medium">Send Gift Token</Text>
-            {selectedAction === 'send' && <CheckIcon />}
+            <Text className="text-white text-base font-medium">
+              Send Gift Token
+            </Text>
+            {selectedAction === "send" && <CheckIcon />}
           </TouchableOpacity>
 
           {/* Receive Gift Token Option */}
           <TouchableOpacity
-            onPress={() => setSelectedAction('receive')}
+            onPress={() => setSelectedAction("receive")}
             className="rounded-xl mb-4 px-4 py-5 flex-row items-center justify-between"
             style={{
-              backgroundColor: selectedAction === 'receive' ? '#FFB6C1' : '#FF6B9D',
-              borderWidth: selectedAction === 'receive' ? 2 : 0,
-              borderColor: '#FFFFFF',
+              backgroundColor: "#FF6B9D",
             }}
           >
-            <Text className="text-white text-base font-medium">Receive Gift Token</Text>
-            {selectedAction === 'receive' && <CheckIcon />}
+            <Text className="text-white text-base font-medium">
+              Receive Gift Token
+            </Text>
+            {selectedAction === "receive" && <CheckIcon />}
           </TouchableOpacity>
         </View>
 
         {/* Proceed Button */}
-        <View className="px-4 pb-8" style={{ paddingBottom: insets.bottom + 32 }}>
+        <View
+          className="px-4 pb-8"
+          style={{ paddingBottom: insets.bottom + 32 }}
+        >
           <TouchableOpacity
             onPress={handleProceed}
             disabled={!selectedAction}
             className="py-4 rounded-full items-center"
             style={{
-              backgroundColor: selectedAction ? '#FFB6C1' : '#FF8FAB',
+              backgroundColor: selectedAction ? "#FFB6C1" : "#FF8FAB",
               opacity: selectedAction ? 1 : 0.7,
             }}
           >

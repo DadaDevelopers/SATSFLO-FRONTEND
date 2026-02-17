@@ -43,6 +43,62 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="gift-token-wallet"
+        options={{
+          title: 'Gift Token Wallet',
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="send-gift-token"
+        options={{
+          title: 'Send Gift Token',
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="send-gift-amount"
+        options={{
+          title: 'Send Gift Amount',
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="receive-gift-token"
+        options={{
+          title: 'Receive Gift Token',
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="receive-wallet"
+        options={{
+          title: 'Receive Wallet',
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="select-wallet"
+        options={{
+          title: 'Select Wallet',
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="success-sent"
+        options={{
+          title: 'Success Sent',
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="success-received"
+        options={{
+          title: 'Success Received',
+          href: null,
+        }}
+      />
+      <Tabs.Screen
         name="calendar"
         options={{
           title: 'Calendar',
