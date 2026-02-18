@@ -49,6 +49,13 @@ export default function TabLayout() {
           href: null, // Accessed via edit period button
         }}
       />
+      <Tabs.Screen
+        name="chat"
+        options={{
+          title: 'Chat',
+          href: null, // Accessed via bottom navigation
+        }}
+      />
     </Tabs>
   );
 }

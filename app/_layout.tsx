@@ -41,6 +41,7 @@ export default function RootLayout() {
         <Stack.Screen name="add-log" />
         <Stack.Screen name="calendar" />
         <Stack.Screen name="gift-token" />
+        <Stack.Screen name="chat" />
         <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
       </Stack>
     </SafeAreaProvider>
