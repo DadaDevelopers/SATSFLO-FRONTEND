@@ -42,7 +42,7 @@ export default function HomeScreen() {
         router.push('/add-log');
         break;
       case 'chat':
-        // router.push('/chat');
+        router.push('/(tabs)/thread');
         break;
       case 'settings':
         // router.push('/settings');

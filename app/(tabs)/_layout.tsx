@@ -112,6 +112,27 @@ export default function TabLayout() {
           href: null, // Accessed via notification icon
         }}
       />
+      <Tabs.Screen
+        name="thread"
+        options={{
+          title: 'Thread',
+          href: null, // Accessed via chat icon in bottom nav
+        }}
+      />
+      <Tabs.Screen
+        name="add-thread"
+        options={{
+          title: 'Add Thread',
+          href: null, // Accessed via plus button in thread screen
+        }}
+      />
+      <Tabs.Screen
+        name="view-comments"
+        options={{
+          title: 'View Comments',
+          href: null, // Accessed via post card in thread screen
+        }}
+      />
     </Tabs>
   );
 }
