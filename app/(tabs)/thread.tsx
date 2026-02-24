@@ -3,6 +3,7 @@ import { Feather } from "@expo/vector-icons";
 import { router } from "expo-router";
 import React, { useState } from "react";
 import {
+  Dimensions,
   Image,
   Pressable,
   ScrollView,
@@ -90,7 +91,21 @@ type NavTab = "home" | "calendar" | "add" | "chat" | "settings";
 export default function ThreadScreen() {
   const insets = useSafeAreaInsets();
   const [activeTab, setActiveTab] = useState<TabType>("threads");
+  const { width } = Dimensions.get("window");
+  const tabWidth = width / 3;
 
+  const getDipLeft = () => {
+    switch (activeTab) {
+      case "threads":
+        return 0;
+      case "chats":
+        return tabWidth;
+      case "groups":
+        return tabWidth * 2;
+      default:
+        return 0;
+    }
+  };
   const handleNavTabPress = (tab: NavTab) => {
     switch (tab) {
       case "home":
@@ -111,41 +126,80 @@ export default function ThreadScreen() {
 
   return (
     <View className="flex-1 bg-[#FF4081]">
-      {/* Tab Bar - full width rectangle starting from top of screen */}
-      <View
-        className="w-full bg-[#FFCCDD] rounded-3xl flex-row justify-between items-end px-8 pb-5"
-        style={{ height: 110 + insets.top, paddingTop: insets.top }}
-      >
-        <Pressable onPress={() => setActiveTab("threads")}>
-          <Text
-            className="text-sm font-inter font-semibold"
+      {/* HEADER */}
+      <View style={{ paddingTop: insets.top }}>
+        <View style={{ position: "relative", height: 110 }}>
+          {/* Figma Background Shape */}
+          <Svg
+            width="100%"
+            height={110}
+            viewBox="0 0 393 110"
+            preserveAspectRatio="none"
+            style={{ position: "absolute" }}
+          >
+            <Path
+              d="M-22 24C-22 10.7452 -11.2548 0 2 0H398C411.255 0 422 10.7452 422 24V51.8621C422 65.1169 411.255 75.8621 398 75.8621H145.424C135.281 75.8621 126.537 82.9951 124.5 92.931C122.463 102.867 113.719 110 103.576 110H2C-11.2548 110 -22 99.2548 -22 86V24Z"
+              fill="#FFCCDD"
+            />
+          </Svg>
+
+          {/* MOVING DIP */}
+          <View
             style={{
-              color: activeTab === "threads" ? "#FF4081" : "#FFFFFF",
+              position: "absolute",
+              bottom: 0,
+              left: getDipLeft(),
+              width: tabWidth,
+              alignItems: "center",
             }}
           >
-            Threads
-          </Text>
-        </Pressable>
-        <Pressable onPress={() => setActiveTab("chats")}>
-          <Text
-            className="text-sm font-inter font-semibold"
+            <Svg width={tabWidth} height={45} viewBox="0 0 120 45">
+              <Path
+                d="
+            M0 0
+            C30 0 35 25 60 35
+            C85 25 90 0 120 0
+            L120 45
+            L0 45
+            Z
+          "
+                fill="#FF4081"
+              />
+            </Svg>
+          </View>
+
+          {/* TAB LABELS */}
+          <View
             style={{
-              color: activeTab === "chats" ? "#FF4081" : "#FFFFFF",
+              position: "absolute",
+              bottom: 30,
+              left: 0,
+              right: 0,
+              flexDirection: "row",
             }}
           >
-            Chats
-          </Text>
-        </Pressable>
-        <Pressable onPress={() => setActiveTab("groups")}>
-          <Text
-            className="text-sm font-inter font-semibold"
-            style={{
-              color: activeTab === "groups" ? "#FF4081" : "#FFFFFF",
-            }}
-          >
-            Groups
-          </Text>
-        </Pressable>
+            {["threads", "chats", "groups"].map((tab) => (
+              <Pressable
+                key={tab}
+                onPress={() => setActiveTab(tab as TabType)}
+                style={{
+                  width: tabWidth,
+                  alignItems: "center",
+                }}
+              >
+                <Text
+                  style={{
+                    fontWeight: "600",
+                    fontSize: 14,
+                    color: activeTab === tab ? "#FFFFFF" : "#FF4081",
+                  }}
+                >
+                  {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+        </View>
       </View>
 
       {/* Search Bar + New Post Button */}
