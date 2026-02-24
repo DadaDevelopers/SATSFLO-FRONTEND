@@ -114,7 +114,7 @@ export default function ThreadScreen() {
       {/* Tab Bar - full width rectangle starting from top of screen */}
       {/* Top Header */}
       <View style={{ paddingTop: insets.top }}>
-        <View style={{ position: "relative" }}>
+        <View style={{ position: "relative", paddingBottom: 14 }}>
           {/* Background SVG */}
           <Svg
             width="100%"
@@ -143,7 +143,7 @@ export default function ThreadScreen() {
               <Text
                 style={{
                   fontWeight: "600",
-                  fontSize: 14,
+                  fontSize: 16,
                   color: activeTab === "threads" ? "#FF4081" : "#FFFFFF",
                 }}
               >
@@ -155,7 +155,7 @@ export default function ThreadScreen() {
               <Text
                 style={{
                   fontWeight: "600",
-                  fontSize: 14,
+                  fontSize: 16,
                   color: activeTab === "chats" ? "#FF4081" : "#FFFFFF",
                 }}
               >
@@ -167,7 +167,7 @@ export default function ThreadScreen() {
               <Text
                 style={{
                   fontWeight: "600",
-                  fontSize: 14,
+                  fontSize: 16,
                   color: activeTab === "groups" ? "#FF4081" : "#FFFFFF",
                 }}
               >
