@@ -22,6 +22,24 @@ function HouseIcon({ color }: { color: string }) {
   );
 }
 
+function ChatIcon({ filled, color }: { filled: boolean; color: string }) {
+  // Uses the exact Feather message-circle path (24x24 viewBox)
+  const path =
+    "M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z";
+  return (
+    <Svg width={30} height={30} viewBox="0 0 24 24" fill="none">
+      <Path
+        d={path}
+        fill={filled ? color : "none"}
+        stroke={color}
+        strokeWidth={2}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </Svg>
+  );
+}
+
 function SettingsIcon({ color }: { color: string }) {
   return (
     <Svg width={30} height={30} viewBox="0 0 20 20" fill="none">
@@ -99,7 +117,7 @@ export function BottomNavigation({ activeTab, onTabPress }: BottomNavigationProp
 
         {/* Chat */}
         <TabItem
-          icon={<Feather name="message-circle" size={30} color={activeTab === 'chat' ? '#FFF0F5' : '#FF99BC'} />}
+          icon={<ChatIcon filled={activeTab === 'chat'} color={activeTab === 'chat' ? '#FFF0F5' : '#FF99BC'} />}
           label="Chat"
           isActive={activeTab === 'chat'}
           onPress={() => onTabPress('chat')}
