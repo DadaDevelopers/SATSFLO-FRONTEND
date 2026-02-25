@@ -114,8 +114,10 @@ export default function ThreadScreen() {
         router.push("/add-log");
         break;
       case "chat":
+        router.push("/(tabs)/chat");
         break;
       case "settings":
+        router.push("/(tabs)/settings");
         break;
     }
   };

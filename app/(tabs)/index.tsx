@@ -52,7 +52,7 @@ export default function HomeScreen() {
         router.push("/(tabs)/thread");
         break;
       case "settings":
-        // router.push('/settings');
+        router.push("/(tabs)/settings");
         break;
       default:
         break;

@@ -141,6 +141,13 @@ export default function TabLayout() {
           href: null, // Accessed via Chats tab in thread screen
         }}
       />
+      <Tabs.Screen
+        name="settings"
+        options={{
+          title: "Settings",
+          href: null, // Accessed via settings icon in bottom nav
+        }}
+      />
     </Tabs>
   );
 }

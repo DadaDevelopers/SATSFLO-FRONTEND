@@ -60,6 +60,7 @@ export default function ChatListScreen() {
         router.push('/add-log');
         break;
       case 'settings':
+        router.push('/(tabs)/settings');
         break;
       default:
         break;
