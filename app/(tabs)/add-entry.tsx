@@ -161,7 +161,7 @@ export default function AddEntryScreen() {
   };
 
   return (
-    <View className="flex-1 bg-home-bg" style={{ paddingTop: insets.top }}>
+    <View className="flex-1" style={{ paddingTop: insets.top, backgroundColor: '#FF4081' }}>
       <StatusBar barStyle="light-content" backgroundColor="#FF4081" />
 
       {/* Header */}
@@ -221,9 +221,13 @@ export default function AddEntryScreen() {
             <TouchableOpacity
               key={date}
               onPress={() => handleDateSelect(date)}
-              className={`w-10 h-10 rounded-full items-center justify-center border border-[#FFDFEA] ${
+              className={`w-10 h-10 rounded-full items-center justify-center ${
                 selectedDate === date ? 'bg-[#FF4081]' : ''
               }`}
+              style={{
+                borderWidth: 1,
+                borderColor: selectedDate === date ? '#CC1775' : '#FFE5EE',
+              }}
             >
               <Text
                 className={`text-sm ${
@@ -411,7 +415,7 @@ export default function AddEntryScreen() {
       </ScrollView>
 
       {/* Save Button */}
-      <View className="absolute bottom-0 left-0 right-0 pb-2 bg-home-bg">
+      <View className="absolute bottom-0 left-0 right-0 pb-2" style={{ backgroundColor: '#FF4081' }}>
         <View className="px-16 mb-4">
           <TouchableOpacity
             onPress={handleSave}

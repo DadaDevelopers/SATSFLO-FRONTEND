@@ -59,7 +59,7 @@ export default function JournalScreen() {
   };
 
   return (
-    <View className="flex-1 bg-home-bg" style={{ paddingTop: insets.top }}>
+    <View className="flex-1" style={{ paddingTop: insets.top, backgroundColor: '#FF4081' }}>
       <StatusBar barStyle="light-content" backgroundColor="#FF4081" />
 
       {/* Header */}
@@ -153,7 +153,8 @@ export default function JournalScreen() {
         {/* Add New Entry Button */}
         <TouchableOpacity
           onPress={handleAddEntry}
-          className="mt-6 px-4 py-2.5 bg-home-bg border border-[#FFB4CD] rounded-full"
+          className="mt-6 px-4 py-2.5 border border-[#FFB4CD] rounded-full"
+          style={{ backgroundColor: '#FF4081' }}
           activeOpacity={0.8}
         >
           <Text className="text-white text-sm font-medium">Add New Entry</Text>

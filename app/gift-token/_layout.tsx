@@ -10,6 +10,8 @@ export default function GiftTokenLayout() {
       }}
     >
       <Stack.Screen name="index" />
+      <Stack.Screen name="send-category" />
+      <Stack.Screen name="send-amount" />
       <Stack.Screen name="receive" />
       <Stack.Screen name="select-wallet" />
       <Stack.Screen name="success" />

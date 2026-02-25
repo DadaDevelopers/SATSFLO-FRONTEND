@@ -28,21 +28,34 @@ const SuccessCheckIcon = () => (
 
 export default function SuccessScreen() {
   const router = useRouter();
-  const params = useLocalSearchParams<{ wallet: string; category: string }>();
+  const params = useLocalSearchParams<{
+    action?: 'send' | 'receive';
+    wallet?: string;
+    category?: string;
+    satsEquivalent?: string;
+  }>();
   const insets = useSafeAreaInsets();
   const { width: screenWidth } = useWindowDimensions();
   const isDesktop = screenWidth > MAX_CONTENT_WIDTH;
 
+  // Determine action type (default to receive for backward compatibility)
+  const action = params.action || 'receive';
+
   // Get wallet name for display
   const walletName = params.wallet === 'blink' ? 'Blink' : 'Wallet of Satoshi';
 
-  // Fixed amount for demo - in real app this would come from actual transaction
-  const satsAmount = '10,009';
+  // Use satsEquivalent from params or default for receive flow
+  const satsAmount = params.satsEquivalent || '10,009';
 
   const handleGoHome = () => {
     // Navigate to home and reset the gift token stack
     router.replace('/(tabs)');
   };
+
+  // Success message based on action
+  const successMessage = action === 'send'
+    ? 'Your SATS was sent successfully!!!'
+    : `Your ${walletName} wallet was credited with ${satsAmount} SATS`;
 
   return (
     <View
@@ -70,7 +83,7 @@ export default function SuccessScreen() {
 
           {/* Success Message */}
           <Text className="text-white text-xl font-semibold text-center px-8">
-            Your {walletName} wallet was credited with {satsAmount} SATS
+            {successMessage}
           </Text>
         </View>
 

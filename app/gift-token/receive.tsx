@@ -67,7 +67,10 @@ export default function ReceiveGiftTokenScreen() {
     if (selectedCategory) {
       router.push({
         pathname: '/gift-token/select-wallet',
-        params: { category: selectedCategory },
+        params: {
+          action: 'receive',
+          category: selectedCategory
+        },
       });
     }
   };

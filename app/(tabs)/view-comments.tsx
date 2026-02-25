@@ -1,0 +1,253 @@
+import { Feather } from "@expo/vector-icons";
+import { router, useLocalSearchParams } from "expo-router";
+import React, { useState } from "react";
+import {
+  Image,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import Svg, { Path } from "react-native-svg";
+
+const BackArrowIcon = () => (
+  <Svg width={24} height={24} viewBox="0 0 24 24" fill="none">
+    <Path
+      d="M19 12H5M12 19l-7-7 7-7"
+      stroke="#FAFAFA"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </Svg>
+);
+
+const SendIcon = () => (
+  <Svg width={20} height={20} viewBox="0 0 24 24" fill="none">
+    <Path
+      d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"
+      stroke="#FFE6EE"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </Svg>
+);
+
+interface Comment {
+  id: string;
+  avatar: any;
+  name: string;
+  time: string;
+  text: string;
+}
+
+const comments: Comment[] = [
+  {
+    id: "1",
+    avatar: require("@/assets/images/zuri.png"),
+    name: "Janet",
+    time: "3 hours ago",
+    text: "Hope you feel better soon. Hope you feel better soon. Hope you feel better soon.",
+  },
+  {
+    id: "2",
+    avatar: require("@/assets/images/zuri.png"),
+    name: "Janet",
+    time: "3 hours ago",
+    text: "Hope you feel better soon. Hope you feel better soon. Hope you feel better soon.",
+  },
+  {
+    id: "3",
+    avatar: require("@/assets/images/zuri.png"),
+    name: "Janet",
+    time: "3 hours ago",
+    text: "Hope you feel better soon. Hope you feel better soon. Hope you feel better soon.",
+  },
+];
+
+export default function ViewCommentsScreen() {
+  const insets = useSafeAreaInsets();
+  const [commentText, setCommentText] = useState("");
+
+  return (
+    <KeyboardAvoidingView
+      className="flex-1"
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      style={{ backgroundColor: "#FF4081" }}
+    >
+      <View className="flex-1" style={{ paddingTop: insets.top }}>
+        {/* Header */}
+        <View className="flex-row items-center px-5 py-4">
+          <TouchableOpacity onPress={() => router.replace("/(tabs)/thread")}>
+            <BackArrowIcon />
+          </TouchableOpacity>
+          <Text
+            className="flex-1 text-center text-white text-xl font-inter font-medium mr-6"
+            style={{ letterSpacing: -0.3 }}
+          >
+            Threads
+          </Text>
+        </View>
+
+        <ScrollView
+          className="flex-1"
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Original Post */}
+          <View className="px-5">
+            <View className="flex-row">
+              {/* Avatar */}
+              <View className="relative">
+                <Image
+                  source={require("@/assets/images/zuri.png")}
+                  className="w-[46px] h-[46px] rounded-full"
+                  style={{ borderWidth: 4, borderColor: "#FFFFFF" }}
+                  resizeMode="cover"
+                />
+                <View className="absolute -top-0.5 -right-0.5 w-3 h-3 rounded-full bg-white items-center justify-center">
+                  <Feather name="plus-circle" size={12} color="#FF4081" />
+                </View>
+              </View>
+
+              {/* Post content */}
+              <View className="flex-1 ml-3">
+                <Text className="text-xs font-inter font-semibold text-white">
+                  Zuri Hassan
+                </Text>
+                <Text className="text-[10px] font-inter text-[#FAFAFA] mt-0.5">
+                  3 hours ago
+                </Text>
+                <Text
+                  className="text-xs font-inter mt-2 leading-[15px]"
+                  style={{ color: "rgba(250, 250, 250, 0.8)" }}
+                >
+                  Feeling Anxious{"\n"}My period's a little late, and I'm
+                  starting to feel anxious about it. Anyone else get that nervous
+                  feeling when your cycle is off? {"\u{1F61F}"}
+                </Text>
+              </View>
+            </View>
+
+            {/* Post action bar */}
+            <View className="flex-row items-center justify-between mt-3">
+              <View className="flex-row items-center gap-4">
+                <Feather name="message-circle" size={15} color="#FAFAFA" />
+                <Feather name="heart" size={12} color="#FAFAFA" />
+                <Feather name="share" size={16} color="#FAFAFA" />
+              </View>
+              <Image
+                source={require("@/assets/images/btc.png")}
+                className="w-[19px] h-[19px]"
+                resizeMode="contain"
+              />
+            </View>
+          </View>
+
+          {/* Comments divider */}
+          <View className="mt-5">
+            <View className="h-[1px] bg-[#FF669A]" />
+            <View className="flex-row justify-between items-center px-5 py-1.5">
+              <Text className="text-[14px] font-inter font-semibold text-white">
+                Comments
+              </Text>
+              <Text className="text-xs font-inter font-semibold text-[#FAFAFA]">
+                200
+              </Text>
+            </View>
+            <View className="h-[1px] bg-[#FF669A]" />
+          </View>
+
+          {/* Comments list */}
+          <View className="px-5 mt-5 gap-6">
+            {comments.map((comment) => (
+              <View key={comment.id} className="flex-row">
+                {/* Comment avatar */}
+                <View className="relative">
+                  <Image
+                    source={comment.avatar}
+                    className="w-10 h-10 rounded-full"
+                    resizeMode="cover"
+                  />
+                  <View className="absolute -top-0.5 -right-0.5 w-3 h-3 rounded-full bg-white items-center justify-center">
+                    <Feather name="plus-circle" size={12} color="#FF4081" />
+                  </View>
+                </View>
+
+                {/* Comment content */}
+                <View className="flex-1 ml-3">
+                  <Text className="text-[14px] font-inter font-semibold text-white">
+                    {comment.name}
+                  </Text>
+                  <Text className="text-[10px] font-inter text-[#FAFAFA]">
+                    {comment.time}
+                  </Text>
+                  <Text
+                    className="text-xs font-inter mt-2 leading-[15px]"
+                    style={{ color: "#F7F7F7" }}
+                  >
+                    {comment.text}
+                  </Text>
+
+                  {/* Comment action bar */}
+                  <View className="flex-row items-center justify-between mt-3">
+                    <View className="flex-row items-center gap-4">
+                      <Feather name="message-circle" size={15} color="#FAFAFA" />
+                      <Feather name="heart" size={12} color="#FAFAFA" />
+                      <Feather name="share" size={16} color="#FAFAFA" />
+                    </View>
+                    <Image
+                      source={require("@/assets/images/btc.png")}
+                      className="w-[19px] h-[19px]"
+                      resizeMode="contain"
+                    />
+                  </View>
+                </View>
+              </View>
+            ))}
+          </View>
+
+          {/* Bottom spacing for scroll */}
+          <View className="h-20" />
+        </ScrollView>
+
+        {/* Post a comment bar */}
+        <View className="flex-row items-center px-5 py-2.5 gap-3">
+          {/* User avatar */}
+          <Image
+            source={require("@/assets/images/zuri.png")}
+            className="w-[26px] h-[26px] rounded-full"
+            style={{ borderWidth: 1, borderColor: "#FFFFFF" }}
+            resizeMode="cover"
+          />
+
+          {/* Input field */}
+          <View className="flex-1 flex-row items-center bg-[#FF4E8A] rounded-[18px] h-10 px-4">
+            <TextInput
+              className="flex-1 text-sm font-inter text-white"
+              placeholder="Post a comment"
+              placeholderTextColor="#FFFFFF"
+              value={commentText}
+              onChangeText={setCommentText}
+            />
+            <TouchableOpacity className="ml-2">
+              <SendIcon />
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* Home Indicator */}
+        <View
+          className="w-full h-[34px] bg-[#FF3378] items-center justify-center"
+          style={{ paddingBottom: insets.bottom }}
+        >
+          <View className="w-[134px] h-[5px] bg-[#FF99BC] rounded-full" />
+        </View>
+      </View>
+    </KeyboardAvoidingView>
+  );
+}

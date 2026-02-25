@@ -1,22 +1,29 @@
-import { BottomNavigation } from '@/components/home/bottom-navigation';
-import { CycleWheel } from '@/components/home/cycle-wheel';
-import { FollicularPhaseModal } from '@/components/home/follicular-phase-modal';
-import { HomeHeader } from '@/components/home/home-header';
-import { LutealPhaseModal } from '@/components/home/luteal-phase-modal';
-import { MenstrualPhaseModal } from '@/components/home/menstrual-phase-modal';
-import { OvulationPhaseModal } from '@/components/home/ovulation-phase-modal';
-import { PhaseLegend } from '@/components/home/phase-legend';
-import { Feather } from '@expo/vector-icons';
-import { router } from 'expo-router';
-import React, { useState } from 'react';
-import { Image, ScrollView, StatusBar, Text, TouchableOpacity, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { BottomNavigation } from "@/components/home/bottom-navigation";
+import { CycleWheel } from "@/components/home/cycle-wheel";
+import { FollicularPhaseModal } from "@/components/home/follicular-phase-modal";
+import { HomeHeader } from "@/components/home/home-header";
+import { LutealPhaseModal } from "@/components/home/luteal-phase-modal";
+import { MenstrualPhaseModal } from "@/components/home/menstrual-phase-modal";
+import { OvulationPhaseModal } from "@/components/home/ovulation-phase-modal";
+import { PhaseLegend } from "@/components/home/phase-legend";
+import { Feather } from "@expo/vector-icons";
+import { router } from "expo-router";
+import React, { useState } from "react";
+import {
+  Image,
+  ScrollView,
+  StatusBar,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-type TabName = 'home' | 'calendar' | 'add' | 'chat' | 'settings';
+type TabName = "home" | "calendar" | "add" | "chat" | "settings";
 
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
-  const [activeTab, setActiveTab] = useState<TabName>('home');
+  const [activeTab, setActiveTab] = useState<TabName>("home");
   const [showMenstrualModal, setShowMenstrualModal] = useState(false);
   const [showFollicularModal, setShowFollicularModal] = useState(false);
   const [showLutealModal, setShowLutealModal] = useState(false);
@@ -28,23 +35,23 @@ export default function HomeScreen() {
     cycleLength: 31,
     periodLength: 5,
     daysUntilPeriod: 13,
-    currentDate: 'October 26th',
+    currentDate: "October 26th",
   };
 
   const handleTabPress = (tab: TabName) => {
     setActiveTab(tab);
     // Navigate to respective screens
     switch (tab) {
-      case 'calendar':
-        router.push('/calendar');
+      case "calendar":
+        router.push("/calendar");
         break;
-      case 'add':
-        router.push('/add-log');
+      case "add":
+        router.push("/add-log");
         break;
-      case 'chat':
-        router.push('/(tabs)/chat');
+      case "chat":
+        router.push("/(tabs)/thread");
         break;
-      case 'settings':
+      case "settings":
         // router.push('/settings');
         break;
       default:
@@ -53,30 +60,31 @@ export default function HomeScreen() {
   };
 
   const handleEditPeriod = () => {
-    router.push('/edit-period');
+    router.push("/edit-period");
   };
 
   const handleNotificationPress = () => {
     // Navigate to notifications
-    // router.push('/notifications');
+    router.push("/(tabs)/notifications");
   };
 
   const handleGiftTokenPress = () => {
-    router.push('/gift-token');
+    router.push("/(tabs)/gift-token");
   };
 
   const handleJournalPress = () => {
-    router.push('/journal');
+    router.push("/journal");
   };
 
   return (
-    <View className="flex-1 bg-home-bg" style={{ paddingTop: insets.top }}>
-      <StatusBar barStyle="dark-content" backgroundColor="#FF4081" />
+    <View
+      className="flex-1"
+      style={{ paddingTop: insets.top, backgroundColor: "#FF4081" }}
+    >
+      <StatusBar barStyle="light-content" backgroundColor="#FF4081" />
 
       {/* Header */}
-      <HomeHeader
-        onNotificationPress={handleNotificationPress}
-      />
+      <HomeHeader onNotificationPress={handleNotificationPress} />
 
       {/* Main Content */}
       <ScrollView
@@ -107,13 +115,16 @@ export default function HomeScreen() {
           onOvulationPhasePress={() => setShowOvulationModal(true)}
         />
 
-       
-
         {/* Gift Token Button */}
         <View className="items-center pt-20 pb-10">
           <TouchableOpacity
             onPress={handleGiftTokenPress}
-            className="flex-row items-center justify-center px-4 py-3 bg-home-bg border border-home-gift-border rounded-full"
+            className="flex-row items-center justify-center px-4 py-3 rounded-full"
+            style={{
+              backgroundColor: "#FF4081",
+              borderWidth: 1,
+              borderColor: "#FFB4CD",
+            }}
             activeOpacity={0.8}
           >
             <Feather name="gift" size={24} color="#FFFFFF" />
@@ -121,19 +132,24 @@ export default function HomeScreen() {
           </TouchableOpacity>
         </View>
 
-         {/* Divider */}
+        {/* Divider */}
         <View className="h-[1.5px] bg-home-card-border my-6" />
 
         {/* My SatsFlow Journal Section */}
         <View className="items-center mt-10">
           <Image
-            source={require('@/assets/images/Group 48.png')}
+            source={require("@/assets/images/Group 48.png")}
             className="w-64 h-64"
             resizeMode="contain"
           />
           <TouchableOpacity
             onPress={handleJournalPress}
-            className="mt-4 px-5 py-4 bg-home-bg border border-home-gift-border rounded-full"
+            className="mt-4 px-5 py-4 rounded-full"
+            style={{
+              backgroundColor: "#FF4081",
+              borderWidth: 1,
+              borderColor: "#FFB4CD",
+            }}
             activeOpacity={0.8}
           >
             <Text className="text-white text-sm">My SatsFlow Journal</Text>
@@ -145,10 +161,7 @@ export default function HomeScreen() {
       </ScrollView>
 
       {/* Bottom Navigation */}
-      <BottomNavigation
-        activeTab={activeTab}
-        onTabPress={handleTabPress}
-      />
+      <BottomNavigation activeTab={activeTab} onTabPress={handleTabPress} />
 
       {/* Menstrual Phase Modal */}
       <MenstrualPhaseModal

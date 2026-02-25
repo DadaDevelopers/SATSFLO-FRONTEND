@@ -7,52 +7,45 @@ export default function SuccessSentScreen() {
   const insets = useSafeAreaInsets();
 
   const handleNext = () => {
-    // Navigate back to home or main screen
-    router.push('/(tabs)');
+    router.replace('/(tabs)');
   };
 
   return (
     <View className="flex-1 bg-[#FF4081]">
-      {/* Status Bar Area */}
-      <View style={{ paddingTop: insets.top }} className="bg-[#FF4081]" />
+      <View
+        className="flex-1"
+        style={{
+          paddingTop: insets.top,
+          paddingBottom: insets.bottom,
+        }}
+      >
+        {/* Content - Centered */}
+        <View className="flex-1 items-center justify-center px-8">
+          {/* Success Icon */}
+          <View className="mb-8">
+            <Image
+              source={require('@/assets/images/CheckCircle.png')}
+              style={{ width: 120, height: 120 }}
+              resizeMode="contain"
+            />
+          </View>
 
-      {/* Main Content */}
-      <View className="flex-1 bg-[#FF4081] items-center justify-center">
-        {/* Success Icon - Green Check Circle */}
-        <View className="items-center mb-8">
-          <Image
-            source={require('@/assets/images/CheckCircle.png')}
-            className="w-[150px] h-[150px]"
-            resizeMode="contain"
-          />
-        </View>
-
-        {/* Success Message */}
-        <View className="px-10 mt-8">
-          <Text className="text-2xl font-inter font-medium text-white text-center tracking-tight leading-7">
+          {/* Success Message */}
+          <Text className="text-white text-2xl font-semibold text-center">
             Your SATS was sent successfully!!!
           </Text>
         </View>
-      </View>
 
-      {/* Bottom Section */}
-      <View
-        className="items-center pb-0"
-        style={{ paddingBottom: insets.bottom }}
-      >
         {/* Next Button */}
-        <Pressable
-          onPress={handleNext}
-          className="w-[250px] py-4 bg-[#FF82AD] rounded-full items-center justify-center active:opacity-80 border-[0.5px] border-[#FF669A] mb-5"
-        >
-          <Text className="text-white font-inter font-medium text-[15px]">
-            Next
-          </Text>
-        </Pressable>
-
-        {/* Home Indicator Area */}
-        <View className="w-full h-[34px] bg-[#FF3378] items-center justify-center">
-          <View className="w-[134px] h-[5px] bg-[#FF99BC] rounded-full" />
+        <View className="px-5 pb-8">
+          <Pressable
+            onPress={handleNext}
+            className="w-full py-4 bg-[#FF82AD] rounded-full items-center justify-center active:opacity-80 border-[0.5px] border-[#FF669A]"
+          >
+            <Text className="text-white font-inter font-medium text-[15px]">
+              Next
+            </Text>
+          </Pressable>
         </View>
       </View>
     </View>

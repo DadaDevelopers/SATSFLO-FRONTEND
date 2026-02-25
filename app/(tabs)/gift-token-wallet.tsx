@@ -4,119 +4,114 @@ import React, { useState } from 'react';
 import { Alert, Pressable, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-type OptionType = 'send' | 'receive' | null;
+type ActionType = 'send' | 'receive' | null;
 
 export default function GiftTokenWalletScreen() {
   const insets = useSafeAreaInsets();
-  const [selectedOption, setSelectedOption] = useState<OptionType>(null);
+  const [selectedAction, setSelectedAction] = useState<ActionType>(null);
 
   const handleBack = () => {
-    // Navigate back to gift token screen
     if (router.canGoBack()) {
-      router.push('/(tabs)/gift-token');
+      router.back();
     }
   };
 
-  const handleSendGiftToken = () => {
-    setSelectedOption('send');
-  };
+  const handleProceed = () => {
+    console.log('Selected action:', selectedAction);
 
-  const handleReceiveGiftToken = () => {
-    setSelectedOption('receive');
-  };
-
-  const handleNext = () => {
-    console.log('Next button clicked, selected option:', selectedOption);
-
-    if (!selectedOption) {
-      // Could show an alert or toast that user needs to select an option
-      console.log('Please select an option first');
-      Alert.alert('Selection Required', 'Please select an option first');
+    if (!selectedAction) {
+      console.log('Please select an action');
       return;
     }
 
-    // Navigate to next screen based on selection
-    if (selectedOption === 'send') {
-      console.log('Navigating to send gift token screen');
+    if (selectedAction === 'send') {
+      console.log('Navigating to send gift token...');
       router.push('/(tabs)/send-gift-token');
-    } else if (selectedOption === 'receive') {
-      // Navigate to receive gift token screen (to be created)
-      console.log('Navigate to receive gift token');
-      Alert.alert('Coming Soon', 'Receive gift token screen coming soon');
+    } else if (selectedAction === 'receive') {
+      console.log('Navigating to receive gift token...');
+      router.push('/(tabs)/receive-gift-token');
     }
   };
 
   return (
     <View className="flex-1 bg-[#FF4081]">
-      {/* Main Content */}
-      <View className="flex-1 bg-[#FF4081]">
-        {/* Header */}
-        <View className="flex-row items-center px-5 py-6 gap-[102px]">
-          {/* Back Button */}
-          <Pressable onPress={handleBack} className="p-1">
-            <Feather name="arrow-left" size={24} color="#FAFAFA" />
-          </Pressable>
+      {/* Header */}
+      <View className="flex-row items-center px-5 py-6 gap-[85px]">
+        {/* Back Button */}
+        <Pressable onPress={handleBack} className="p-1">
+          <Feather name="arrow-left" size={24} color="#FAFAFA" />
+        </Pressable>
 
-          {/* Title */}
-          <Text className="text-xl font-inter font-medium text-white tracking-tight">
-            Gift token
-          </Text>
+        {/* Title */}
+        <Text className="text-xl font-inter font-medium text-white tracking-tight">
+          Gift token
+        </Text>
 
-          {/* Calendar Icon (hidden as per design) */}
-          <View className="w-6 h-6 opacity-0">
-            <Feather name="calendar" size={24} color="#666666" />
-          </View>
-        </View>
-
-        {/* Question Text */}
-        <View className="px-5 mt-6">
-          <Text className="text-sm font-inter text-[#FAFAFA] tracking-tight">
-            Do you want to receive or send gift token?
-          </Text>
-        </View>
-
-        {/* Options */}
-        <View className="px-5 mt-4 gap-4">
-          {/* Send Gift Token */}
-          <Pressable
-            onPress={handleSendGiftToken}
-            className="flex-row justify-between items-center px-4 py-4 border border-[#FF99BC] rounded-lg active:opacity-80"
-          >
-            <Text className="text-sm font-inter text-[#FAFAFA]" style={{ fontWeight: '500' }}>
-              Send Gift Token
-            </Text>
-            {selectedOption === 'send' && (
-              <Feather name="plus-circle" size={18} color="#4DC721" />
-            )}
-          </Pressable>
-
-          {/* Receive Gift Token */}
-          <Pressable
-            onPress={handleReceiveGiftToken}
-            className="flex-row justify-between items-center px-4 py-4 border border-[#FF99BC] rounded-lg active:opacity-80"
-          >
-            <Text className="text-sm font-inter text-[#FAFAFA]" style={{ fontWeight: '500' }}>
-              Receive Gift Token
-            </Text>
-            {selectedOption === 'receive' && (
-              <Feather name="plus-circle" size={18} color="#4DC721" />
-            )}
-          </Pressable>
+        {/* Spacer */}
+        <View className="w-6 h-6 opacity-0">
+          <Feather name="calendar" size={24} color="#666666" />
         </View>
       </View>
 
+      {/* Instruction Text */}
+      <View className="px-5 mt-6">
+        <Text className="text-sm font-inter text-[#FAFAFA] tracking-tight">
+          Do you want to receive or send gift token?
+        </Text>
+      </View>
+
+      {/* Action Options */}
+      <View className="px-5 mt-4 gap-4">
+        {/* Send Gift Token */}
+        <Pressable
+          onPress={() => setSelectedAction('send')}
+          className="flex-row justify-between items-center px-4 py-5 border rounded-lg active:opacity-80"
+          style={{
+            borderColor: selectedAction === 'send' ? '#FFFFFF' : '#FF99BC',
+            borderWidth: selectedAction === 'send' ? 2 : 1,
+            backgroundColor: selectedAction === 'send' ? '#FF6B9D' : 'transparent',
+          }}
+        >
+          <Text className="text-base font-inter text-[#FAFAFA]" style={{ fontWeight: '500' }}>
+            Send Gift Token
+          </Text>
+          {selectedAction === 'send' && (
+            <Feather name="check-circle" size={20} color="#4DC721" />
+          )}
+        </Pressable>
+
+        {/* Receive Gift Token */}
+        <Pressable
+          onPress={() => setSelectedAction('receive')}
+          className="flex-row justify-between items-center px-4 py-5 border rounded-lg active:opacity-80"
+          style={{
+            borderColor: selectedAction === 'receive' ? '#FFFFFF' : '#FF99BC',
+            borderWidth: selectedAction === 'receive' ? 2 : 1,
+            backgroundColor: selectedAction === 'receive' ? '#FF6B9D' : 'transparent',
+          }}
+        >
+          <Text className="text-base font-inter text-[#FAFAFA]" style={{ fontWeight: '500' }}>
+            Receive Gift Token
+          </Text>
+          {selectedAction === 'receive' && (
+            <Feather name="check-circle" size={20} color="#4DC721" />
+          )}
+        </Pressable>
+      </View>
+
       {/* Bottom Section */}
+      <View className="flex-1" />
       <View
         className="items-center pb-0"
         style={{ paddingBottom: insets.bottom }}
       >
-        {/* Next Button */}
+        {/* Proceed Button */}
         <Pressable
-          onPress={handleNext}
+          onPress={handleProceed}
           className="w-[250px] py-4 bg-[#FF82AD] rounded-full items-center justify-center active:opacity-80 border-[0.5px] border-[#FF669A] mb-5"
         >
           <Text className="text-white font-inter font-medium text-[15px]">
-            Next
+            Proceed
           </Text>
         </Pressable>
 
