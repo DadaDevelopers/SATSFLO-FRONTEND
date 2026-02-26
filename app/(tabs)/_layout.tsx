@@ -162,6 +162,13 @@ export default function TabLayout() {
           href: null,
         }}
       />
+      <Tabs.Screen
+        name="cycle-length-settings"
+        options={{
+          title: "Cycle Length",
+          href: null,
+        }}
+      />
     </Tabs>
   );
 }
