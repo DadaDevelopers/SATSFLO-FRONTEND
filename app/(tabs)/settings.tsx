@@ -335,6 +335,7 @@ export default function SettingsScreen() {
             icon={<PeriodIcon />}
             label="Period length"
             rightText="5 days"
+            onPress={() => router.push("/(tabs)/period-length-settings")}
           />
           <SettingRow
             icon={<CycleIcon />}
