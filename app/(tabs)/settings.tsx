@@ -352,6 +352,7 @@ export default function SettingsScreen() {
             icon={<CycleIcon />}
             label="Cycle length"
             rightText="28 days"
+            onPress={() => router.push("/(tabs)/cycle-length-settings" as any)}
           />
           <SettingRow
             icon={<LutealIcon />}
