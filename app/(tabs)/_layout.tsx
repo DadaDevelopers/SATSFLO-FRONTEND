@@ -148,6 +148,13 @@ export default function TabLayout() {
           href: null, // Accessed via settings icon in bottom nav
         }}
       />
+      <Tabs.Screen
+        name="my-profile"
+        options={{
+          title: "My Profile",
+          href: null, // Accessed via profile card in settings
+        }}
+      />
     </Tabs>
   );
 }
