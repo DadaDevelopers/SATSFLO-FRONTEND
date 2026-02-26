@@ -152,10 +152,7 @@ export default function TabLayout() {
         name="my-profile"
         options={{
           title: "My Profile",
-<<<<<<< HEAD
           href: null, // Accessed via profile card in settings
-=======
-          href: null,
         }}
       />
       <Tabs.Screen
@@ -163,7 +160,6 @@ export default function TabLayout() {
         options={{
           title: "Period Length",
           href: null,
->>>>>>> 4ed06cd (fix: fixed profile and period length screen)
         }}
       />
     </Tabs>
