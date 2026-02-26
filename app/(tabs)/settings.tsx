@@ -298,7 +298,10 @@ export default function SettingsScreen() {
       >
         {/* Profile Card */}
         <SectionCard>
-          <Pressable className="flex-row items-center justify-between p-6">
+          <Pressable
+            className="flex-row items-center justify-between p-6"
+            onPress={() => router.push("/(tabs)/my-profile")}
+          >
             <View className="flex-row items-center gap-3">
               <Image
                 source={require("@/assets/images/zuri.png")}
