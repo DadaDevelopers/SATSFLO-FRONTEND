@@ -20,7 +20,11 @@ export default function PeriodLengthSettingsScreen() {
 
   const handleSave = () => {
     Alert.alert("Saved", `Period length set to ${selectedLength} days.`, [
+<<<<<<< HEAD
       { text: "OK", onPress: () => router.push("/(tabs)/settings") },
+=======
+      { text: "OK", onPress: () => router.push("/(tabs)/settings" as any) },
+>>>>>>> 4ed06cd (fix: fixed profile and period length screen)
     ]);
   };
 
@@ -33,7 +37,13 @@ export default function PeriodLengthSettingsScreen() {
         className="flex-row items-center px-5"
         style={{ marginTop: insets.top + 28 }}
       >
+<<<<<<< HEAD
         <TouchableOpacity onPress={() => router.push("/(tabs)/settings")}>
+=======
+        <TouchableOpacity
+          onPress={() => router.push("/(tabs)/settings" as any)}
+        >
+>>>>>>> 4ed06cd (fix: fixed profile and period length screen)
           <Feather name="arrow-left" size={24} color="#FAFAFA" />
         </TouchableOpacity>
 
@@ -41,7 +51,10 @@ export default function PeriodLengthSettingsScreen() {
           Period Length
         </Text>
 
+<<<<<<< HEAD
         {/* Spacer to keep title centered */}
+=======
+>>>>>>> 4ed06cd (fix: fixed profile and period length screen)
         <View style={{ width: 24 }} />
       </View>
 

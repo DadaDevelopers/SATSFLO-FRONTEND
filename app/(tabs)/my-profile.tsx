@@ -51,10 +51,8 @@ export default function MyProfileScreen() {
 
   const [fullName, setFullName] = useState("Sarah Abraham");
   const [email, setEmail] = useState("sarahabraham@gmail.com");
-
   const [selectedCountry, setSelectedCountry] = useState(countries[0]);
   const [phone, setPhone] = useState("");
-
   const [dateOfBirth, setDateOfBirth] = useState("21-12-2012");
   const [modalVisible, setModalVisible] = useState(false);
   const [avatarModalVisible, setAvatarModalVisible] = useState(false);
@@ -78,11 +76,11 @@ export default function MyProfileScreen() {
       return;
     }
     Alert.alert("Success", "Profile saved successfully.", [
-      { text: "OK", onPress: () => router.back() },
+      { text: "OK", onPress: () => router.push("/(tabs)/settings" as any) },
     ]);
   };
 
-  const handleSelectCountry = (country: any) => {
+  const handleSelectCountry = (country: (typeof countries)[0]) => {
     setSelectedCountry(country);
     setModalVisible(false);
   };
@@ -126,7 +124,9 @@ export default function MyProfileScreen() {
             className="flex-row items-center px-5"
             style={{ marginTop: insets.top + 28 }}
           >
-            <TouchableOpacity onPress={() => router.push("/(tabs)/settings")}>
+            <TouchableOpacity
+              onPress={() => router.push("/(tabs)/settings" as any)}
+            >
               <Feather name="arrow-left" size={24} color="#FAFAFA" />
             </TouchableOpacity>
 
@@ -139,7 +139,6 @@ export default function MyProfileScreen() {
 
           {/* AVATAR */}
           <View className="items-center mt-10 mb-10">
-            {/* 84×84 wrapper so the pencil badge can be absolutely positioned */}
             <View style={{ width: 84, height: 84 }}>
               <Image
                 source={
@@ -149,7 +148,6 @@ export default function MyProfileScreen() {
                 }
                 style={{ width: 80, height: 80, borderRadius: 2000 }}
               />
-              {/* Pencil badge — Figma: 16×16 circle at left:59, top:59 */}
               <TouchableOpacity
                 activeOpacity={0.8}
                 onPress={() => setAvatarModalVisible(true)}
@@ -199,7 +197,6 @@ export default function MyProfileScreen() {
               <Text className="text-white text-md font-inter mb-1">
                 Phone Number
               </Text>
-
               <View className="bg-[#FFD6E4] rounded-lg flex-row items-center px-3 h-12">
                 <TouchableOpacity
                   onPress={() => setModalVisible(true)}
@@ -209,7 +206,6 @@ export default function MyProfileScreen() {
                   <Text className="ml-1">{selectedCountry.code}</Text>
                   <Feather name="chevron-down" size={16} color="#666" />
                 </TouchableOpacity>
-
                 <TextInput
                   value={phone}
                   onChangeText={setPhone}
@@ -237,7 +233,9 @@ export default function MyProfileScreen() {
           </View>
 
           {/* SAVE BUTTON */}
-          <View style={{ alignItems: "center", marginTop: 96, paddingTop: 112 }}>
+          <View
+            style={{ alignItems: "center", marginTop: 96, paddingTop: 112 }}
+          >
             <TouchableOpacity
               onPress={handleSave}
               activeOpacity={0.8}
@@ -283,7 +281,6 @@ export default function MyProfileScreen() {
             <Text className="text-lg font-semibold mb-4 text-center">
               Change Profile Photo
             </Text>
-
             <TouchableOpacity
               onPress={takePhoto}
               className="flex-row items-center py-4 border-b border-gray-100"
@@ -291,7 +288,6 @@ export default function MyProfileScreen() {
               <Feather name="camera" size={20} color="#FF4081" />
               <Text className="ml-3 text-base text-gray-800">Take Photo</Text>
             </TouchableOpacity>
-
             <TouchableOpacity
               onPress={pickFromGallery}
               className="flex-row items-center py-4"
@@ -301,7 +297,6 @@ export default function MyProfileScreen() {
                 Upload from Gallery
               </Text>
             </TouchableOpacity>
-
             <TouchableOpacity
               onPress={() => setAvatarModalVisible(false)}
               className="mt-4 items-center py-3 bg-[#FFD6E4] rounded-full"
@@ -317,7 +312,6 @@ export default function MyProfileScreen() {
         <View className="flex-1 bg-black/40 justify-end">
           <View className="bg-white rounded-t-3xl p-5 max-h-[60%]">
             <Text className="text-lg font-semibold mb-4">Select Country</Text>
-
             <FlatList
               data={countries}
               keyExtractor={(item) => item.code}
@@ -332,7 +326,6 @@ export default function MyProfileScreen() {
                 </TouchableOpacity>
               )}
             />
-
             <TouchableOpacity
               onPress={() => setModalVisible(false)}
               className="mt-4 items-center"
