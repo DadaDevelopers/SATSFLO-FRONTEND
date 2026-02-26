@@ -3,13 +3,7 @@ import { HomeIndicatorArea } from "@/components/signup/home-indicator-area";
 import { Feather } from "@expo/vector-icons";
 import { router } from "expo-router";
 import React, { useState } from "react";
-import {
-  Alert,
-  StatusBar,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { Alert, StatusBar, Text, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const PERIOD_LENGTH_OPTIONS = Array.from({ length: 7 }, (_, i) => i + 3); // 3–9 days
@@ -20,11 +14,7 @@ export default function PeriodLengthSettingsScreen() {
 
   const handleSave = () => {
     Alert.alert("Saved", `Period length set to ${selectedLength} days.`, [
-<<<<<<< HEAD
-      { text: "OK", onPress: () => router.push("/(tabs)/settings") },
-=======
       { text: "OK", onPress: () => router.push("/(tabs)/settings" as any) },
->>>>>>> 4ed06cd (fix: fixed profile and period length screen)
     ]);
   };
 
@@ -37,13 +27,9 @@ export default function PeriodLengthSettingsScreen() {
         className="flex-row items-center px-5"
         style={{ marginTop: insets.top + 28 }}
       >
-<<<<<<< HEAD
-        <TouchableOpacity onPress={() => router.push("/(tabs)/settings")}>
-=======
         <TouchableOpacity
           onPress={() => router.push("/(tabs)/settings" as any)}
         >
->>>>>>> 4ed06cd (fix: fixed profile and period length screen)
           <Feather name="arrow-left" size={24} color="#FAFAFA" />
         </TouchableOpacity>
 
@@ -51,10 +37,6 @@ export default function PeriodLengthSettingsScreen() {
           Period Length
         </Text>
 
-<<<<<<< HEAD
-        {/* Spacer to keep title centered */}
-=======
->>>>>>> 4ed06cd (fix: fixed profile and period length screen)
         <View style={{ width: 24 }} />
       </View>
 
