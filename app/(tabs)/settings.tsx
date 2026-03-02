@@ -417,7 +417,12 @@ export default function SettingsScreen() {
 
         {/* Wallet Card */}
         <SectionCard>
-          <SettingRow icon={<WalletIcon />} label="Connect wallet" isLast />
+          <SettingRow
+            icon={<WalletIcon />}
+            label="Connect wallet"
+            onPress={() => router.push("/(tabs)/connect-wallet" as any)}
+            isLast
+          />
         </SectionCard>
 
         {/* Support & Legal Card */}
