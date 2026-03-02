@@ -227,7 +227,7 @@ function SettingRow({
       >
         <View className="flex-row items-center gap-1">
           {icon ?? <Feather name={iconName!} size={16} color={iconColor} />}
-          <Text className="text-sm text-[#1E1E1E] dark:text-[#F0F0F0] leading-[21px]">{label}</Text>
+          <Text className="text-sm text-[#1E1E1E] leading-[21px]">{label}</Text>
         </View>
         <View className="flex-row items-center gap-[10px]">
           {rightText && (
@@ -238,28 +238,32 @@ function SettingRow({
           <Feather name="chevron-right" size={16} color="#666666" />
         </View>
       </Pressable>
-      {!isLast && <View className="h-px bg-[#FFD6E8] dark:bg-[#3A1825] mx-3" />}
+      {!isLast && <View className="h-px bg-[#FFD6E8] mx-3" />}
     </>
   );
 }
 
 function SectionCard({ children }: { children: React.ReactNode }) {
-  return <View className="bg-[#FFE6EE] dark:bg-[#2E1520] rounded-xl mb-4">{children}</View>;
+  return <View className="bg-[#FFE6EE] rounded-xl mb-4">{children}</View>;
 }
 
-type ThemeOption = 'system' | 'light' | 'dark';
+type ThemeOption = "system" | "light" | "dark";
 
 const THEME_OPTIONS: { id: ThemeOption; label: string; subtitle: string }[] = [
-  { id: 'system', label: 'System default', subtitle: 'Sync app appearance with your device settings' },
-  { id: 'light',  label: 'Light mode',     subtitle: 'Use light mode' },
-  { id: 'dark',   label: 'Dark mode',      subtitle: 'Use dark mode' },
+  {
+    id: "system",
+    label: "System default",
+    subtitle: "Sync app appearance with your device settings",
+  },
+  { id: "light", label: "Light mode", subtitle: "Use light mode" },
+  { id: "dark", label: "Dark mode", subtitle: "Use dark mode" },
 ];
 
 export default function SettingsScreen() {
   const insets = useSafeAreaInsets();
   const [activeTab] = useState<TabName>("settings");
   const [themeModalVisible, setThemeModalVisible] = useState(false);
-  const { selectedTheme, setSelectedTheme, colors } = useTheme();
+  const { selectedTheme, setSelectedTheme } = useTheme();
 
   const handleTabPress = (tab: TabName) => {
     switch (tab) {
@@ -281,7 +285,7 @@ export default function SettingsScreen() {
   };
 
   return (
-    <View className="flex-1 bg-[#FF4081] dark:bg-[#1C0A14]">
+    <View className="flex-1 bg-[#FF4081]">
       <StatusBar barStyle="light-content" backgroundColor="#FF4081" />
 
       {/* Frame 125 — page header */}
@@ -328,10 +332,10 @@ export default function SettingsScreen() {
                 className="w-10 h-10 rounded-full"
               />
               <View className="gap-1">
-                <Text className="text-sm font-medium text-[#1E1E1E] dark:text-[#F0F0F0]">
+                <Text className="text-sm font-medium text-[#1E1E1E]">
                   Sarah Abraham
                 </Text>
-                <Text className="text-xs text-[#616161] dark:text-[#AAAAAA]">
+                <Text className="text-xs text-[#616161]">
                   sarahabraham@gmail.com
                 </Text>
               </View>
@@ -339,12 +343,12 @@ export default function SettingsScreen() {
             <Feather name="chevron-right" size={16} color="#666666" />
           </Pressable>
 
-          <View className="h-px bg-[#FFD6E8] dark:bg-[#3A1825] mx-3" />
+          <View className="h-px bg-[#FFD6E8] mx-3" />
 
           <Pressable className="flex-row items-center justify-between px-3 py-6">
             <View className="flex-row items-center gap-1">
               <InviteIcon />
-              <Text className="text-sm text-[#1E1E1E] dark:text-[#F0F0F0] leading-[21px]">
+              <Text className="text-sm text-[#1E1E1E] leading-[21px]">
                 Invite my partner/friend
               </Text>
             </View>
@@ -387,9 +391,22 @@ export default function SettingsScreen() {
 
         {/* Personalization Card */}
         <SectionCard>
-          <SettingRow icon={<SymptomsIcon />} label="Symptoms" onPress={() => router.push('/add-log/symptoms')} />
-          <SettingRow icon={<MoodsIcon />} label="Moods" onPress={() => router.push('/add-log/moods')} />
-          <SettingRow iconName="eye" iconColor="#077845" label="Theme" onPress={() => setThemeModalVisible(true)} />
+          <SettingRow
+            icon={<SymptomsIcon />}
+            label="Symptoms"
+            onPress={() => router.push("/add-log/symptoms")}
+          />
+          <SettingRow
+            icon={<MoodsIcon />}
+            label="Moods"
+            onPress={() => router.push("/add-log/moods")}
+          />
+          <SettingRow
+            iconName="eye"
+            iconColor="#077845"
+            label="Theme"
+            onPress={() => setThemeModalVisible(true)}
+          />
           <SettingRow
             icon={<LanguageIcon />}
             label="Language preferences"
@@ -441,19 +458,18 @@ export default function SettingsScreen() {
         animationType="slide"
         onRequestClose={() => setThemeModalVisible(false)}
       >
-        {/* Dim overlay — tapping it closes the sheet */}
+        {/* Dim overlay */}
         <Pressable
-          style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)' }}
+          style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.5)" }}
           onPress={() => setThemeModalVisible(false)}
         />
 
         {/* Bottom sheet panel */}
         <View
           style={{
-            backgroundColor: colors.cardBackground,
+            backgroundColor: "#FFE6EE",
             borderTopLeftRadius: 24,
             borderTopRightRadius: 24,
-            paddingTop: 12,
             paddingBottom: insets.bottom || 20,
           }}
         >
@@ -462,9 +478,10 @@ export default function SettingsScreen() {
             style={{
               width: 40,
               height: 5,
-              backgroundColor: colors.accent,
+              backgroundColor: "#FF669A",
               borderRadius: 100,
-              alignSelf: 'center',
+              alignSelf: "center",
+              marginTop: 12,
               marginBottom: 16,
             }}
           />
@@ -472,66 +489,64 @@ export default function SettingsScreen() {
           {/* Title */}
           <Text
             style={{
-              fontFamily: 'Inter',
-              fontWeight: '500',
+              fontFamily: "Inter",
+              fontWeight: "500",
               fontSize: 20,
-              color: '#000000',
-              textAlign: 'center',
-              marginBottom: 8,
+              color: "#000000",
+              textAlign: "center",
+              letterSpacing: -0.3,
+              marginBottom: 16,
             }}
           >
             Select Theme
           </Text>
 
+          {/* Divider below title */}
+          <View style={{ height: 1, backgroundColor: "#FFB3CD" }} />
+
           {/* Options */}
-          {THEME_OPTIONS.map((option, index) => (
-            <React.Fragment key={option.id}>
-              <TouchableOpacity
-                onPress={() => setSelectedTheme(option.id)}
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  paddingHorizontal: 16,
-                  paddingVertical: 16,
-                  minHeight: 70,
-                }}
-                activeOpacity={0.7}
-              >
-                <View style={{ flex: 1 }}>
-                  <Text
-                    style={{
-                      fontFamily: 'Inter',
-                      fontWeight: '400',
-                      fontSize: 16,
-                      color: colors.textOnCard,
-                      marginBottom: 2,
-                    }}
-                  >
-                    {option.label}
-                  </Text>
-                  <Text
-                    style={{
-                      fontFamily: 'Inter',
-                      fontWeight: '400',
-                      fontSize: 12,
-                      color: colors.textOnCard,
-                      opacity: 0.7,
-                    }}
-                  >
-                    {option.subtitle}
-                  </Text>
-                </View>
+          {THEME_OPTIONS.map((option) => (
+            <TouchableOpacity
+              key={option.id}
+              onPress={() => setSelectedTheme(option.id)}
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "space-between",
+                paddingHorizontal: 20,
+                paddingVertical: 16,
+                minHeight: 70,
+              }}
+              activeOpacity={0.7}
+            >
+              <View style={{ flex: 1, gap: 4 }}>
+                <Text
+                  style={{
+                    fontFamily: "Inter",
+                    fontWeight: "400",
+                    fontSize: 16,
+                    color: "#1E1E1E",
+                  }}
+                >
+                  {option.label}
+                </Text>
+                <Text
+                  style={{
+                    fontFamily: "Inter",
+                    fontWeight: "400",
+                    fontSize: 12,
+                    color: "#333333",
+                    opacity: 0.8,
+                  }}
+                >
+                  {option.subtitle}
+                </Text>
+              </View>
 
-                {selectedTheme === option.id && (
-                  <Text style={{ color: '#FF4081', fontSize: 18, fontWeight: '400' }}>✓</Text>
-                )}
-              </TouchableOpacity>
-
-              {index < THEME_OPTIONS.length - 1 && (
-                <View style={{ height: 1, backgroundColor: colors.cardBorder, marginHorizontal: 16 }} />
+              {selectedTheme === option.id && (
+                <Feather name="check" size={18} color="#FF4081" />
               )}
-            </React.Fragment>
+            </TouchableOpacity>
           ))}
         </View>
       </Modal>
