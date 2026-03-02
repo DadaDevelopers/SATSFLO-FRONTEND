@@ -1,6 +1,7 @@
 import { BottomNavigation } from "@/components/home/bottom-navigation";
 import { useTheme } from "@/context/theme-context";
 import { Feather } from "@expo/vector-icons";
+import { BlurView } from "expo-blur";
 import { router } from "expo-router";
 import React, { useState } from "react";
 import {
@@ -247,6 +248,22 @@ function SectionCard({ children }: { children: React.ReactNode }) {
   return <View className="bg-[#FFE6EE] rounded-xl mb-4">{children}</View>;
 }
 
+function StarIcon({ filled, size = 36 }: { filled: boolean; size?: number }) {
+  const color = filled ? "#FF4283" : "#FFB3CD";
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Path
+        d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"
+        fill={color}
+        stroke={color}
+        strokeWidth={1}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </Svg>
+  );
+}
+
 type ThemeOption = "system" | "light" | "dark";
 
 const THEME_OPTIONS: { id: ThemeOption; label: string; subtitle: string }[] = [
@@ -263,6 +280,8 @@ export default function SettingsScreen() {
   const insets = useSafeAreaInsets();
   const [activeTab] = useState<TabName>("settings");
   const [themeModalVisible, setThemeModalVisible] = useState(false);
+  const [rateAppModalVisible, setRateAppModalVisible] = useState(false);
+  const [rating, setRating] = useState(3);
   const { selectedTheme, setSelectedTheme } = useTheme();
 
   const handleTabPress = (tab: TabName) => {
@@ -430,7 +449,11 @@ export default function SettingsScreen() {
           <SettingRow iconName="help-circle" iconColor="#C62828" label="FAQ" />
           <SettingRow icon={<ContactSupportIcon />} label="Contact support" />
           <SettingRow icon={<PrivacyIcon />} label="Privacy policy" />
-          <SettingRow icon={<RateAppIcon />} label="Rate app" />
+          <SettingRow
+            icon={<RateAppIcon />}
+            label="Rate app"
+            onPress={() => setRateAppModalVisible(true)}
+          />
           <SettingRow
             iconName="log-out"
             iconColor="#C62828"
@@ -554,6 +577,170 @@ export default function SettingsScreen() {
               )}
             </TouchableOpacity>
           ))}
+        </View>
+      </Modal>
+
+      {/* Rate App modal */}
+      <Modal
+        visible={rateAppModalVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setRateAppModalVisible(false)}
+      >
+        <View style={{ flex: 1 }}>
+          {/* Blur overlay */}
+          <BlurView intensity={10} tint="dark" style={{ flex: 1 }}>
+            <Pressable
+              style={{ flex: 1 }}
+              onPress={() => setRateAppModalVisible(false)}
+            />
+          </BlurView>
+
+          {/* Floating emoji circle + bottom sheet */}
+          <View style={{ alignItems: "center" }}>
+            {/* Emoji circle — overlaps the top of the sheet by 50px */}
+            <View
+              style={{
+                width: 100,
+                height: 100,
+                borderRadius: 50,
+                backgroundColor: "#FFE6EE",
+                alignItems: "center",
+                justifyContent: "center",
+                marginBottom: -50,
+                zIndex: 10,
+                shadowColor: "#000",
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.1,
+                shadowRadius: 4,
+                elevation: 4,
+              }}
+            >
+              <Text style={{ fontSize: 52 }}>😄</Text>
+            </View>
+
+            {/* Sheet */}
+            <View
+              style={{
+                width: "100%",
+                backgroundColor: "#FFE6EE",
+                borderTopLeftRadius: 24,
+                borderTopRightRadius: 24,
+                paddingBottom: (insets.bottom || 0) + 32,
+                alignItems: "center",
+              }}
+            >
+              {/* Space for the 50px emoji overlap + breathing room */}
+              <View style={{ height: 80 }} />
+
+              {/* Drag handle */}
+              {/* Title */}
+              <Text
+                style={{
+                  fontFamily: "Inter",
+                  fontWeight: "500",
+                  fontSize: 20,
+                  color: "#000000",
+                  letterSpacing: -0.3,
+                  marginBottom: 16,
+                }}
+              >
+                Rate App
+              </Text>
+
+              <View
+                style={{ height: 1, backgroundColor: "#DBE2E8", width: "100%" }}
+              />
+
+              {/* Description */}
+              <Text
+                style={{
+                  fontFamily: "Inter",
+                  fontWeight: "400",
+                  fontSize: 16,
+                  color: "#222222",
+                  textAlign: "center",
+                  marginTop: 28,
+                  marginBottom: 28,
+                  paddingHorizontal: 20,
+                }}
+              >
+                Empower us by rating the app
+              </Text>
+
+              {/* Stars */}
+              <View style={{ flexDirection: "row", gap: 8, marginBottom: 36 }}>
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <TouchableOpacity
+                    key={star}
+                    onPress={() => setRating(star)}
+                    activeOpacity={0.7}
+                  >
+                    <StarIcon filled={star <= rating} size={40} />
+                  </TouchableOpacity>
+                ))}
+              </View>
+
+              {/* Buttons */}
+              <View
+                style={{
+                  flexDirection: "row",
+                  gap: 12,
+                  paddingHorizontal: 20,
+                  width: "100%",
+                  marginBottom: 8,
+                }}
+              >
+                <TouchableOpacity
+                  onPress={() => setRateAppModalVisible(false)}
+                  activeOpacity={0.8}
+                  style={{
+                    flex: 1,
+                    height: 56,
+                    backgroundColor: "#FFF5F9",
+                    borderRadius: 1000,
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <Text
+                    style={{
+                      fontFamily: "Inter",
+                      fontWeight: "500",
+                      fontSize: 15,
+                      color: "#FF4081",
+                    }}
+                  >
+                    Later
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  onPress={() => setRateAppModalVisible(false)}
+                  activeOpacity={0.8}
+                  style={{
+                    flex: 1,
+                    height: 56,
+                    backgroundColor: "#FF4081",
+                    borderRadius: 1000,
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <Text
+                    style={{
+                      fontFamily: "Inter",
+                      fontWeight: "500",
+                      fontSize: 15,
+                      color: "#FFFFFF",
+                    }}
+                  >
+                    Rate Now
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
         </View>
       </Modal>
     </View>
