@@ -283,6 +283,7 @@ export default function SettingsScreen() {
   const [rateAppModalVisible, setRateAppModalVisible] = useState(false);
   const [rating, setRating] = useState(3);
   const [logoutModalVisible, setLogoutModalVisible] = useState(false);
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const { selectedTheme, setSelectedTheme } = useTheme();
 
   const handleTabPress = (tab: TabName) => {
@@ -466,7 +467,10 @@ export default function SettingsScreen() {
 
         {/* Delete Account */}
         <SectionCard>
-          <Pressable className="flex-row items-center px-3 py-[14px] gap-1">
+          <Pressable
+            className="flex-row items-center px-3 py-[14px] gap-1"
+            onPress={() => setDeleteModalVisible(true)}
+          >
             <Feather name="trash-2" size={16} color="#FF0004" />
             <Text className="text-sm text-[#1E1E1E] leading-[21px]">
               Delete account
@@ -491,85 +495,39 @@ export default function SettingsScreen() {
       >
         {/* Dim overlay */}
         <Pressable
-          style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.5)" }}
+          className="flex-1 bg-black/50"
           onPress={() => setThemeModalVisible(false)}
         />
 
         {/* Bottom sheet panel */}
         <View
-          style={{
-            backgroundColor: "#FFE6EE",
-            borderTopLeftRadius: 24,
-            borderTopRightRadius: 24,
-            paddingBottom: insets.bottom || 20,
-          }}
+          className="bg-[#FFE6EE] rounded-t-3xl"
+          style={{ paddingBottom: insets.bottom || 20 }}
         >
           {/* Drag handle */}
-          <View
-            style={{
-              width: 40,
-              height: 5,
-              backgroundColor: "#FF669A",
-              borderRadius: 100,
-              alignSelf: "center",
-              marginTop: 12,
-              marginBottom: 16,
-            }}
-          />
+          <View className="w-10 h-[5px] bg-[#FF669A] rounded-full self-center mt-3 mb-4" />
 
           {/* Title */}
-          <Text
-            style={{
-              fontFamily: "Inter",
-              fontWeight: "500",
-              fontSize: 20,
-              color: "#000000",
-              textAlign: "center",
-              letterSpacing: -0.3,
-              marginBottom: 16,
-            }}
-          >
+          <Text className="font-inter font-medium text-xl text-black text-center tracking-[-0.3px] mb-4">
             Select Theme
           </Text>
 
           {/* Divider below title */}
-          <View style={{ height: 1, backgroundColor: "#FFB3CD" }} />
+          <View className="h-px bg-[#FFB3CD]" />
 
           {/* Options */}
           {THEME_OPTIONS.map((option) => (
             <TouchableOpacity
               key={option.id}
               onPress={() => setSelectedTheme(option.id)}
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "space-between",
-                paddingHorizontal: 20,
-                paddingVertical: 16,
-                minHeight: 70,
-              }}
+              className="flex-row items-center justify-between px-5 py-4 min-h-[70px]"
               activeOpacity={0.7}
             >
-              <View style={{ flex: 1, gap: 4 }}>
-                <Text
-                  style={{
-                    fontFamily: "Inter",
-                    fontWeight: "400",
-                    fontSize: 16,
-                    color: "#1E1E1E",
-                  }}
-                >
+              <View className="flex-1 gap-1">
+                <Text className="font-inter text-base text-[#1E1E1E]">
                   {option.label}
                 </Text>
-                <Text
-                  style={{
-                    fontFamily: "Inter",
-                    fontWeight: "400",
-                    fontSize: 12,
-                    color: "#333333",
-                    opacity: 0.8,
-                  }}
-                >
+                <Text className="font-inter text-xs text-[#333333] opacity-80">
                   {option.subtitle}
                 </Text>
               </View>
@@ -589,28 +547,22 @@ export default function SettingsScreen() {
         animationType="slide"
         onRequestClose={() => setRateAppModalVisible(false)}
       >
-        <View style={{ flex: 1 }}>
+        <View className="flex-1">
           {/* Blur overlay */}
-          <BlurView intensity={10} tint="dark" style={{ flex: 1 }}>
+          <BlurView intensity={10} tint="dark" className="flex-1">
             <Pressable
-              style={{ flex: 1 }}
+              className="flex-1"
               onPress={() => setRateAppModalVisible(false)}
             />
           </BlurView>
 
           {/* Floating emoji circle + bottom sheet */}
-          <View style={{ alignItems: "center" }}>
+          <View className="items-center">
             {/* Emoji circle — overlaps the top of the sheet by 50px */}
             <View
+              className="w-[100px] h-[100px] rounded-full bg-[#FFE6EE] items-center justify-center z-10"
               style={{
-                width: 100,
-                height: 100,
-                borderRadius: 50,
-                backgroundColor: "#FFE6EE",
-                alignItems: "center",
-                justifyContent: "center",
                 marginBottom: -50,
-                zIndex: 10,
                 shadowColor: "#000",
                 shadowOffset: { width: 0, height: 2 },
                 shadowOpacity: 0.1,
@@ -623,55 +575,26 @@ export default function SettingsScreen() {
 
             {/* Sheet */}
             <View
-              style={{
-                width: "100%",
-                backgroundColor: "#FFE6EE",
-                borderTopLeftRadius: 24,
-                borderTopRightRadius: 24,
-                paddingBottom: (insets.bottom || 0) + 32,
-                alignItems: "center",
-              }}
+              className="w-full bg-[#FFE6EE] rounded-t-3xl items-center"
+              style={{ paddingBottom: (insets.bottom || 0) + 32 }}
             >
               {/* Space for the 50px emoji overlap + breathing room */}
-              <View style={{ height: 80 }} />
+              <View className="h-20" />
 
-              {/* Drag handle */}
               {/* Title */}
-              <Text
-                style={{
-                  fontFamily: "Inter",
-                  fontWeight: "500",
-                  fontSize: 20,
-                  color: "#000000",
-                  letterSpacing: -0.3,
-                  marginBottom: 16,
-                }}
-              >
+              <Text className="font-inter font-medium text-xl text-black tracking-[-0.3px] mb-4">
                 Rate App
               </Text>
 
-              <View
-                style={{ height: 1, backgroundColor: "#DBE2E8", width: "100%" }}
-              />
+              <View className="h-px bg-[#DBE2E8] w-full" />
 
               {/* Description */}
-              <Text
-                style={{
-                  fontFamily: "Inter",
-                  fontWeight: "400",
-                  fontSize: 16,
-                  color: "#222222",
-                  textAlign: "center",
-                  marginTop: 28,
-                  marginBottom: 28,
-                  paddingHorizontal: 20,
-                }}
-              >
+              <Text className="font-inter text-base text-[#222222] text-center mt-7 mb-7 px-5">
                 Empower us by rating the app
               </Text>
 
               {/* Stars */}
-              <View style={{ flexDirection: "row", gap: 8, marginBottom: 36 }}>
+              <View className="flex-row gap-2 mb-9">
                 {[1, 2, 3, 4, 5].map((star) => (
                   <TouchableOpacity
                     key={star}
@@ -684,35 +607,13 @@ export default function SettingsScreen() {
               </View>
 
               {/* Buttons */}
-              <View
-                style={{
-                  flexDirection: "row",
-                  gap: 12,
-                  paddingHorizontal: 20,
-                  width: "100%",
-                  marginBottom: 8,
-                }}
-              >
+              <View className="flex-row gap-3 px-5 w-full mb-2">
                 <TouchableOpacity
                   onPress={() => setRateAppModalVisible(false)}
                   activeOpacity={0.8}
-                  style={{
-                    flex: 1,
-                    height: 56,
-                    backgroundColor: "#FFF5F9",
-                    borderRadius: 1000,
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
+                  className="flex-1 h-14 bg-[#FFF5F9] rounded-full items-center justify-center"
                 >
-                  <Text
-                    style={{
-                      fontFamily: "Inter",
-                      fontWeight: "500",
-                      fontSize: 15,
-                      color: "#FF4081",
-                    }}
-                  >
+                  <Text className="font-inter font-medium text-[15px] text-[#FF4081]">
                     Later
                   </Text>
                 </TouchableOpacity>
@@ -720,23 +621,9 @@ export default function SettingsScreen() {
                 <TouchableOpacity
                   onPress={() => setRateAppModalVisible(false)}
                   activeOpacity={0.8}
-                  style={{
-                    flex: 1,
-                    height: 56,
-                    backgroundColor: "#FF4081",
-                    borderRadius: 1000,
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
+                  className="flex-1 h-14 bg-[#FF4081] rounded-full items-center justify-center"
                 >
-                  <Text
-                    style={{
-                      fontFamily: "Inter",
-                      fontWeight: "500",
-                      fontSize: 15,
-                      color: "#FFFFFF",
-                    }}
-                  >
+                  <Text className="font-inter font-medium text-[15px] text-white">
                     Rate Now
                   </Text>
                 </TouchableOpacity>
@@ -753,100 +640,44 @@ export default function SettingsScreen() {
         animationType="slide"
         onRequestClose={() => setLogoutModalVisible(false)}
       >
-        <View style={{ flex: 1 }}>
+        <View className="flex-1">
           {/* Blur overlay */}
-          <BlurView intensity={20} tint="dark" style={{ flex: 1 }}>
+          <BlurView intensity={20} tint="dark" className="flex-1">
             <Pressable
-              style={{ flex: 1 }}
+              className="flex-1"
               onPress={() => setLogoutModalVisible(false)}
             />
           </BlurView>
 
           {/* Bottom sheet */}
           <View
-            style={{
-              backgroundColor: "#FFE6EE",
-              borderTopLeftRadius: 24,
-              borderTopRightRadius: 24,
-              paddingBottom: (insets.bottom || 0) + 20,
-            }}
+            className="bg-[#FFE6EE] rounded-t-3xl"
+            style={{ paddingBottom: (insets.bottom || 0) + 20 }}
           >
             {/* Drag handle */}
-            <View
-              style={{
-                width: 40,
-                height: 5,
-                backgroundColor: "#FF669A",
-                borderRadius: 100,
-                alignSelf: "center",
-                marginTop: 16,
-                marginBottom: 24,
-              }}
-            />
+            <View className="w-10 h-[5px] bg-[#FF669A] rounded-full self-center mt-4 mb-6" />
 
             {/* Title */}
-            <Text
-              style={{
-                fontFamily: "Inter",
-                fontWeight: "500",
-                fontSize: 20,
-                lineHeight: 24,
-                letterSpacing: -0.3,
-                color: "#000000",
-                textAlign: "center",
-                marginBottom: 24,
-              }}
-            >
+            <Text className="font-inter font-medium text-xl leading-6 tracking-[-0.3px] text-black text-center mb-6">
               Log Out
             </Text>
 
             {/* Divider */}
-            <View style={{ height: 1, backgroundColor: "#FFB3CD" }} />
+            <View className="h-px bg-[#FFB3CD]" />
 
             {/* Confirmation text */}
-            <Text
-              style={{
-                fontFamily: "Inter",
-                fontWeight: "400",
-                fontSize: 16,
-                lineHeight: 19,
-                color: "#222222",
-                textAlign: "center",
-                marginTop: 20,
-                marginBottom: 50,
-              }}
-            >
+            <Text className="font-inter text-base leading-[19px] text-[#222222] text-center mt-5 mb-[50px]">
               Are you sure you want to log out?
             </Text>
 
             {/* Buttons */}
-            <View
-              style={{
-                flexDirection: "row",
-                gap: 12,
-                paddingHorizontal: 20,
-              }}
-            >
+            <View className="flex-row gap-3 px-5">
               <TouchableOpacity
                 onPress={() => setLogoutModalVisible(false)}
                 activeOpacity={0.8}
-                style={{
-                  flex: 1,
-                  height: 50,
-                  backgroundColor: "#FFF5F9",
-                  borderRadius: 50,
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
+                className="flex-1 h-[50px] bg-[#FFF5F9] rounded-full items-center justify-center"
               >
-                <Text
-                  style={{
-                    fontFamily: "Inter",
-                    fontWeight: "500",
-                    fontSize: 15,
-                    color: "#FF4081",
-                  }}
-                >
+                <Text className="font-inter font-medium text-[15px] text-[#FF4081]">
                   Cancel
                 </Text>
               </TouchableOpacity>
@@ -857,24 +688,77 @@ export default function SettingsScreen() {
                   router.replace("/(auth)/login" as any);
                 }}
                 activeOpacity={0.8}
-                style={{
-                  flex: 1,
-                  height: 50,
-                  backgroundColor: "#FF4081",
-                  borderRadius: 50,
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
+                className="flex-1 h-[50px] bg-[#FF4081] rounded-full items-center justify-center"
               >
-                <Text
-                  style={{
-                    fontFamily: "Inter",
-                    fontWeight: "500",
-                    fontSize: 15,
-                    color: "#FFFFFF",
-                  }}
-                >
+                <Text className="font-inter font-medium text-[15px] text-white">
                   Yes, Logout
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Delete Account confirmation modal */}
+      <Modal
+        visible={deleteModalVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setDeleteModalVisible(false)}
+      >
+        <View className="flex-1">
+          {/* Blur overlay */}
+          <BlurView intensity={20} tint="dark" className="flex-1">
+            <Pressable
+              className="flex-1"
+              onPress={() => setDeleteModalVisible(false)}
+            />
+          </BlurView>
+
+          {/* Bottom sheet */}
+          <View
+            className="bg-[#FFE6EE] rounded-t-3xl"
+            style={{ paddingBottom: (insets.bottom || 0) + 20 }}
+          >
+            {/* Drag handle */}
+            <View className="w-10 h-[5px] bg-[#FF669A] rounded-full self-center mt-4 mb-6" />
+
+            {/* Title */}
+            <Text className="font-inter font-medium text-xl leading-6 tracking-[-0.3px] text-black text-center mb-6">
+              Delete Account
+            </Text>
+
+            {/* Divider */}
+            <View className="h-px bg-[#FFB3CD]" />
+
+            {/* Warning text */}
+            <Text className="font-inter text-base leading-6 text-[#222222] text-center mt-5 mb-10 px-12">
+              Are you sure you want to delete this account? All data will be
+              accessible for only 30 days after confirmation.
+            </Text>
+
+            {/* Buttons */}
+            <View className="flex-row gap-3 px-5">
+              <TouchableOpacity
+                onPress={() => setDeleteModalVisible(false)}
+                activeOpacity={0.8}
+                className="flex-1 h-[50px] bg-[#FFF5F9] rounded-full items-center justify-center"
+              >
+                <Text className="font-inter font-medium text-[15px] text-[#FF4081]">
+                  Cancel
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={() => {
+                  setDeleteModalVisible(false);
+                  router.replace("/(auth)/login" as any);
+                }}
+                activeOpacity={0.8}
+                className="flex-1 h-[50px] bg-[#C62828] rounded-full items-center justify-center"
+              >
+                <Text className="font-inter font-medium text-[15px] text-white">
+                  Yes, Delete
                 </Text>
               </TouchableOpacity>
             </View>
