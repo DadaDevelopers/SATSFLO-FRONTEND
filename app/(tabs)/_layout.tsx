@@ -169,6 +169,13 @@ export default function TabLayout() {
           href: null,
         }}
       />
+      <Tabs.Screen
+        name="luteal-phase-settings"
+        options={{
+          title: "Luteal Phase Length",
+          href: null,
+        }}
+      />
     </Tabs>
   );
 }
