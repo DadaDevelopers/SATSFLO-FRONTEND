@@ -410,6 +410,7 @@ export default function SettingsScreen() {
           <SettingRow
             icon={<LanguageIcon />}
             label="Language preferences"
+            onPress={() => router.push("/(tabs)/language-settings" as any)}
             isLast
           />
         </SectionCard>
