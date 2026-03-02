@@ -358,6 +358,7 @@ export default function SettingsScreen() {
             icon={<LutealIcon />}
             label="Luteal phase length"
             rightText="14 days"
+            onPress={() => router.push("/(tabs)/luteal-phase-settings" as any)}
             isLast
           />
         </SectionCard>
