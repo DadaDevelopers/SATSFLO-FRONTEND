@@ -365,7 +365,12 @@ export default function SettingsScreen() {
 
         {/* Reminders Card */}
         <SectionCard>
-          <SettingRow icon={<ReminderIcon />} label="Reminders" isLast />
+          <SettingRow
+            icon={<ReminderIcon />}
+            label="Reminders"
+            onPress={() => router.push("/(tabs)/reminders" as any)}
+            isLast
+          />
         </SectionCard>
 
         {/* Personalization Card */}
