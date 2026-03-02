@@ -376,7 +376,7 @@ export default function SettingsScreen() {
         {/* Personalization Card */}
         <SectionCard>
           <SettingRow icon={<SymptomsIcon />} label="Symptoms" onPress={() => router.push('/add-log/symptoms')} />
-          <SettingRow icon={<MoodsIcon />} label="Moods" />
+          <SettingRow icon={<MoodsIcon />} label="Moods" onPress={() => router.push('/add-log/moods')} />
           <SettingRow iconName="eye" iconColor="#077845" label="Theme" />
           <SettingRow
             icon={<LanguageIcon />}

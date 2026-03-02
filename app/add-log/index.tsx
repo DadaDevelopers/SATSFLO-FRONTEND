@@ -296,10 +296,12 @@ export default function AddLogScreen() {
   const moodLabels: Record<string, string> = {
     normal: 'Normal', happy: 'Happy', calm: 'Calm', hyped: 'Hyped',
     inLove: 'In love', peaceful: 'Peaceful', lonely: 'Lonely', angry: 'Angry',
+    silly: 'Silly', sad: 'Sad', relaxed: 'Relaxed',
   };
   const moodEmojis: Record<string, string> = {
     normal: '😐', happy: '😊', calm: '😌', hyped: '🤩',
     inLove: '😍', peaceful: '😇', lonely: '😢', angry: '😠',
+    silly: '😜', sad: '😔', relaxed: '🙂',
   };
   const medicineLabels: Record<string, string> = {
     condom: 'Condom', pill: 'Pill', patch: 'Patch', iud: 'IUD',
