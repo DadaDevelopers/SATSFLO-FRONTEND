@@ -1,9 +1,11 @@
 import { BottomNavigation } from "@/components/home/bottom-navigation";
+import { useTheme } from "@/context/theme-context";
 import { Feather } from "@expo/vector-icons";
 import { router } from "expo-router";
 import React, { useState } from "react";
 import {
   Image,
+  Modal,
   Pressable,
   ScrollView,
   StatusBar,
@@ -245,9 +247,23 @@ function SectionCard({ children }: { children: React.ReactNode }) {
   return <View className="bg-[#FFE6EE] rounded-xl mb-4">{children}</View>;
 }
 
+type ThemeOption = "system" | "light" | "dark";
+
+const THEME_OPTIONS: { id: ThemeOption; label: string; subtitle: string }[] = [
+  {
+    id: "system",
+    label: "System default",
+    subtitle: "Sync app appearance with your device settings",
+  },
+  { id: "light", label: "Light mode", subtitle: "Use light mode" },
+  { id: "dark", label: "Dark mode", subtitle: "Use dark mode" },
+];
+
 export default function SettingsScreen() {
   const insets = useSafeAreaInsets();
   const [activeTab] = useState<TabName>("settings");
+  const [themeModalVisible, setThemeModalVisible] = useState(false);
+  const { selectedTheme, setSelectedTheme } = useTheme();
 
   const handleTabPress = (tab: TabName) => {
     switch (tab) {
@@ -375,9 +391,22 @@ export default function SettingsScreen() {
 
         {/* Personalization Card */}
         <SectionCard>
-          <SettingRow icon={<SymptomsIcon />} label="Symptoms" onPress={() => router.push('/add-log/symptoms')} />
-          <SettingRow icon={<MoodsIcon />} label="Moods" onPress={() => router.push('/add-log/moods')} />
-          <SettingRow iconName="eye" iconColor="#077845" label="Theme" />
+          <SettingRow
+            icon={<SymptomsIcon />}
+            label="Symptoms"
+            onPress={() => router.push("/add-log/symptoms")}
+          />
+          <SettingRow
+            icon={<MoodsIcon />}
+            label="Moods"
+            onPress={() => router.push("/add-log/moods")}
+          />
+          <SettingRow
+            iconName="eye"
+            iconColor="#077845"
+            label="Theme"
+            onPress={() => setThemeModalVisible(true)}
+          />
           <SettingRow
             icon={<LanguageIcon />}
             label="Language preferences"
@@ -421,6 +450,106 @@ export default function SettingsScreen() {
       </ScrollView>
 
       <BottomNavigation activeTab={activeTab} onTabPress={handleTabPress} />
+
+      {/* Theme selection bottom sheet */}
+      <Modal
+        visible={themeModalVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setThemeModalVisible(false)}
+      >
+        {/* Dim overlay */}
+        <Pressable
+          style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.5)" }}
+          onPress={() => setThemeModalVisible(false)}
+        />
+
+        {/* Bottom sheet panel */}
+        <View
+          style={{
+            backgroundColor: "#FFE6EE",
+            borderTopLeftRadius: 24,
+            borderTopRightRadius: 24,
+            paddingBottom: insets.bottom || 20,
+          }}
+        >
+          {/* Drag handle */}
+          <View
+            style={{
+              width: 40,
+              height: 5,
+              backgroundColor: "#FF669A",
+              borderRadius: 100,
+              alignSelf: "center",
+              marginTop: 12,
+              marginBottom: 16,
+            }}
+          />
+
+          {/* Title */}
+          <Text
+            style={{
+              fontFamily: "Inter",
+              fontWeight: "500",
+              fontSize: 20,
+              color: "#000000",
+              textAlign: "center",
+              letterSpacing: -0.3,
+              marginBottom: 16,
+            }}
+          >
+            Select Theme
+          </Text>
+
+          {/* Divider below title */}
+          <View style={{ height: 1, backgroundColor: "#FFB3CD" }} />
+
+          {/* Options */}
+          {THEME_OPTIONS.map((option) => (
+            <TouchableOpacity
+              key={option.id}
+              onPress={() => setSelectedTheme(option.id)}
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "space-between",
+                paddingHorizontal: 20,
+                paddingVertical: 16,
+                minHeight: 70,
+              }}
+              activeOpacity={0.7}
+            >
+              <View style={{ flex: 1, gap: 4 }}>
+                <Text
+                  style={{
+                    fontFamily: "Inter",
+                    fontWeight: "400",
+                    fontSize: 16,
+                    color: "#1E1E1E",
+                  }}
+                >
+                  {option.label}
+                </Text>
+                <Text
+                  style={{
+                    fontFamily: "Inter",
+                    fontWeight: "400",
+                    fontSize: 12,
+                    color: "#333333",
+                    opacity: 0.8,
+                  }}
+                >
+                  {option.subtitle}
+                </Text>
+              </View>
+
+              {selectedTheme === option.id && (
+                <Feather name="check" size={18} color="#FF4081" />
+              )}
+            </TouchableOpacity>
+          ))}
+        </View>
+      </Modal>
     </View>
   );
 }
