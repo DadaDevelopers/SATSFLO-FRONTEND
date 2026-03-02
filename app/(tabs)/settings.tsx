@@ -282,6 +282,7 @@ export default function SettingsScreen() {
   const [themeModalVisible, setThemeModalVisible] = useState(false);
   const [rateAppModalVisible, setRateAppModalVisible] = useState(false);
   const [rating, setRating] = useState(3);
+  const [logoutModalVisible, setLogoutModalVisible] = useState(false);
   const { selectedTheme, setSelectedTheme } = useTheme();
 
   const handleTabPress = (tab: TabName) => {
@@ -458,6 +459,7 @@ export default function SettingsScreen() {
             iconName="log-out"
             iconColor="#C62828"
             label="Log out"
+            onPress={() => setLogoutModalVisible(true)}
             isLast
           />
         </SectionCard>
@@ -739,6 +741,142 @@ export default function SettingsScreen() {
                   </Text>
                 </TouchableOpacity>
               </View>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Logout confirmation modal */}
+      <Modal
+        visible={logoutModalVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setLogoutModalVisible(false)}
+      >
+        <View style={{ flex: 1 }}>
+          {/* Blur overlay */}
+          <BlurView intensity={20} tint="dark" style={{ flex: 1 }}>
+            <Pressable
+              style={{ flex: 1 }}
+              onPress={() => setLogoutModalVisible(false)}
+            />
+          </BlurView>
+
+          {/* Bottom sheet */}
+          <View
+            style={{
+              backgroundColor: "#FFE6EE",
+              borderTopLeftRadius: 24,
+              borderTopRightRadius: 24,
+              paddingBottom: (insets.bottom || 0) + 20,
+            }}
+          >
+            {/* Drag handle */}
+            <View
+              style={{
+                width: 40,
+                height: 5,
+                backgroundColor: "#FF669A",
+                borderRadius: 100,
+                alignSelf: "center",
+                marginTop: 16,
+                marginBottom: 24,
+              }}
+            />
+
+            {/* Title */}
+            <Text
+              style={{
+                fontFamily: "Inter",
+                fontWeight: "500",
+                fontSize: 20,
+                lineHeight: 24,
+                letterSpacing: -0.3,
+                color: "#000000",
+                textAlign: "center",
+                marginBottom: 24,
+              }}
+            >
+              Log Out
+            </Text>
+
+            {/* Divider */}
+            <View style={{ height: 1, backgroundColor: "#FFB3CD" }} />
+
+            {/* Confirmation text */}
+            <Text
+              style={{
+                fontFamily: "Inter",
+                fontWeight: "400",
+                fontSize: 16,
+                lineHeight: 19,
+                color: "#222222",
+                textAlign: "center",
+                marginTop: 20,
+                marginBottom: 50,
+              }}
+            >
+              Are you sure you want to log out?
+            </Text>
+
+            {/* Buttons */}
+            <View
+              style={{
+                flexDirection: "row",
+                gap: 12,
+                paddingHorizontal: 20,
+              }}
+            >
+              <TouchableOpacity
+                onPress={() => setLogoutModalVisible(false)}
+                activeOpacity={0.8}
+                style={{
+                  flex: 1,
+                  height: 50,
+                  backgroundColor: "#FFF5F9",
+                  borderRadius: 50,
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <Text
+                  style={{
+                    fontFamily: "Inter",
+                    fontWeight: "500",
+                    fontSize: 15,
+                    color: "#FF4081",
+                  }}
+                >
+                  Cancel
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={() => {
+                  setLogoutModalVisible(false);
+                  router.replace("/(auth)/login" as any);
+                }}
+                activeOpacity={0.8}
+                style={{
+                  flex: 1,
+                  height: 50,
+                  backgroundColor: "#FF4081",
+                  borderRadius: 50,
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <Text
+                  style={{
+                    fontFamily: "Inter",
+                    fontWeight: "500",
+                    fontSize: 15,
+                    color: "#FFFFFF",
+                  }}
+                >
+                  Yes, Logout
+                </Text>
+              </TouchableOpacity>
             </View>
           </View>
         </View>
