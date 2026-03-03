@@ -1,18 +1,15 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
   TouchableOpacity,
   TextInput,
-  Modal,
-  StyleSheet,
   Alert,
   useWindowDimensions,
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Path } from 'react-native-svg';
-import { BarCodeScanner } from 'expo-barcode-scanner';
 import * as Clipboard from 'expo-clipboard';
 
 const MAX_CONTENT_WIDTH = 480;
@@ -87,20 +84,6 @@ const CheckCircleIcon = () => (
   </Svg>
 );
 
-// Close icon
-const CloseIcon = () => (
-  <Svg width={24} height={24} viewBox="0 0 24 24">
-    <Path
-      d="M6 18L18 6M6 6l12 12"
-      stroke="#000000"
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      fill="none"
-    />
-  </Svg>
-);
-
 type CurrencyType = 'USD' | 'EUR' | 'KES' | 'NGN';
 
 const conversionRates: Record<CurrencyType, number> = {
@@ -129,32 +112,8 @@ export default function SendAmountScreen() {
   const [note, setNote] = useState('');
   const [currency, setCurrency] = useState<CurrencyType>('USD');
   const [showCurrencyDropdown, setShowCurrencyDropdown] = useState(false);
-  const [showQRScanner, setShowQRScanner] = useState(false);
-  const [hasPermission, setHasPermission] = useState<boolean | null>(null);
-
-  useEffect(() => {
-    (async () => {
-      const { status } = await BarCodeScanner.requestPermissionsAsync();
-      setHasPermission(status === 'granted');
-    })();
-  }, []);
-
-  const handleScanQR = async () => {
-    if (hasPermission === null) {
-      Alert.alert('Camera Permission', 'Requesting camera permission...');
-      return;
-    }
-    if (hasPermission === false) {
-      Alert.alert('No Camera Access', 'Please grant camera permission in your device settings to scan QR codes');
-      return;
-    }
-    setShowQRScanner(true);
-  };
-
-  const handleBarCodeScanned = ({ type, data }: { type: string; data: string }) => {
-    setShowQRScanner(false);
-    setDestination(data);
-    Alert.alert('QR Code Scanned', `Destination set to: ${data}`);
+  const handleScanQR = () => {
+    Alert.alert('QR Scanning', 'Please type or paste the destination address manually.');
   };
 
   const handlePaste = async () => {
@@ -369,31 +328,6 @@ export default function SendAmountScreen() {
         </View>
       </View>
 
-      {/* QR Scanner Modal */}
-      {showQRScanner && (
-        <Modal visible={showQRScanner} transparent={false} animationType="slide">
-          <View className="flex-1 bg-black">
-            <BarCodeScanner
-              onBarCodeScanned={handleBarCodeScanned}
-              style={StyleSheet.absoluteFillObject}
-            />
-            <TouchableOpacity
-              onPress={() => setShowQRScanner(false)}
-              className="absolute top-12 right-4 bg-white/90 p-3 rounded-full"
-              style={{ zIndex: 10 }}
-            >
-              <CloseIcon />
-            </TouchableOpacity>
-            <View className="absolute bottom-20 left-0 right-0 items-center">
-              <View className="bg-black/70 px-6 py-3 rounded-lg">
-                <Text className="text-white text-base font-medium">
-                  Point camera at QR code
-                </Text>
-              </View>
-            </View>
-          </View>
-        </Modal>
-      )}
     </View>
   );
 }

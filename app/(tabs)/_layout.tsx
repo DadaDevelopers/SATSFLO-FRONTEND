@@ -183,6 +183,13 @@ export default function TabLayout() {
           href: null,
         }}
       />
+      <Tabs.Screen
+        name="invite-partner"
+        options={{
+          title: "Invite Partner",
+          href: null,
+        }}
+      />
     </Tabs>
   );
 }
