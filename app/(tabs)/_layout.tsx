@@ -218,6 +218,13 @@ export default function TabLayout() {
           href: null,
         }}
       />
+      <Tabs.Screen
+        name="whats-your-partner-name"
+        options={{
+          title: "What's Your Partner Name",
+          href: null,
+        }}
+      />
     </Tabs>
   );
 }
