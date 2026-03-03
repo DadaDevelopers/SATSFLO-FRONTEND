@@ -76,7 +76,7 @@ export default function SharingInviteScreen() {
         </Text>
 
         <TouchableOpacity
-          onPress={() => router.push("/(tabs)/settings" as any)}
+          onPress={() => router.push("/(tabs)/generate-invite" as any)}
           activeOpacity={0.7}
         >
           <Text className="font-inter font-medium text-sm text-[#FAFAFA] tracking-[-0.3px]">
@@ -141,6 +141,7 @@ export default function SharingInviteScreen() {
       {/* Next button */}
       <View className="items-center" style={{ paddingBottom: 20 }}>
         <TouchableOpacity
+          onPress={() => router.push("/(tabs)/generate-invite" as any)}
           activeOpacity={0.8}
           className="w-[250px] h-14 bg-[#FF82AD] rounded-full items-center justify-center"
         >
