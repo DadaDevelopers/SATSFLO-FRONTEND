@@ -116,6 +116,7 @@ export default function InvitePartnerScreen() {
         <TouchableOpacity
           activeOpacity={0.8}
           className="w-[250px] h-14 bg-[#FF82AD] rounded-full items-center justify-center"
+          onPress={() => router.push("/(tabs)/sharing-invite" as any)}
         >
           <Text className="font-inter font-medium text-[15px] text-white">
             Generate partner code
