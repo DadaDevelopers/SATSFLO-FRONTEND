@@ -211,6 +211,13 @@ export default function TabLayout() {
           href: null,
         }}
       />
+      <Tabs.Screen
+        name="made-for-you"
+        options={{
+          title: "Made For You",
+          href: null,
+        }}
+      />
     </Tabs>
   );
 }
