@@ -197,6 +197,13 @@ export default function TabLayout() {
           href: null,
         }}
       />
+      <Tabs.Screen
+        name="generate-invite"
+        options={{
+          title: "Generate Code",
+          href: null,
+        }}
+      />
     </Tabs>
   );
 }
