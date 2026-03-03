@@ -38,10 +38,8 @@ export default function RootLayout() {
       <ThemeProvider>
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="splash" />
-        <Stack.Screen name="onboarding" />
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="add-log" />
-        <Stack.Screen name="calendar" />
         <Stack.Screen name="gift-token" />
         <Stack.Screen name="chat" />
         <Stack.Screen name="modal" options={{ presentation: 'modal' }} />

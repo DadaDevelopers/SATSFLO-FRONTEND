@@ -59,8 +59,21 @@ export default function CalendarScreen() {
 
   const handleTabPress = (tab: TabName) => {
     setActiveTab(tab);
-    if (tab === 'home') {
-      router.push('/');
+    switch (tab) {
+      case 'home':
+        router.push('/');
+        break;
+      case 'add':
+        router.push('/add-log' as any);
+        break;
+      case 'chat':
+        router.push('/(tabs)/thread' as any);
+        break;
+      case 'settings':
+        router.push('/(tabs)/settings' as any);
+        break;
+      default:
+        break;
     }
   };
 
