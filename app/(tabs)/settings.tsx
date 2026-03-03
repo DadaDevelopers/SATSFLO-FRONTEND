@@ -329,7 +329,9 @@ export default function SettingsScreen() {
 
           <View className="h-px bg-[#FFD6E8] mx-3" />
 
-          <Pressable className="flex-row items-center justify-between px-3 py-6">
+          <Pressable
+            className="flex-row items-center justify-between px-3 py-6"
+          >
             <View className="flex-row items-center gap-1">
               <InviteIcon />
               <Text className="text-sm text-[#1E1E1E] leading-[21px]">
