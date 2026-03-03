@@ -204,6 +204,13 @@ export default function TabLayout() {
           href: null,
         }}
       />
+      <Tabs.Screen
+        name="partner-pairing-success"
+        options={{
+          title: "Partner Pairing Successful",
+          href: null,
+        }}
+      />
     </Tabs>
   );
 }
