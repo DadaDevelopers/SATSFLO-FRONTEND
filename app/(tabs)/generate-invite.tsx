@@ -41,6 +41,7 @@ export default function GenerateInviteScreen() {
     } catch {
       // share dismissed
     }
+    router.push("/(tabs)/partner-pairing-success" as any);
   };
 
   return (
