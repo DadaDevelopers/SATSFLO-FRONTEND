@@ -190,6 +190,13 @@ export default function TabLayout() {
           href: null,
         }}
       />
+      <Tabs.Screen
+        name="sharing-invite"
+        options={{
+          title: "Sharing Options",
+          href: null,
+        }}
+      />
     </Tabs>
   );
 }
