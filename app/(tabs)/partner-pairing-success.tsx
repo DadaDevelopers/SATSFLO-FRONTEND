@@ -140,7 +140,7 @@ export default function PartnerPairingSuccessScreen() {
       {/* Next button */}
       <View className="items-center pb-7">
         <TouchableOpacity
-          onPress={() => router.push("/(tabs)/index" as any)}
+          onPress={() => router.push("/(tabs)/made-for-you" as any)}
           activeOpacity={0.8}
           className="w-[250px] h-14 bg-[#FF82AD] rounded-full items-center justify-center"
         >
