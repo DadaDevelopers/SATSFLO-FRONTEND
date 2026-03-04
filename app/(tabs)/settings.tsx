@@ -1,9 +1,12 @@
 import { BottomNavigation } from "@/components/home/bottom-navigation";
+import { useTheme } from "@/context/theme-context";
 import { Feather } from "@expo/vector-icons";
+import { BlurView } from "expo-blur";
 import { router } from "expo-router";
 import React, { useState } from "react";
 import {
   Image,
+  Modal,
   Pressable,
   ScrollView,
   StatusBar,
@@ -245,9 +248,43 @@ function SectionCard({ children }: { children: React.ReactNode }) {
   return <View className="bg-[#FFE6EE] rounded-xl mb-4">{children}</View>;
 }
 
+function StarIcon({ filled, size = 36 }: { filled: boolean; size?: number }) {
+  const color = filled ? "#FF4283" : "#FFB3CD";
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Path
+        d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"
+        fill={color}
+        stroke={color}
+        strokeWidth={1}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </Svg>
+  );
+}
+
+type ThemeOption = "system" | "light" | "dark";
+
+const THEME_OPTIONS: { id: ThemeOption; label: string; subtitle: string }[] = [
+  {
+    id: "system",
+    label: "System default",
+    subtitle: "Sync app appearance with your device settings",
+  },
+  { id: "light", label: "Light mode", subtitle: "Use light mode" },
+  { id: "dark", label: "Dark mode", subtitle: "Use dark mode" },
+];
+
 export default function SettingsScreen() {
   const insets = useSafeAreaInsets();
   const [activeTab] = useState<TabName>("settings");
+  const [themeModalVisible, setThemeModalVisible] = useState(false);
+  const [rateAppModalVisible, setRateAppModalVisible] = useState(false);
+  const [rating, setRating] = useState(3);
+  const [logoutModalVisible, setLogoutModalVisible] = useState(false);
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+  const { selectedTheme, setSelectedTheme } = useTheme();
 
   const handleTabPress = (tab: TabName) => {
     switch (tab) {
@@ -331,6 +368,7 @@ export default function SettingsScreen() {
 
           <Pressable
             className="flex-row items-center justify-between px-3 py-6"
+            onPress={() => router.push("/(tabs)/invite-partner" as any)}
           >
             <View className="flex-row items-center gap-1">
               <InviteIcon />
@@ -360,30 +398,55 @@ export default function SettingsScreen() {
             icon={<LutealIcon />}
             label="Luteal phase length"
             rightText="14 days"
+            onPress={() => router.push("/(tabs)/luteal-phase-settings" as any)}
             isLast
           />
         </SectionCard>
 
         {/* Reminders Card */}
         <SectionCard>
-          <SettingRow icon={<ReminderIcon />} label="Reminders" isLast />
+          <SettingRow
+            icon={<ReminderIcon />}
+            label="Reminders"
+            onPress={() => router.push("/(tabs)/reminders" as any)}
+            isLast
+          />
         </SectionCard>
 
         {/* Personalization Card */}
         <SectionCard>
-          <SettingRow icon={<SymptomsIcon />} label="Symptoms" />
-          <SettingRow icon={<MoodsIcon />} label="Moods" />
-          <SettingRow iconName="eye" iconColor="#077845" label="Theme" />
+          <SettingRow
+            icon={<SymptomsIcon />}
+            label="Symptoms"
+            onPress={() => router.push("/add-log/symptoms")}
+          />
+          <SettingRow
+            icon={<MoodsIcon />}
+            label="Moods"
+            onPress={() => router.push("/add-log/moods")}
+          />
+          <SettingRow
+            iconName="eye"
+            iconColor="#077845"
+            label="Theme"
+            onPress={() => setThemeModalVisible(true)}
+          />
           <SettingRow
             icon={<LanguageIcon />}
             label="Language preferences"
+            onPress={() => router.push("/(tabs)/language-settings" as any)}
             isLast
           />
         </SectionCard>
 
         {/* Wallet Card */}
         <SectionCard>
-          <SettingRow icon={<WalletIcon />} label="Connect wallet" isLast />
+          <SettingRow
+            icon={<WalletIcon />}
+            label="Connect wallet"
+            onPress={() => router.push("/(tabs)/connect-wallet" as any)}
+            isLast
+          />
         </SectionCard>
 
         {/* Support & Legal Card */}
@@ -391,18 +454,26 @@ export default function SettingsScreen() {
           <SettingRow iconName="help-circle" iconColor="#C62828" label="FAQ" />
           <SettingRow icon={<ContactSupportIcon />} label="Contact support" />
           <SettingRow icon={<PrivacyIcon />} label="Privacy policy" />
-          <SettingRow icon={<RateAppIcon />} label="Rate app" />
+          <SettingRow
+            icon={<RateAppIcon />}
+            label="Rate app"
+            onPress={() => setRateAppModalVisible(true)}
+          />
           <SettingRow
             iconName="log-out"
             iconColor="#C62828"
             label="Log out"
+            onPress={() => setLogoutModalVisible(true)}
             isLast
           />
         </SectionCard>
 
         {/* Delete Account */}
         <SectionCard>
-          <Pressable className="flex-row items-center px-3 py-[14px] gap-1">
+          <Pressable
+            className="flex-row items-center px-3 py-[14px] gap-1"
+            onPress={() => setDeleteModalVisible(true)}
+          >
             <Feather name="trash-2" size={16} color="#FF0004" />
             <Text className="text-sm text-[#1E1E1E] leading-[21px]">
               Delete account
@@ -417,6 +488,286 @@ export default function SettingsScreen() {
       </ScrollView>
 
       <BottomNavigation activeTab={activeTab} onTabPress={handleTabPress} />
+
+      {/* Theme selection bottom sheet */}
+      <Modal
+        visible={themeModalVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setThemeModalVisible(false)}
+      >
+        {/* Dim overlay */}
+        <Pressable
+          className="flex-1 bg-black/50"
+          onPress={() => setThemeModalVisible(false)}
+        />
+
+        {/* Bottom sheet panel */}
+        <View
+          className="bg-[#FFE6EE] rounded-t-3xl"
+          style={{ paddingBottom: insets.bottom || 20 }}
+        >
+          {/* Drag handle */}
+          <View className="w-10 h-[5px] bg-[#FF669A] rounded-full self-center mt-3 mb-4" />
+
+          {/* Title */}
+          <Text className="font-inter font-medium text-xl text-black text-center tracking-[-0.3px] mb-4">
+            Select Theme
+          </Text>
+
+          {/* Divider below title */}
+          <View className="h-px bg-[#FFB3CD]" />
+
+          {/* Options */}
+          {THEME_OPTIONS.map((option) => (
+            <TouchableOpacity
+              key={option.id}
+              onPress={() => setSelectedTheme(option.id)}
+              className="flex-row items-center justify-between px-5 py-4 min-h-[70px]"
+              activeOpacity={0.7}
+            >
+              <View className="flex-1 gap-1">
+                <Text className="font-inter text-base text-[#1E1E1E]">
+                  {option.label}
+                </Text>
+                <Text className="font-inter text-xs text-[#333333] opacity-80">
+                  {option.subtitle}
+                </Text>
+              </View>
+
+              {selectedTheme === option.id && (
+                <Feather name="check" size={18} color="#FF4081" />
+              )}
+            </TouchableOpacity>
+          ))}
+        </View>
+      </Modal>
+
+      {/* Rate App modal */}
+      <Modal
+        visible={rateAppModalVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setRateAppModalVisible(false)}
+      >
+        <View className="flex-1">
+          {/* Blur overlay */}
+          <BlurView intensity={10} tint="dark" className="flex-1">
+            <Pressable
+              className="flex-1"
+              onPress={() => setRateAppModalVisible(false)}
+            />
+          </BlurView>
+
+          {/* Floating emoji circle + bottom sheet */}
+          <View className="items-center">
+            {/* Emoji circle — overlaps the top of the sheet by 50px */}
+            <View
+              className="w-[100px] h-[100px] rounded-full bg-[#FFE6EE] items-center justify-center z-10"
+              style={{
+                marginBottom: -50,
+                shadowColor: "#000",
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.1,
+                shadowRadius: 4,
+                elevation: 4,
+              }}
+            >
+              <Text style={{ fontSize: 52 }}>😄</Text>
+            </View>
+
+            {/* Sheet */}
+            <View
+              className="w-full bg-[#FFE6EE] rounded-t-3xl items-center"
+              style={{ paddingBottom: (insets.bottom || 0) + 32 }}
+            >
+              {/* Space for the 50px emoji overlap + breathing room */}
+              <View className="h-20" />
+
+              {/* Title */}
+              <Text className="font-inter font-medium text-xl text-black tracking-[-0.3px] mb-4">
+                Rate App
+              </Text>
+
+              <View className="h-px bg-[#DBE2E8] w-full" />
+
+              {/* Description */}
+              <Text className="font-inter text-base text-[#222222] text-center mt-7 mb-7 px-5">
+                Empower us by rating the app
+              </Text>
+
+              {/* Stars */}
+              <View className="flex-row gap-2 mb-9">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <TouchableOpacity
+                    key={star}
+                    onPress={() => setRating(star)}
+                    activeOpacity={0.7}
+                  >
+                    <StarIcon filled={star <= rating} size={40} />
+                  </TouchableOpacity>
+                ))}
+              </View>
+
+              {/* Buttons */}
+              <View className="flex-row gap-3 px-5 w-full mb-2">
+                <TouchableOpacity
+                  onPress={() => setRateAppModalVisible(false)}
+                  activeOpacity={0.8}
+                  className="flex-1 h-14 bg-[#FFF5F9] rounded-full items-center justify-center"
+                >
+                  <Text className="font-inter font-medium text-[15px] text-[#FF4081]">
+                    Later
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  onPress={() => setRateAppModalVisible(false)}
+                  activeOpacity={0.8}
+                  className="flex-1 h-14 bg-[#FF4081] rounded-full items-center justify-center"
+                >
+                  <Text className="font-inter font-medium text-[15px] text-white">
+                    Rate Now
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Logout confirmation modal */}
+      <Modal
+        visible={logoutModalVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setLogoutModalVisible(false)}
+      >
+        <View className="flex-1">
+          {/* Blur overlay */}
+          <BlurView intensity={20} tint="dark" className="flex-1">
+            <Pressable
+              className="flex-1"
+              onPress={() => setLogoutModalVisible(false)}
+            />
+          </BlurView>
+
+          {/* Bottom sheet */}
+          <View
+            className="bg-[#FFE6EE] rounded-t-3xl"
+            style={{ paddingBottom: (insets.bottom || 0) + 20 }}
+          >
+            {/* Drag handle */}
+            <View className="w-10 h-[5px] bg-[#FF669A] rounded-full self-center mt-4 mb-6" />
+
+            {/* Title */}
+            <Text className="font-inter font-medium text-xl leading-6 tracking-[-0.3px] text-black text-center mb-6">
+              Log Out
+            </Text>
+
+            {/* Divider */}
+            <View className="h-px bg-[#FFB3CD]" />
+
+            {/* Confirmation text */}
+            <Text className="font-inter text-base leading-[19px] text-[#222222] text-center mt-5 mb-[50px]">
+              Are you sure you want to log out?
+            </Text>
+
+            {/* Buttons */}
+            <View className="flex-row gap-3 px-5">
+              <TouchableOpacity
+                onPress={() => setLogoutModalVisible(false)}
+                activeOpacity={0.8}
+                className="flex-1 h-[50px] bg-[#FFF5F9] rounded-full items-center justify-center"
+              >
+                <Text className="font-inter font-medium text-[15px] text-[#FF4081]">
+                  Cancel
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={() => {
+                  setLogoutModalVisible(false);
+                  router.replace("/(auth)/login" as any);
+                }}
+                activeOpacity={0.8}
+                className="flex-1 h-[50px] bg-[#FF4081] rounded-full items-center justify-center"
+              >
+                <Text className="font-inter font-medium text-[15px] text-white">
+                  Yes, Logout
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Delete Account confirmation modal */}
+      <Modal
+        visible={deleteModalVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setDeleteModalVisible(false)}
+      >
+        <View className="flex-1">
+          {/* Blur overlay */}
+          <BlurView intensity={20} tint="dark" className="flex-1">
+            <Pressable
+              className="flex-1"
+              onPress={() => setDeleteModalVisible(false)}
+            />
+          </BlurView>
+
+          {/* Bottom sheet */}
+          <View
+            className="bg-[#FFE6EE] rounded-t-3xl"
+            style={{ paddingBottom: (insets.bottom || 0) + 20 }}
+          >
+            {/* Drag handle */}
+            <View className="w-10 h-[5px] bg-[#FF669A] rounded-full self-center mt-4 mb-6" />
+
+            {/* Title */}
+            <Text className="font-inter font-medium text-xl leading-6 tracking-[-0.3px] text-black text-center mb-6">
+              Delete Account
+            </Text>
+
+            {/* Divider */}
+            <View className="h-px bg-[#FFB3CD]" />
+
+            {/* Warning text */}
+            <Text className="font-inter text-base leading-6 text-[#222222] text-center mt-5 mb-10 px-12">
+              Are you sure you want to delete this account? All data will be
+              accessible for only 30 days after confirmation.
+            </Text>
+
+            {/* Buttons */}
+            <View className="flex-row gap-3 px-5">
+              <TouchableOpacity
+                onPress={() => setDeleteModalVisible(false)}
+                activeOpacity={0.8}
+                className="flex-1 h-[50px] bg-[#FFF5F9] rounded-full items-center justify-center"
+              >
+                <Text className="font-inter font-medium text-[15px] text-[#FF4081]">
+                  Cancel
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={() => {
+                  setDeleteModalVisible(false);
+                  router.replace("/(auth)/login" as any);
+                }}
+                activeOpacity={0.8}
+                className="flex-1 h-[50px] bg-[#C62828] rounded-full items-center justify-center"
+              >
+                <Text className="font-inter font-medium text-[15px] text-white">
+                  Yes, Delete
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }

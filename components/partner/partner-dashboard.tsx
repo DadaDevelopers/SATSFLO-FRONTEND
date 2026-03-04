@@ -53,7 +53,7 @@ export default function PartnerDashboardScreen() {
                 router.push("/calendar");
                 break;
             case "settings":
-                router.push("/(tabs)/partner-settings");
+                router.push("/test-partner-settings");
                 break;
             case "home":
                 // Already on home

@@ -4,6 +4,7 @@ import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { ThemeProvider } from '@/context/theme-context';
 import '../global.css';
 
 export const unstable_settings = {
@@ -34,16 +35,16 @@ export default function RootLayout() {
 
   return (
     <SafeAreaProvider>
+      <ThemeProvider>
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="splash" />
-        <Stack.Screen name="onboarding" />
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="add-log" />
-        <Stack.Screen name="calendar" />
         <Stack.Screen name="gift-token" />
         <Stack.Screen name="chat" />
         <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
       </Stack>
+      </ThemeProvider>
     </SafeAreaProvider>
   );
 }

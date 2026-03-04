@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, ReactNode } from 'react';
 
 type FlowLevel = 'light' | 'medium' | 'heavy' | 'veryHeavy' | null;
 type Symptom = 'cramps' | 'fatigue' | 'bloating' | 'headache' | 'bellyAches' | 'acne' | 'soreBreasts' | 'cravings';
-type Mood = 'normal' | 'happy' | 'calm' | 'hyped' | 'inLove' | 'peaceful' | 'lonely' | 'angry';
+type Mood = 'normal' | 'happy' | 'calm' | 'hyped' | 'inLove' | 'peaceful' | 'lonely' | 'angry' | 'silly' | 'sad' | 'relaxed';
 type Medicine = 'condom' | 'pill' | 'patch' | 'iud' | 'implant' | 'vRing' | 'injection' | 'spermicide';
 type CupStyle = 'classic' | 'tumbler' | 'tall' | 'mug';
 

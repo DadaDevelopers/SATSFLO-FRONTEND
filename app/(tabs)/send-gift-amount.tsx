@@ -1,9 +1,8 @@
 import { Feather } from '@expo/vector-icons';
-import { BarCodeScanner } from 'expo-barcode-scanner';
 import * as Clipboard from 'expo-clipboard';
 import { router } from 'expo-router';
-import React, { useEffect, useState } from 'react';
-import { Alert, Modal, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import React, { useState } from 'react';
+import { Alert, Pressable, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 type CurrencyType = 'USD' | 'EUR' | 'KES' | 'NGN';
@@ -22,15 +21,6 @@ export default function SendGiftAmountScreen() {
   const [note, setNote] = useState('');
   const [currency, setCurrency] = useState<CurrencyType>('USD');
   const [showCurrencyDropdown, setShowCurrencyDropdown] = useState(false);
-  const [showQRScanner, setShowQRScanner] = useState(false);
-  const [hasPermission, setHasPermission] = useState<boolean | null>(null);
-
-  useEffect(() => {
-    (async () => {
-      const { status } = await BarCodeScanner.requestPermissionsAsync();
-      setHasPermission(status === 'granted');
-    })();
-  }, []);
 
   const handleBack = () => {
     if (router.canGoBack()) {
@@ -38,22 +28,8 @@ export default function SendGiftAmountScreen() {
     }
   };
 
-  const handleScanQR = async () => {
-    if (hasPermission === null) {
-      Alert.alert('Camera Permission', 'Requesting camera permission...');
-      return;
-    }
-    if (hasPermission === false) {
-      Alert.alert('No Camera Access', 'Please grant camera permission in your device settings to scan QR codes');
-      return;
-    }
-    setShowQRScanner(true);
-  };
-
-  const handleBarCodeScanned = ({ type, data }: { type: string; data: string }) => {
-    setShowQRScanner(false);
-    setDestination(data);
-    Alert.alert('QR Code Scanned', `Destination set to: ${data}`);
+  const handleScanQR = () => {
+    Alert.alert('QR Scanning', 'Please type or paste the destination address manually.');
   };
 
   const handlePaste = async () => {
@@ -264,29 +240,6 @@ export default function SendGiftAmountScreen() {
           </View>
         </View>
       </View>
-
-      {/* QR Scanner Modal */}
-      {showQRScanner && (
-        <Modal visible={showQRScanner} transparent={false} animationType="slide">
-          <View className="flex-1 bg-black">
-            <BarCodeScanner
-              onBarCodeScanned={handleBarCodeScanned}
-              style={StyleSheet.absoluteFillObject}
-            />
-            <Pressable
-              onPress={() => setShowQRScanner(false)}
-              className="absolute top-12 right-4 bg-white/90 p-3 rounded-full z-10"
-            >
-              <Feather name="x" size={24} color="#000" />
-            </Pressable>
-            <View className="absolute bottom-20 left-0 right-0 items-center">
-              <Text className="text-white text-base font-inter font-medium bg-black/70 px-6 py-3 rounded-lg">
-                Point camera at QR code
-              </Text>
-            </View>
-          </View>
-        </Modal>
-      )}
 
       {/* Bottom Section */}
       <View className="flex-1" />

@@ -49,10 +49,10 @@ export default function HomeScreen() {
         router.push("/add-log");
         break;
       case "chat":
-        router.push("/(tabs)/thread");
+        router.push("/(tabs)/thread" as any);
         break;
       case "settings":
-        router.push("/(tabs)/settings");
+        router.push("/(tabs)/settings" as any);
         break;
       default:
         break;

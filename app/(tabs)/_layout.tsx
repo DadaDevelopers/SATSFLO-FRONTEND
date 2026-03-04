@@ -169,6 +169,62 @@ export default function TabLayout() {
           href: null,
         }}
       />
+      <Tabs.Screen
+        name="luteal-phase-settings"
+        options={{
+          title: "Luteal Phase Length",
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="reminders"
+        options={{
+          title: "Reminders",
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="invite-partner"
+        options={{
+          title: "Invite Partner",
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="sharing-invite"
+        options={{
+          title: "Sharing Options",
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="generate-invite"
+        options={{
+          title: "Generate Code",
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="partner-pairing-success"
+        options={{
+          title: "Partner Pairing Successful",
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="made-for-you"
+        options={{
+          title: "Made For You",
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="whats-your-partner-name"
+        options={{
+          title: "What's Your Partner Name",
+          href: null,
+        }}
+      />
     </Tabs>
   );
 }
