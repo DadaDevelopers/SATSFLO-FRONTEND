@@ -21,7 +21,7 @@ export default function StartPartnershipScreen() {
 
     const handleStartJourney = () => {
         // Proceed to the core dashboard
-        router.replace("/(tabs)/partner-dashboard" as any);
+        router.replace("/partner" as any);
     };
 
     return (

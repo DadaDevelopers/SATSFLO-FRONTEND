@@ -28,7 +28,7 @@ export default function WhatsYourPartnerNameScreen() {
         </TouchableOpacity>
 
         <TouchableOpacity
-          onPress={() => router.push("/(tabs)/index" as any)}
+          onPress={() => router.push("/(tabs)/partner-nickname" as any)}
           activeOpacity={0.7}
         >
           <Text className="font-inter font-medium text-[14px] text-[#FAFAFA] tracking-[-0.3px]">
@@ -62,7 +62,7 @@ export default function WhatsYourPartnerNameScreen() {
       {/* Done button */}
       <View className="items-center pb-7">
         <TouchableOpacity
-          onPress={() => router.push("/(tabs)/index" as any)}
+          onPress={() => router.push("/(tabs)/partner-nickname" as any)}
           activeOpacity={0.8}
           className="w-[250px] h-14 bg-[#FF82AD] rounded-full items-center justify-center"
         >

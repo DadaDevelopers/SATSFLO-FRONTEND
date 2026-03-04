@@ -50,10 +50,10 @@ export default function PartnerDashboardScreen() {
         setActiveTab(tab);
         switch (tab) {
             case "calendar":
-                router.push("/calendar");
+                router.push("/partner/calendar" as any);
                 break;
             case "settings":
-                router.push("/test-partner-settings");
+                router.push("/partner/settings" as any);
                 break;
             case "home":
                 // Already on home

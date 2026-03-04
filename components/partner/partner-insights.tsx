@@ -26,10 +26,10 @@ export default function PartnerInsightsScreen() {
         setActiveTab(tab);
         switch (tab) {
             case "calendar":
-                router.push("/test-partner-calendar" as any);
+                router.push("/partner/calendar" as any);
                 break;
             case "settings":
-                router.push("/test-partner-settings" as any);
+                router.push("/partner/settings" as any);
                 break;
             case "home":
                 // Already on home
