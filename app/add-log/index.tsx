@@ -8,6 +8,7 @@ import {
   FlatList,
   useWindowDimensions,
   Modal,
+  Image,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -27,6 +28,17 @@ const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 
 const MONTHS_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
 const DATE_ITEM_SIZE = 60;
+
+const MEDICINE_IMAGES: Record<string, ReturnType<typeof require>> = {
+  condom:     require('@/assets/images/condom.png'),
+  pill:       require('@/assets/images/pill.png'),
+  patch:      require('@/assets/images/patch.png'),
+  iud:        require('@/assets/images/IUD.png'),
+  implant:    require('@/assets/images/implant.png'),
+  vRing:      require('@/assets/images/V-ring.png'),
+  injection:  require('@/assets/images/injection.png'),
+  spermicide: require('@/assets/images/spermicide.png'),
+};
 
 // Generate dates for the horizontal scroll
 const generateDates = () => {
@@ -562,7 +574,7 @@ export default function AddLogScreen() {
                 {day ? (
                   <TouchableOpacity onPress={() => handleDateSelect(day.fullDate)}>
                     <View className={`w-9 h-9 rounded-full items-center justify-center ${day.isSelected ? 'bg-white' : day.isPeriodDay ? 'bg-pink-700' : day.isToday ? 'bg-pink-300' : ''}`}>
-                      <Text className={`text-sm ${day.isSelected ? 'text-pink-500 font-semibold' : 'text-white'}`}>{day.date}</Text>
+                      <Text className={`text-base ${day.isSelected ? 'text-pink-500 font-semibold' : 'text-white'}`}>{day.date}</Text>
                     </View>
                     {day.isPeriodDay && <View className="w-1.5 h-1.5 rounded-full bg-white mt-0.5 self-center" />}
                   </TouchableOpacity>
@@ -602,7 +614,7 @@ export default function AddLogScreen() {
         </View>
       )}
 
-      <ScrollView className="flex-1 px-4" contentContainerStyle={{ paddingBottom: 100 }} showsVerticalScrollIndicator={false}>
+      <ScrollView className="flex-1 px-4" contentContainerStyle={{ paddingBottom: 100, paddingTop: 12 }} showsVerticalScrollIndicator={false}>
         {/* Period */}
         <Section title="Period" showChevron={false} showEditIcon={true} onEditPress={handleEditPeriod}>
           <View className="flex-row gap-2">
@@ -709,8 +721,9 @@ export default function AddLogScreen() {
           {dayData.medicine.length > 0 ? (
             <View className="flex-row flex-wrap">
               {dayData.medicine.map(m => (
-                <View key={m} className="bg-pink-100 rounded-full px-3 py-1.5 mr-2 mb-2">
-                  <Text className="text-pink-500 text-sm">{medicineLabels[m]}</Text>
+                <View key={m} className="items-center mr-4 mb-2">
+                  <Image source={MEDICINE_IMAGES[m]} style={{ width: 40, height: 40 }} resizeMode="contain" />
+                  <Text className="text-pink-500 text-xs mt-1">{medicineLabels[m]}</Text>
                 </View>
               ))}
             </View>
@@ -780,8 +793,29 @@ export default function AddLogScreen() {
                   }}
                   className="items-center"
                 >
-                  <WaterCup filled={cupFilled} />
-                  <Text className={`text-xs mt-1 ${cupFilled ? 'text-blue-400' : 'text-gray-500'}`}>+{amount} ml</Text>
+                  <Svg width={60} height={60} viewBox="0 0 60 60" fill="none">
+                    {/* Circle border */}
+                    <Path
+                      d="M30 58C45.464 58 58 45.464 58 30C58 14.536 45.464 2 30 2C14.536 2 2 14.536 2 30C2 45.464 14.536 58 30 58Z"
+                      stroke={cupFilled ? "#FF4081" : "#FFE4ED"}
+                      strokeWidth={2}
+                      fill="none"
+                    />
+                    {/* Glass body */}
+                    <Path
+                      d="M20 18L22 44H38L40 18H20Z"
+                      fill="#BBCAFF"
+                    />
+                    {/* Water fill */}
+                    <Path
+                      d="M21.5 30L22 44H38L38.5 30H21.5Z"
+                      fill="#4770FD"
+                    />
+                    {/* Bubble dots */}
+                    <Path d="M28 35C28.5523 35 29 34.5523 29 34C29 33.4477 28.5523 33 28 33C27.4477 33 27 33.4477 27 34C27 34.5523 27.4477 35 28 35Z" fill="#BBCAFF" />
+                    <Path d="M33 38C33.5523 38 34 37.5523 34 37C34 36.4477 33.5523 36 33 36C32.4477 36 32 36.4477 32 37C32 37.5523 32.4477 38 33 38Z" fill="#BBCAFF" />
+                  </Svg>
+                  <Text style={{ fontSize: 11, marginTop: 4, color: cupFilled ? '#FF4081' : '#666666' }}>{amount}ml</Text>
                 </TouchableOpacity>
               );
             })}
@@ -790,10 +824,45 @@ export default function AddLogScreen() {
       </ScrollView>
 
         {/* Save */}
-        <View className="absolute bottom-0 left-0 right-0 px-4 pb-8 pt-4 bg-signup-bg" style={{ paddingBottom: insets.bottom + 20 }}>
-          <TouchableOpacity onPress={handleSave} className="bg-pink-300 py-4 rounded-full items-center">
-            <Text className="text-white font-semibold text-base">Save</Text>
+        <View style={{ alignItems: "center", backgroundColor: "#FF3378" }}>
+          <TouchableOpacity
+            onPress={handleSave}
+            style={{
+              width: 250,
+              height: 56,
+              backgroundColor: "#FF82AD",
+              borderWidth: 0.5,
+              borderColor: "#FF669A",
+              borderRadius: 1000,
+              alignItems: "center",
+              justifyContent: "center",
+              marginTop: 16,
+              marginBottom: 20,
+            }}
+            activeOpacity={0.8}
+          >
+            <Text
+              style={{
+                fontFamily: "Inter",
+                fontWeight: "500",
+                fontSize: 15,
+                lineHeight: 18,
+                color: "#FFFFFF",
+                textAlign: "center",
+              }}
+            >
+              Save
+            </Text>
           </TouchableOpacity>
+          <View
+            style={{
+              width: 134,
+              height: 5,
+              backgroundColor: "#FF99BC",
+              borderRadius: 100,
+              marginBottom: insets.bottom + 8,
+            }}
+          />
         </View>
       </View>
 

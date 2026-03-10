@@ -1,32 +1,59 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
-import { useRouter } from 'expo-router';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Svg, { Path } from 'react-native-svg';
-import { useAddLog } from '@/context/add-log-context';
-import { useResponsive } from '@/hooks/use-responsive';
-import {
-  SymptomCramps,
-  SymptomFatigue,
-  SymptomBloating,
-  SymptomHeadache,
-  SymptomBellyAches,
-  SymptomAcne,
-  SymptomSoreBreasts,
-  SymptomCravings,
-} from '@/components/add-log/icons';
+import { useAddLog } from "@/context/add-log-context";
+import { useResponsive } from "@/hooks/use-responsive";
+import { useRouter } from "expo-router";
+import React from "react";
+import { Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import Svg, { Path } from "react-native-svg";
 
-type Symptom = 'cramps' | 'fatigue' | 'bloating' | 'headache' | 'bellyAches' | 'acne' | 'soreBreasts' | 'cravings';
+function CrampsImage({ size = 24 }: { size?: number; color?: string }) {
+  return <Image source={require("@/assets/images/cramps.png")} style={{ width: size, height: size }} resizeMode="contain" />;
+}
+function FatigueImage({ size = 24 }: { size?: number; color?: string }) {
+  return <Image source={require("@/assets/images/fatigue.png")} style={{ width: size, height: size }} resizeMode="contain" />;
+}
+function BloatingImage({ size = 24 }: { size?: number; color?: string }) {
+  return <Image source={require("@/assets/images/bloating.png")} style={{ width: size, height: size }} resizeMode="contain" />;
+}
+function HeadacheImage({ size = 24 }: { size?: number; color?: string }) {
+  return <Image source={require("@/assets/images/headache.png")} style={{ width: size, height: size }} resizeMode="contain" />;
+}
+function BellyAchesImage({ size = 24 }: { size?: number; color?: string }) {
+  return <Image source={require("@/assets/images/bellyaches.png")} style={{ width: size, height: size }} resizeMode="contain" />;
+}
+function AcneImage({ size = 24 }: { size?: number; color?: string }) {
+  return <Image source={require("@/assets/images/acne.png")} style={{ width: size, height: size }} resizeMode="contain" />;
+}
+function SoreBreastsImage({ size = 24 }: { size?: number; color?: string }) {
+  return <Image source={require("@/assets/images/sorebreasts.png")} style={{ width: size, height: size }} resizeMode="contain" />;
+}
+function CravingsImage({ size = 24 }: { size?: number; color?: string }) {
+  return <Image source={require("@/assets/images/cravings.png")} style={{ width: size, height: size }} resizeMode="contain" />;
+}
 
-const SYMPTOMS: { id: Symptom; label: string; Icon: React.FC<{ size?: number; color?: string }> }[] = [
-  { id: 'cramps',      label: 'Cramps',       Icon: SymptomCramps },
-  { id: 'fatigue',     label: 'Fatigue',      Icon: SymptomFatigue },
-  { id: 'bloating',    label: 'Bloating',     Icon: SymptomBloating },
-  { id: 'headache',    label: 'Headache',     Icon: SymptomHeadache },
-  { id: 'bellyAches',  label: 'Belly aches',  Icon: SymptomBellyAches },
-  { id: 'acne',        label: 'Acne',         Icon: SymptomAcne },
-  { id: 'soreBreasts', label: 'Sore breasts', Icon: SymptomSoreBreasts },
-  { id: 'cravings',    label: 'Cravings',     Icon: SymptomCravings },
+type Symptom =
+  | "cramps"
+  | "fatigue"
+  | "bloating"
+  | "headache"
+  | "bellyAches"
+  | "acne"
+  | "soreBreasts"
+  | "cravings";
+
+const SYMPTOMS: {
+  id: Symptom;
+  label: string;
+  Icon: React.FC<{ size?: number; color?: string }>;
+}[] = [
+  { id: "cramps",      label: "Cramps",       Icon: CrampsImage },
+  { id: "fatigue",     label: "Fatigue",      Icon: FatigueImage },
+  { id: "bloating",    label: "Bloating",     Icon: BloatingImage },
+  { id: "headache",    label: "Headache",     Icon: HeadacheImage },
+  { id: "bellyAches",  label: "Belly aches",  Icon: BellyAchesImage },
+  { id: "acne",        label: "Acne",         Icon: AcneImage },
+  { id: "soreBreasts", label: "Sore breasts", Icon: SoreBreastsImage },
+  { id: "cravings",    label: "Cravings",     Icon: CravingsImage },
 ];
 
 // 4 items per row — matches Figma Frame 170/171 layout (gap: 40px, width: 320px)
@@ -49,12 +76,11 @@ export default function SymptomsScreen() {
       }}
     >
       <View className="flex-1" style={containerStyle}>
-
         {/* Header — Frame 133: top 87px, height 24px */}
         <View
           style={{
-            flexDirection: 'row',
-            alignItems: 'center',
+            flexDirection: "row",
+            alignItems: "center",
             marginTop: 28,
             marginHorizontal: 20,
             height: 24,
@@ -62,7 +88,12 @@ export default function SymptomsScreen() {
         >
           <TouchableOpacity
             onPress={() => router.back()}
-            style={{ width: 24, height: 20, alignItems: 'center', justifyContent: 'center' }}
+            style={{
+              width: 24,
+              height: 20,
+              alignItems: "center",
+              justifyContent: "center",
+            }}
             activeOpacity={0.7}
           >
             <Svg width={18} height={15} viewBox="0 0 18 15" fill="none">
@@ -73,15 +104,15 @@ export default function SymptomsScreen() {
             </Svg>
           </TouchableOpacity>
 
-          <View style={{ flex: 1, alignItems: 'center' }}>
+          <View style={{ flex: 1, alignItems: "center" }}>
             <Text
               style={{
-                fontFamily: 'Inter',
-                fontWeight: '500',
+                fontFamily: "Inter",
+                fontWeight: "500",
                 fontSize: 20,
                 lineHeight: 24,
                 letterSpacing: -0.3,
-                color: '#FFFFFF',
+                color: "#FFFFFF",
               }}
             >
               Symptoms
@@ -105,12 +136,12 @@ export default function SymptomsScreen() {
             style={{
               marginHorizontal: 20,
               marginTop: 20,
-              backgroundColor: '#FFE6EE',
+              backgroundColor: "#FFE6EE",
               borderRadius: 16,
               padding: 16,
               gap: 25,
-              alignItems: 'center',
-              justifyContent: 'center',
+              alignItems: "center",
+              justifyContent: "center",
             }}
           >
             {ROWS.map((row, rowIndex) => (
@@ -118,8 +149,8 @@ export default function SymptomsScreen() {
               <View
                 key={rowIndex}
                 style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
+                  flexDirection: "row",
+                  alignItems: "center",
                   gap: 40,
                   width: 320,
                   height: 69,
@@ -133,7 +164,7 @@ export default function SymptomsScreen() {
                       key={id}
                       onPress={() => toggleSymptom(id)}
                       style={{
-                        alignItems: 'center',
+                        alignItems: "center",
                         gap: 4,
                         width: 50,
                         height: 69,
@@ -146,26 +177,26 @@ export default function SymptomsScreen() {
                           width: 50,
                           height: 50,
                           borderRadius: 1000,
-                          backgroundColor: isSelected ? '#FF82AD' : '#FFCCDD',
-                          alignItems: 'center',
-                          justifyContent: 'center',
+                          backgroundColor: isSelected ? "#FF82AD" : "#FFCCDD",
+                          alignItems: "center",
+                          justifyContent: "center",
                         }}
                       >
                         <Icon
                           size={24}
-                          color={isSelected ? '#FFFFFF' : '#FF6B9D'}
+                          color={isSelected ? "#FFFFFF" : "#FF6B9D"}
                         />
                       </View>
 
                       {/* Label: Inter 400, 12px, #1E1E1E */}
                       <Text
                         style={{
-                          fontFamily: 'Inter',
-                          fontWeight: '400',
+                          fontFamily: "Inter",
+                          fontWeight: "400",
                           fontSize: 12,
                           lineHeight: 15,
-                          color: '#1E1E1E',
-                          textAlign: 'center',
+                          color: "#1E1E1E",
+                          textAlign: "center",
                         }}
                         numberOfLines={1}
                         adjustsFontSizeToFit
@@ -181,32 +212,31 @@ export default function SymptomsScreen() {
         </ScrollView>
 
         {/* Bottom section — Frame 116: column, align-items center, gap 20px, height 110px */}
-        <View style={{ alignItems: 'center' }}>
-
+        <View style={{ alignItems: "center" }}>
           {/* Save button — Buttonss: 250×56, #FF82AD, border #FF669A, radius 1000px */}
           <TouchableOpacity
             onPress={() => router.back()}
             style={{
               width: 250,
               height: 56,
-              backgroundColor: '#FF82AD',
+              backgroundColor: "#FF82AD",
               borderWidth: 0.5,
-              borderColor: '#FF669A',
+              borderColor: "#FF669A",
               borderRadius: 1000,
-              alignItems: 'center',
-              justifyContent: 'center',
+              alignItems: "center",
+              justifyContent: "center",
               marginBottom: 20,
             }}
             activeOpacity={0.8}
           >
             <Text
               style={{
-                fontFamily: 'Inter',
-                fontWeight: '500',
+                fontFamily: "Inter",
+                fontWeight: "500",
                 fontSize: 15,
                 lineHeight: 18,
-                color: '#FFFFFF',
-                textAlign: 'center',
+                color: "#FFFFFF",
+                textAlign: "center",
               }}
             >
               Save
@@ -216,11 +246,11 @@ export default function SymptomsScreen() {
           {/* Home indicator strip — #FF3378, height 34px + insets */}
           <View
             style={{
-              width: '100%',
+              width: "100%",
               height: 34 + (isDesktop ? 0 : insets.bottom),
-              backgroundColor: '#FF3378',
-              alignItems: 'center',
-              justifyContent: 'flex-end',
+              backgroundColor: "#FF3378",
+              alignItems: "center",
+              justifyContent: "flex-end",
               paddingBottom: 8,
             }}
           >
@@ -229,13 +259,12 @@ export default function SymptomsScreen() {
               style={{
                 width: 134,
                 height: 5,
-                backgroundColor: '#FF99BC',
+                backgroundColor: "#FF99BC",
                 borderRadius: 100,
               }}
             />
           </View>
         </View>
-
       </View>
     </View>
   );
