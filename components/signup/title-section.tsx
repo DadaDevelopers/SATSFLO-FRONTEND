@@ -15,7 +15,7 @@ export function TitleSection({
   className = 'mb-5',
 }: TitleSectionProps) {
   return (
-    <View className={`gap-4 ${className}`}>
+    <View className={`gap-1 ${className}`}>
       <View className="flex-row justify-between items-center">
         <Text className="text-2xl font-semibold leading-[29px] text-signup-title flex-1">
           {title}

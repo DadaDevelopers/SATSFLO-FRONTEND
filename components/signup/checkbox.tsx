@@ -1,5 +1,6 @@
 import React from 'react';
 import { TouchableOpacity, View, Text } from 'react-native';
+import Svg, { Path } from 'react-native-svg';
 import { cn } from '@/lib/utils';
 
 type CheckboxProps = {
@@ -17,24 +18,16 @@ export function Checkbox({ checked, onToggle, label, className }: CheckboxProps)
       activeOpacity={0.7}
     >
       <View
-        className={cn(
-          'w-5 h-5 border-[1.5px] border-signup-checkbox-border rounded justify-center items-center',
-          checked && 'bg-signup-button-border border-signup-button-border'
-        )}
+        className="w-5 h-5 border-[1.5px] border-signup-checkbox-border rounded justify-center items-center"
+        style={checked ? { backgroundColor: '#FAFAFA', borderColor: '#FAFAFA' } : undefined}
       >
         {checked && (
-          <View className="w-3 h-[10px] relative">
-            {/* Checkmark short line */}
-            <View
-              className="absolute w-[5px] h-0.5 bg-signup-title bottom-[3px] left-0"
-              style={{ transform: [{ rotate: '45deg' }] }}
+          <Svg width={13} height={13} viewBox="0 0 13 13" fill="none">
+            <Path
+              d="M9.35375 4.64625C9.40024 4.69269 9.43712 4.74783 9.46228 4.80853C9.48744 4.86923 9.5004 4.93429 9.5004 5C9.5004 5.06571 9.48744 5.13077 9.46228 5.19147C9.43712 5.25217 9.40024 5.30731 9.35375 5.35375L5.85375 8.85375C5.80732 8.90024 5.75217 8.93712 5.69147 8.96228C5.63077 8.98744 5.56571 9.00039 5.5 9.00039C5.4343 9.00039 5.36923 8.98744 5.30853 8.96228C5.24783 8.93712 5.19269 8.90024 5.14625 8.85375L3.64625 7.35375C3.55243 7.25993 3.49972 7.13268 3.49972 7C3.49972 6.86732 3.55243 6.74007 3.64625 6.64625C3.74007 6.55243 3.86732 6.49972 4 6.49972C4.13268 6.49972 4.25993 6.55243 4.35375 6.64625L5.5 7.79313L8.64625 4.64625C8.69269 4.59976 8.74783 4.56288 8.80853 4.53772C8.86923 4.51256 8.93429 4.49961 9 4.49961C9.06571 4.49961 9.13077 4.51256 9.19147 4.53772C9.25217 4.56288 9.30732 4.59976 9.35375 4.64625Z"
+              fill="#FF4081"
             />
-            {/* Checkmark long line */}
-            <View
-              className="absolute w-[10px] h-0.5 bg-signup-title bottom-1 left-[3px]"
-              style={{ transform: [{ rotate: '-45deg' }] }}
-            />
-          </View>
+          </Svg>
         )}
       </View>
       <Text className="text-xs font-normal leading-[18px] text-signup-body">{label}</Text>

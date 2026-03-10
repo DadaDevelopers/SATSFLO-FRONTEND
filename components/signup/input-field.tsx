@@ -29,7 +29,7 @@ export function InputField({
       )}
     >
       <TextInput
-        className={cn('flex-1 text-sm font-medium leading-5 text-[#333333] p-0', className)}
+        className={cn('flex-1 text-sm font-medium leading-5 text-[#090909] p-0', className)}
         placeholderTextColor="#666666"
         secureTextEntry={showPasswordToggle ? !isPasswordVisible : secureTextEntry}
         {...props}

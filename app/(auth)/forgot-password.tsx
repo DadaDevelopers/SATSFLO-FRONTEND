@@ -1,30 +1,30 @@
-import React, { useState } from 'react';
-import { View, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
-import { useRouter } from 'expo-router';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { InputField } from '@/components/signup/input-field';
-import { PrimaryButton } from '@/components/signup/primary-button';
-import { BackButton } from '@/components/signup/back-button';
-import { HomeIndicatorArea } from '@/components/signup/home-indicator-area';
-import { TitleSection } from '@/components/signup/title-section';
+import { BackButton } from "@/components/signup/back-button";
+import { HomeIndicatorArea } from "@/components/signup/home-indicator-area";
+import { InputField } from "@/components/signup/input-field";
+import { PrimaryButton } from "@/components/signup/primary-button";
+import { TitleSection } from "@/components/signup/title-section";
+import { useRouter } from "expo-router";
+import React, { useState } from "react";
+import { KeyboardAvoidingView, Platform, ScrollView, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function ForgotPasswordScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState("");
 
-  const isFormValid = email.trim() !== '';
+  const isFormValid = email.trim() !== "";
 
   const handleRecoverPassword = () => {
     if (isFormValid) {
-      router.push('/(auth)/otp-verification');
+      router.push("/(auth)/otp-verification");
     }
   };
 
   return (
     <View className="flex-1 bg-signup-bg" style={{ paddingTop: insets.top }}>
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
         className="flex-1"
       >
         <ScrollView
@@ -47,7 +47,7 @@ export default function ForgotPasswordScreen() {
             <TitleSection
               title="Forgot Password"
               subtitle="Please, enter email address registered with this account to request for a new password."
-              className="mb-10"
+              className="mb-4"
             />
 
             {/* Form Section */}

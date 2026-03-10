@@ -91,8 +91,8 @@ export default function OtpVerificationScreen() {
               >
                 <Text
                   className={cn(
-                    'text-sm font-normal text-signup-body',
-                    canResend && 'text-signup-title font-semibold underline'
+                    'text-sm font-normal text-[#FAFAFA]',
+                    canResend && 'font-semibold underline'
                   )}
                 >
                   {canResend ? 'Resend code' : `Resend code in ${countdown}s`}
