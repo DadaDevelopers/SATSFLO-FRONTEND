@@ -23,7 +23,7 @@ module.exports = {
           bg: '#FF4081',
           'input-bg': '#FFD6E4',
           'input-border': '#FFB3CD',
-          'button-bg': '#FFB9D1',
+          'button-bg': '#FF82AD',
           'button-border': '#FF99BC',
           'title': '#FFFFFF',
           'placeholder': '#666666',

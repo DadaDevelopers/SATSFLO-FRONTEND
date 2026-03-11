@@ -1,20 +1,21 @@
-import React, { useState } from 'react';
+import { BackButton } from "@/components/signup/back-button";
+import { Checkbox } from "@/components/signup/checkbox";
+import { HomeIndicatorArea } from "@/components/signup/home-indicator-area";
+import { InputField } from "@/components/signup/input-field";
+import { PrimaryButton } from "@/components/signup/primary-button";
+import { TitleSection } from "@/components/signup/title-section";
+import { useRouter } from "expo-router";
+import React, { useState } from "react";
 import {
-  View,
-  Text,
-  TouchableOpacity,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  Text,
+  TouchableOpacity,
   useWindowDimensions,
-} from 'react-native';
-import { useRouter } from 'expo-router';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { InputField } from '@/components/signup/input-field';
-import { PrimaryButton } from '@/components/signup/primary-button';
-import { Checkbox } from '@/components/signup/checkbox';
-import { HomeIndicatorArea } from '@/components/signup/home-indicator-area';
-import { TitleSection } from '@/components/signup/title-section';
+  View,
+} from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const MAX_CONTENT_WIDTH = 480;
 
@@ -23,58 +24,62 @@ export default function SignupScreen() {
   const insets = useSafeAreaInsets();
   const { width: screenWidth } = useWindowDimensions();
   const isDesktop = screenWidth > MAX_CONTENT_WIDTH;
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [agreeToTerms, setAgreeToTerms] = useState(false);
 
   const isFormValid =
-    name.trim() !== '' &&
-    email.trim() !== '' &&
-    password.trim() !== '' &&
-    confirmPassword.trim() !== '' &&
+    name.trim() !== "" &&
+    email.trim() !== "" &&
+    password.trim() !== "" &&
+    confirmPassword.trim() !== "" &&
     password === confirmPassword &&
     agreeToTerms;
 
   const handleNext = () => {
     if (isFormValid) {
-      router.push('/(auth)/cycle-length');
+      router.push("/(auth)/cycle-length");
     }
   };
 
   const handleSignIn = () => {
-    router.push('/(auth)/login');
+    router.push("/(auth)/login");
   };
 
   return (
     <View
       className="flex-1"
       style={{
-        backgroundColor: isDesktop ? '#f5f5f5' : '#FF4081',
+        backgroundColor: isDesktop ? "#f5f5f5" : "#FF4081",
         paddingTop: isDesktop ? 20 : insets.top,
         paddingBottom: isDesktop ? 20 : 0,
       }}
     >
       <View
         className="flex-1"
-        style={isDesktop ? {
-          maxWidth: MAX_CONTENT_WIDTH,
-          maxHeight: 844,
-          width: '100%',
-          alignSelf: 'center',
-          backgroundColor: '#FF4081',
-          shadowColor: '#000',
-          shadowOffset: { width: 0, height: 4 },
-          shadowOpacity: 0.2,
-          shadowRadius: 16,
-          elevation: 8,
-          borderRadius: 24,
-          overflow: 'hidden',
-        } : undefined}
+        style={
+          isDesktop
+            ? {
+                maxWidth: MAX_CONTENT_WIDTH,
+                maxHeight: 844,
+                width: "100%",
+                alignSelf: "center",
+                backgroundColor: "#FF4081",
+                shadowColor: "#000",
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: 0.2,
+                shadowRadius: 16,
+                elevation: 8,
+                borderRadius: 24,
+                overflow: "hidden",
+              }
+            : undefined
+        }
       >
         <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
           className="flex-1"
         >
           <ScrollView
@@ -88,11 +93,14 @@ export default function SignupScreen() {
           >
             {/* Content */}
             <View className="w-full pt-12 pb-8">
+              {/* Back Arrow */}
+              <BackButton />
+
               {/* Title Section */}
               <TitleSection
                 title="Create Account"
                 subtitle="Sign up with Satsflo to start tracking your cycle today."
-                className="mb-10"
+                className="mb-10 mt-4"
               />
 
               {/* Form Section */}
@@ -148,15 +156,17 @@ export default function SignupScreen() {
           {/* Bottom Section - Fixed at bottom */}
           <View className="px-6 pb-4 pt-4">
             <View className="items-center gap-4">
-              <PrimaryButton
-                title={isFormValid ? 'Next' : 'Sign up'}
-                onPress={handleNext}
-                disabled={!isFormValid}
-              />
-              <TouchableOpacity onPress={handleSignIn} activeOpacity={0.7} className="py-3">
+              <PrimaryButton title="Sign up" onPress={handleNext} />
+              <TouchableOpacity
+                onPress={handleSignIn}
+                activeOpacity={0.7}
+                className="py-3"
+              >
                 <Text className="text-sm font-normal leading-[17px] text-center text-signup-link">
-                  Already have an account?{' '}
-                  <Text className="font-semibold text-signup-title">Sign In</Text>
+                  Already have an account?{" "}
+                  <Text className="font-semibold text-signup-title">
+                    Sign In
+                  </Text>
                 </Text>
               </TouchableOpacity>
             </View>
