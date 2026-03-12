@@ -6,9 +6,10 @@ import { LutealPhaseModal } from "@/components/home/luteal-phase-modal";
 import { MenstrualPhaseModal } from "@/components/home/menstrual-phase-modal";
 import { OvulationPhaseModal } from "@/components/home/ovulation-phase-modal";
 import { PhaseLegend } from "@/components/home/phase-legend";
+import { cycleProfileService, CycleProfileWithPredictions } from "@/services/cycle-profile.service";
 import { Feather } from "@expo/vector-icons";
 import { router } from "expo-router";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Image,
   ScrollView,
@@ -28,14 +29,30 @@ export default function HomeScreen() {
   const [showFollicularModal, setShowFollicularModal] = useState(false);
   const [showLutealModal, setShowLutealModal] = useState(false);
   const [showOvulationModal, setShowOvulationModal] = useState(false);
+  const [cycleProfile, setCycleProfile] = useState<CycleProfileWithPredictions | null>(null);
 
-  // Sample data - in a real app, this would come from user's data/state
+  useEffect(() => {
+    cycleProfileService.get().then(setCycleProfile).catch(() => {});
+  }, []);
+
+  // Derive display values from API data; fall back to sensible defaults while loading
+  const today = new Date();
+  const formattedDate = today.toLocaleDateString("en-US", { month: "long", day: "numeric" }) + (
+    (() => {
+      const d = today.getDate();
+      const s = ["th","st","nd","rd"];
+      const v = d % 100;
+      return s[(v - 20) % 10] ?? s[v] ?? s[0];
+    })()
+  );
   const cycleData = {
-    currentDay: 26,
-    cycleLength: 31,
-    periodLength: 5,
-    daysUntilPeriod: 13,
-    currentDate: "October 26th",
+    currentDay: cycleProfile
+      ? cycleProfile.cycle_length - cycleProfile.days_until_next_period
+      : 1,
+    cycleLength: cycleProfile?.cycle_length ?? 28,
+    periodLength: cycleProfile?.period_length ?? 5,
+    daysUntilPeriod: cycleProfile?.days_until_next_period ?? 0,
+    currentDate: formattedDate,
   };
 
   const handleTabPress = (tab: TabName) => {

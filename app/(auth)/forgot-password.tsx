@@ -3,21 +3,35 @@ import { HomeIndicatorArea } from "@/components/signup/home-indicator-area";
 import { InputField } from "@/components/signup/input-field";
 import { PrimaryButton } from "@/components/signup/primary-button";
 import { TitleSection } from "@/components/signup/title-section";
+import { authService } from "@/services/auth.service";
+import { handleApiError } from "@/utils/handleApiError";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
-import { KeyboardAvoidingView, Platform, ScrollView, View } from "react-native";
+import { Alert, KeyboardAvoidingView, Platform, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function ForgotPasswordScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const [email, setEmail] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const isFormValid = email.trim() !== "";
 
-  const handleRecoverPassword = () => {
-    if (isFormValid) {
-      router.push("/(auth)/otp-verification");
+  const handleRecoverPassword = async () => {
+    if (!isFormValid || isSubmitting) return;
+    setIsSubmitting(true);
+    try {
+      await authService.forgotPassword(email.trim());
+      Alert.alert(
+        'Email Sent',
+        'Check your inbox for a password reset link.',
+        [{ text: 'OK', onPress: () => router.back() }]
+      );
+    } catch (err) {
+      Alert.alert('Error', handleApiError(err));
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -68,9 +82,9 @@ export default function ForgotPasswordScreen() {
         <View className="px-6 pb-4 pt-4">
           <View className="items-center">
             <PrimaryButton
-              title="Recover Password"
+              title={isSubmitting ? "Sending..." : "Recover Password"}
               onPress={handleRecoverPassword}
-              disabled={!isFormValid}
+              disabled={!isFormValid || isSubmitting}
             />
           </View>
         </View>

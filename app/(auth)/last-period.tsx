@@ -3,9 +3,11 @@ import { CalendarPicker } from "@/components/signup/calendar-picker";
 import { HomeIndicatorArea } from "@/components/signup/home-indicator-area";
 import { PrimaryButton } from "@/components/signup/primary-button";
 import { TitleSection } from "@/components/signup/title-section";
-import { useRouter } from "expo-router";
+import { cycleProfileService } from "@/services/cycle-profile.service";
+import { handleApiError } from "@/utils/handleApiError";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useState } from "react";
-import { ScrollView, useWindowDimensions, View } from "react-native";
+import { Alert, ScrollView, useWindowDimensions, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const MAX_CONTENT_WIDTH = 480;
@@ -17,12 +19,29 @@ export default function LastPeriodScreen() {
   const isDesktop = screenWidth > MAX_CONTENT_WIDTH;
 
   // Default to a date like October 12 (as shown in the design)
-  const [selectedDate, setSelectedDate] = useState<Date | null>(
-    new Date(2024, 9, 12),
-  );
+  const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
+  const [isSaving, setIsSaving] = useState(false);
+  const { cycleLength, periodLength } = useLocalSearchParams<{
+    cycleLength: string;
+    periodLength: string;
+  }>();
 
-  const handleFinish = () => {
-    router.replace("/(tabs)");
+  const handleFinish = async () => {
+    if (!selectedDate || isSaving) return;
+    setIsSaving(true);
+    try {
+      const last_period_date = selectedDate.toISOString().split('T')[0]; // YYYY-MM-DD
+      await cycleProfileService.upsert({
+        cycle_length: Number(cycleLength ?? 28),
+        period_length: Number(periodLength ?? 5),
+        last_period_date,
+      });
+      router.replace('/(tabs)');
+    } catch (err) {
+      Alert.alert('Setup Failed', handleApiError(err));
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -95,9 +114,9 @@ export default function LastPeriodScreen() {
           <View className="px-5 pb-3 pt-2">
             <View className="items-center">
               <PrimaryButton
-                title="Finish"
+                title={isSaving ? "Saving..." : "Finish"}
                 onPress={handleFinish}
-                disabled={!selectedDate}
+                disabled={!selectedDate || isSaving}
               />
             </View>
           </View>

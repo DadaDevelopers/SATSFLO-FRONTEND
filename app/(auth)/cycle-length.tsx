@@ -19,7 +19,7 @@ export default function CycleLengthScreen() {
   const [selectedLength, setSelectedLength] = useState(27);
 
   const handleNext = () => {
-    router.push("/(auth)/period-length");
+    router.push(`/(auth)/period-length?cycleLength=${selectedLength}` as any);
   };
 
   return (

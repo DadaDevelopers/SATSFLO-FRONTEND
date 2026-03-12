@@ -4,9 +4,12 @@ import { HomeIndicatorArea } from "@/components/signup/home-indicator-area";
 import { InputField } from "@/components/signup/input-field";
 import { PrimaryButton } from "@/components/signup/primary-button";
 import { TitleSection } from "@/components/signup/title-section";
+import { useAuth } from "@/context/auth-context";
+import { handleApiError } from "@/utils/handleApiError";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
+  Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -29,6 +32,8 @@ export default function SignupScreen() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [agreeToTerms, setAgreeToTerms] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { register } = useAuth();
 
   const isFormValid =
     name.trim() !== "" &&
@@ -38,9 +43,17 @@ export default function SignupScreen() {
     password === confirmPassword &&
     agreeToTerms;
 
-  const handleNext = () => {
-    if (isFormValid) {
+  const handleNext = async () => {
+    if (!isFormValid || isSubmitting) return;
+    setIsSubmitting(true);
+    try {
+      await register(name.trim(), email.trim(), password);
+      // Tokens saved — proceed to cycle onboarding
       router.push("/(auth)/cycle-length");
+    } catch (err) {
+      Alert.alert("Sign Up Failed", handleApiError(err));
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -156,7 +169,11 @@ export default function SignupScreen() {
           {/* Bottom Section - Fixed at bottom */}
           <View className="px-6 pb-4 pt-4">
             <View className="items-center gap-4">
-              <PrimaryButton title="Sign up" onPress={handleNext} />
+              <PrimaryButton
+                title={isSubmitting ? "Creating account..." : "Sign up"}
+                onPress={handleNext}
+                disabled={isSubmitting}
+              />
               <TouchableOpacity
                 onPress={handleSignIn}
                 activeOpacity={0.7}

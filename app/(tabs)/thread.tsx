@@ -1,8 +1,11 @@
 import { BottomNavigation } from "@/components/home/bottom-navigation";
+import { Thread, threadService } from "@/services/thread.service";
+import { useAuth } from "@/context/auth-context";
 import { Feather } from "@expo/vector-icons";
 import { router } from "expo-router";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
+  ActivityIndicator,
   Image,
   Pressable,
   ScrollView,
@@ -59,48 +62,45 @@ const getHeaderPath = (tab: TabType): string => {
   }
 };
 
-interface Post {
-  id: string;
-  avatar: any;
-  name: string;
-  handle: string;
-  status: string;
-  content: string;
-  image?: any;
-  comments: string;
-  likes: string;
-}
-
-const posts: Post[] = [
-  {
-    id: "1",
-    avatar: require("@/assets/images/zuri.png"),
-    name: "Zuri Hassan",
-    handle: "@hassan",
-    status: "Active 5m ago",
-    content:
-      "Feeling Anxious\nMy period's a little late, and I'm starting to feel anxious about it. Anyone else get that nervous feeling when your cycle is off? \u{1F61F}",
-    comments: "500",
-    likes: "10",
-  },
-  {
-    id: "2",
-    avatar: require("@/assets/images/zuri.png"),
-    name: "Janet",
-    handle: "@jelly",
-    status: "Online",
-    content: "Crazy cravings with heavy crumps!!",
-    image: require("@/assets/images/cravings.png"),
-    comments: "500",
-    likes: "10",
-  },
-];
-
 type NavTab = "home" | "calendar" | "add" | "chat" | "settings";
 
 export default function ThreadScreen() {
   const insets = useSafeAreaInsets();
   const [activeTab, setActiveTab] = useState<TabType>("threads");
+  const [threads, setThreads] = useState<Thread[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [search, setSearch] = useState("");
+  const { user } = useAuth();
+
+  useEffect(() => {
+    setIsLoading(true);
+    threadService
+      .getThreads({ limit: 20 })
+      .then((res) => setThreads(res?.threads ?? []))
+      .catch(() => {})
+      .finally(() => setIsLoading(false));
+  }, []);
+
+  const handleSearch = (text: string) => {
+    setSearch(text);
+    if (!text.trim()) {
+      threadService.getThreads({ limit: 20 }).then((res) => setThreads(res?.threads ?? [])).catch(() => {});
+      return;
+    }
+    threadService.getThreads({ search: text, limit: 20 }).then((res) => setThreads(res.threads)).catch(() => {});
+  };
+
+  const handleLike = async (threadId: string, liked: boolean) => {
+    try {
+      if (liked) {
+        await threadService.unlike(threadId);
+      } else {
+        await threadService.like(threadId);
+      }
+      // Refresh
+      threadService.getThreads({ limit: 20 }).then((res) => setThreads(res?.threads ?? [])).catch(() => {});
+    } catch {}
+  };
 
   const handleNavTabPress = (tab: NavTab) => {
     switch (tab) {
@@ -198,6 +198,8 @@ export default function ThreadScreen() {
               className="flex-1 text-sm font-inter text-[#1E1E1E]"
               placeholder="Search post"
               placeholderTextColor="rgba(30,30,30,0.46)"
+              value={search}
+              onChangeText={handleSearch}
             />
           </View>
           {/* New Post Button */}
@@ -234,104 +236,111 @@ export default function ThreadScreen() {
         </View>
 
         {/* Posts */}
-        {posts.map((post) => (
-          <View
-            key={post.id}
-            className="bg-[#FFE6EE] rounded-2xl mb-6 overflow-hidden"
-            style={{
-              shadowColor: "#000",
-              shadowOffset: { width: 0, height: 10 },
-              shadowOpacity: 0.1,
-              shadowRadius: 20,
-              elevation: 4,
-            }}
-          >
-            {/* Post Header */}
-            <View className="flex-row items-center px-5 pt-5">
-              {/* Avatar with plus icon */}
-              <View className="relative">
-                <Image
-                  source={post.avatar}
-                  className="w-[56px] h-[56px] rounded-full"
-                  style={{ borderWidth: 4, borderColor: "#FFE6EE" }}
-                  resizeMode="cover"
-                />
-                <View className="absolute bottom-0 right-0 w-4 h-4 rounded-full bg-[#FD71A1] items-center justify-center">
-                  <Feather name="plus" size={10} color="#FFFFFF" />
+        {isLoading ? (
+          <ActivityIndicator color="#FFFFFF" size="large" className="mt-8" />
+        ) : threads.length === 0 ? (
+          <Text className="text-white text-center mt-10 opacity-70">No threads yet. Be the first to post!</Text>
+        ) : (
+          threads.map((thread) => (
+            <Pressable
+              key={thread.id}
+              onPress={() => router.push(`/(tabs)/view-thread?id=${thread.id}` as any)}
+            >
+              <View
+                className="bg-[#FFE6EE] rounded-2xl mb-6 overflow-hidden"
+                style={{
+                  shadowColor: "#000",
+                  shadowOffset: { width: 0, height: 10 },
+                  shadowOpacity: 0.1,
+                  shadowRadius: 20,
+                  elevation: 4,
+                }}
+              >
+                {/* Post Header */}
+                <View className="flex-row items-center px-5 pt-5">
+                  <View className="relative">
+                    {thread.user.avatar_url ? (
+                      <Image
+                        source={{ uri: thread.user.avatar_url }}
+                        className="w-[56px] h-[56px] rounded-full"
+                        style={{ borderWidth: 4, borderColor: "#FFE6EE" }}
+                        resizeMode="cover"
+                      />
+                    ) : (
+                      <View
+                        className="w-[56px] h-[56px] rounded-full bg-[#FFB3CD] items-center justify-center"
+                        style={{ borderWidth: 4, borderColor: "#FFE6EE" }}
+                      >
+                        <Text className="text-white text-lg font-semibold">
+                          {thread.user.name?.[0]?.toUpperCase() ?? "?"}
+                        </Text>
+                      </View>
+                    )}
+                    <View className="absolute bottom-0 right-0 w-4 h-4 rounded-full bg-[#FD71A1] items-center justify-center">
+                      <Feather name="plus" size={10} color="#FFFFFF" />
+                    </View>
+                  </View>
+
+                  <View className="ml-3">
+                    <Text className="text-[13px] font-inter font-semibold text-[#1E1E1E]">
+                      {thread.user.name}
+                    </Text>
+                    {thread.category && (
+                      <Text className="text-[11px] font-inter text-black/50 mt-1">
+                        {thread.category}
+                      </Text>
+                    )}
+                  </View>
                 </View>
-              </View>
 
-              {/* Name, Handle, Status */}
-              <View className="ml-3">
-                <View className="flex-row items-center gap-1.5">
-                  <Text className="text-[13px] font-inter font-semibold text-[#1E1E1E]">
-                    {post.name}
+                {/* Post Content */}
+                <View className="px-8 py-4">
+                  <Text className="text-sm font-inter font-semibold text-[#1E1E1E] mb-1">
+                    {thread.title}
                   </Text>
-                  <Text className="text-[11px] font-inter text-black/50">
-                    {post.handle}
-                  </Text>
-                </View>
-                <Text className="text-[11px] font-inter text-black/50 mt-1">
-                  {post.status}
-                </Text>
-              </View>
-            </View>
-
-            {/* Post Content */}
-            <View className="px-8 py-4">
-              <Text className="text-sm font-inter text-[#1E1E1E] leading-5">
-                {post.content}
-              </Text>
-            </View>
-
-            {/* Post Image (if any) */}
-            {post.image && (
-              <View className="px-6 pb-4">
-                <Image
-                  source={post.image}
-                  className="w-full h-[160px] rounded-[10px]"
-                  resizeMode="cover"
-                />
-              </View>
-            )}
-
-            {/* Action Bar */}
-            <View className="flex-row items-center justify-between px-6 pb-5">
-              <View className="flex-row items-center gap-5">
-                {/* Comments */}
-                <Pressable
-                  onPress={() => router.push("/(tabs)/view-comments")}
-                  className="flex-row items-center gap-1.5"
-                >
-                  <Feather name="message-circle" size={20} color="#FD71A1" />
-                  <Text className="text-[10px] font-inter font-light text-[#FD71A1]">
-                    {post.comments}
-                  </Text>
-                </Pressable>
-
-                {/* Likes */}
-                <View className="flex-row items-center gap-1.5">
-                  <Feather name="heart" size={20} color="#FD71A1" />
-                  <Text className="text-[10px] font-inter font-light text-[#FD71A1]">
-                    {post.likes}
+                  <Text className="text-sm font-inter text-[#1E1E1E] leading-5" numberOfLines={3}>
+                    {thread.content}
                   </Text>
                 </View>
 
-                {/* Share */}
-                <Feather name="send" size={18} color="#FD71A1" />
-              </View>
+                {/* Action Bar */}
+                <View className="flex-row items-center justify-between px-6 pb-5">
+                  <View className="flex-row items-center gap-5">
+                    <Pressable
+                      onPress={() => router.push(`/(tabs)/view-thread?id=${thread.id}` as any)}
+                      className="flex-row items-center gap-1.5"
+                    >
+                      <Feather name="message-circle" size={20} color="#FD71A1" />
+                      <Text className="text-[10px] font-inter font-light text-[#FD71A1]">
+                        {thread.comments_count}
+                      </Text>
+                    </Pressable>
 
-              {/* BTC Icon */}
-              <Pressable onPress={() => router.push("/(tabs)/select-wallet")}>
-                <Image
-                  source={require("@/assets/images/btc.png")}
-                  className="w-[22px] h-[22px]"
-                  resizeMode="contain"
-                />
-              </Pressable>
-            </View>
-          </View>
-        ))}
+                    <Pressable
+                      onPress={() => handleLike(thread.id, false)}
+                      className="flex-row items-center gap-1.5"
+                    >
+                      <Feather name="heart" size={20} color="#FD71A1" />
+                      <Text className="text-[10px] font-inter font-light text-[#FD71A1]">
+                        {thread.likes_count}
+                      </Text>
+                    </Pressable>
+
+                    <Feather name="send" size={18} color="#FD71A1" />
+                  </View>
+
+                  <Pressable onPress={() => router.push("/(tabs)/select-wallet" as any)}>
+                    <Image
+                      source={require("@/assets/images/btc.png")}
+                      className="w-[22px] h-[22px]"
+                      resizeMode="contain"
+                    />
+                  </Pressable>
+                </View>
+              </View>
+            </Pressable>
+          ))
+        )}
 
         {/* Bottom spacing */}
         <View className="h-4" />

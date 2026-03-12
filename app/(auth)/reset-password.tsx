@@ -3,9 +3,11 @@ import { HomeIndicatorArea } from "@/components/signup/home-indicator-area";
 import { InputField } from "@/components/signup/input-field";
 import { PrimaryButton } from "@/components/signup/primary-button";
 import { TitleSection } from "@/components/signup/title-section";
-import { useRouter } from "expo-router";
+import { authService } from "@/services/auth.service";
+import { handleApiError } from "@/utils/handleApiError";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useState } from "react";
-import { KeyboardAvoidingView, Platform, ScrollView, View } from "react-native";
+import { Alert, KeyboardAvoidingView, Platform, ScrollView, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function ResetPasswordScreen() {
@@ -13,15 +15,31 @@ export default function ResetPasswordScreen() {
   const insets = useSafeAreaInsets();
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  // Token arrives via email deep-link: /(auth)/reset-password?token=xxx
+  const { token } = useLocalSearchParams<{ token: string }>();
 
   const isFormValid =
     password.trim() !== "" &&
     confirmPassword.trim() !== "" &&
     password === confirmPassword;
 
-  const handleSavePassword = () => {
-    if (isFormValid) {
-      router.replace("/(auth)/login");
+  const handleSavePassword = async () => {
+    if (!isFormValid || isSubmitting) return;
+    if (!token) {
+      Alert.alert('Error', 'Reset token is missing. Please use the link from your email.');
+      return;
+    }
+    setIsSubmitting(true);
+    try {
+      await authService.resetPassword(token, password);
+      Alert.alert('Password Reset', 'Your password has been updated. Please sign in.', [
+        { text: 'OK', onPress: () => router.replace('/(auth)/login') },
+      ]);
+    } catch (err) {
+      Alert.alert('Error', handleApiError(err));
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -80,10 +98,15 @@ export default function ResetPasswordScreen() {
         {/* Bottom Section - Fixed at bottom */}
         <View className="px-6 pb-4 pt-4">
           <View className="items-center">
+            {!token && (
+              <Text className="text-red-300 text-xs text-center mb-3">
+                No reset token found. Please use the link from your email.
+              </Text>
+            )}
             <PrimaryButton
-              title="Save New Password"
+              title={isSubmitting ? "Saving..." : "Save New Password"}
               onPress={handleSavePassword}
-              disabled={!isFormValid}
+              disabled={!isFormValid || isSubmitting || !token}
             />
           </View>
         </View>

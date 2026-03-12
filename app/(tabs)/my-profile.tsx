@@ -1,7 +1,8 @@
+import { userService } from "@/services/user.service";
 import { Feather } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import { router } from "expo-router";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Alert,
   FlatList,
@@ -49,35 +50,59 @@ function CalendarIcon() {
 export default function MyProfileScreen() {
   const insets = useSafeAreaInsets();
 
-  const [fullName, setFullName] = useState("Sarah Abraham");
-  const [email, setEmail] = useState("sarahabraham@gmail.com");
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
   const [selectedCountry, setSelectedCountry] = useState(countries[0]);
   const [phone, setPhone] = useState("");
-  const [dateOfBirth, setDateOfBirth] = useState("21-12-2012");
+  const [dateOfBirth, setDateOfBirth] = useState("");
   const [modalVisible, setModalVisible] = useState(false);
   const [avatarModalVisible, setAvatarModalVisible] = useState(false);
   const [profileImage, setProfileImage] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
 
-  const handleSave = () => {
+  // Load profile on mount
+  useEffect(() => {
+    userService.getProfile().then((profile) => {
+      setFullName(profile.name ?? "");
+      setEmail(profile.email ?? "");
+      if (profile.avatar_url) setProfileImage(profile.avatar_url);
+      if (profile.date_of_birth) {
+        // Convert YYYY-MM-DD → DD-MM-YYYY for display
+        const [y, m, d] = profile.date_of_birth.split("-");
+        setDateOfBirth(`${d}-${m}-${y}`);
+      }
+    }).catch(() => {});
+  }, []);
+
+  const handleSave = async () => {
     if (!fullName.trim()) {
       Alert.alert("Validation Error", "Full name is required.");
       return;
     }
-    if (!email.trim()) {
-      Alert.alert("Validation Error", "Email is required.");
-      return;
+    setIsSaving(true);
+    try {
+      // Convert DD-MM-YYYY → YYYY-MM-DD for the API
+      let date_of_birth: string | undefined;
+      if (dateOfBirth.trim()) {
+        const parts = dateOfBirth.split("-");
+        if (parts.length === 3) {
+          date_of_birth = `${parts[2]}-${parts[1]}-${parts[0]}`;
+        }
+      }
+      await userService.updateProfile({
+        name: fullName.trim(),
+        date_of_birth,
+        avatar_url: profileImage ?? undefined,
+      });
+      Alert.alert("Success", "Profile saved successfully.", [
+        { text: "OK", onPress: () => router.push("/(tabs)/settings" as any) },
+      ]);
+    } catch (err: any) {
+      const message = err?.response?.data?.message ?? "Failed to save profile.";
+      Alert.alert("Error", message);
+    } finally {
+      setIsSaving(false);
     }
-    if (!phone.trim()) {
-      Alert.alert("Validation Error", "Phone number is required.");
-      return;
-    }
-    if (!dateOfBirth.trim()) {
-      Alert.alert("Validation Error", "Date of birth is required.");
-      return;
-    }
-    Alert.alert("Success", "Profile saved successfully.", [
-      { text: "OK", onPress: () => router.push("/(tabs)/settings" as any) },
-    ]);
   };
 
   const handleSelectCountry = (country: (typeof countries)[0]) => {
@@ -238,6 +263,7 @@ export default function MyProfileScreen() {
           >
             <TouchableOpacity
               onPress={handleSave}
+              disabled={isSaving}
               activeOpacity={0.8}
               style={{
                 width: 256,
@@ -246,9 +272,12 @@ export default function MyProfileScreen() {
                 borderRadius: 9999,
                 alignItems: "center",
                 justifyContent: "center",
+                opacity: isSaving ? 0.7 : 1,
               }}
             >
-              <Text style={{ color: "#fff", fontWeight: "500" }}>Save</Text>
+              <Text style={{ color: "#fff", fontWeight: "500" }}>
+                {isSaving ? "Saving..." : "Save"}
+              </Text>
             </TouchableOpacity>
           </View>
         </ScrollView>

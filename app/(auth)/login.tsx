@@ -3,9 +3,12 @@ import { HomeIndicatorArea } from "@/components/signup/home-indicator-area";
 import { InputField } from "@/components/signup/input-field";
 import { PrimaryButton } from "@/components/signup/primary-button";
 import { TitleSection } from "@/components/signup/title-section";
+import { useAuth } from "@/context/auth-context";
+import { handleApiError } from "@/utils/handleApiError";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
+  Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -27,12 +30,21 @@ export default function LoginScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { login } = useAuth();
 
   const isFormValid = email.trim() !== "" && password.trim() !== "";
 
-  const handleSignIn = () => {
-    if (isFormValid) {
+  const handleSignIn = async () => {
+    if (!isFormValid || isSubmitting) return;
+    setIsSubmitting(true);
+    try {
+      await login(email.trim(), password);
       router.replace("/(tabs)");
+    } catch (err) {
+      Alert.alert("Sign In Failed", handleApiError(err));
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -153,7 +165,11 @@ export default function LoginScreen() {
           {/* Bottom Section - Fixed at bottom */}
           <View className="px-6 pb-4 pt-4">
             <View className="items-center gap-4">
-              <PrimaryButton title="Sign In" onPress={handleSignIn} />
+              <PrimaryButton
+                title={isSubmitting ? "Signing In..." : "Sign In"}
+                onPress={handleSignIn}
+                disabled={isSubmitting}
+              />
               <TouchableOpacity
                 onPress={handleCreateAccount}
                 activeOpacity={0.7}

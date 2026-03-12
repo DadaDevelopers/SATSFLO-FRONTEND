@@ -1,16 +1,20 @@
 import { BottomNavigation } from "@/components/home/bottom-navigation";
+import { useAuth } from "@/context/auth-context";
 import { useTheme } from "@/context/theme-context";
+import { userService } from "@/services/user.service";
 import { Feather } from "@expo/vector-icons";
 import { BlurView } from "expo-blur";
 import { router } from "expo-router";
 import React, { useState } from "react";
 import {
+  Alert,
   Image,
   Modal,
   Pressable,
   ScrollView,
   StatusBar,
   Text,
+  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
@@ -284,7 +288,43 @@ export default function SettingsScreen() {
   const [rating, setRating] = useState(3);
   const [logoutModalVisible, setLogoutModalVisible] = useState(false);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+  const [deletePassword, setDeletePassword] = useState("");
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [isDeletingAccount, setIsDeletingAccount] = useState(false);
   const { selectedTheme, setSelectedTheme } = useTheme();
+  const { logout, user } = useAuth();
+
+  const handleLogout = async () => {
+    setIsLoggingOut(true);
+    try {
+      await logout();
+      setLogoutModalVisible(false);
+      router.replace("/(auth)/login" as any);
+    } catch {
+      Alert.alert("Error", "Failed to log out. Please try again.");
+    } finally {
+      setIsLoggingOut(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!deletePassword.trim()) {
+      Alert.alert("Required", "Please enter your password to confirm.");
+      return;
+    }
+    setIsDeletingAccount(true);
+    try {
+      await userService.deleteAccount(deletePassword);
+      await logout();
+      setDeleteModalVisible(false);
+      router.replace("/(auth)/login" as any);
+    } catch (err: any) {
+      const message = err?.response?.data?.message ?? "Failed to delete account.";
+      Alert.alert("Error", message);
+    } finally {
+      setIsDeletingAccount(false);
+    }
+  };
 
   const handleTabPress = (tab: TabName) => {
     switch (tab) {
@@ -354,10 +394,10 @@ export default function SettingsScreen() {
               />
               <View className="gap-1">
                 <Text className="text-sm font-medium text-[#1E1E1E]">
-                  Sarah Abraham
+                  {user?.name ?? "—"}
                 </Text>
                 <Text className="text-xs text-[#616161]">
-                  sarahabraham@gmail.com
+                  {user?.email ?? "—"}
                 </Text>
               </View>
             </View>
@@ -686,15 +726,13 @@ export default function SettingsScreen() {
               </TouchableOpacity>
 
               <TouchableOpacity
-                onPress={() => {
-                  setLogoutModalVisible(false);
-                  router.replace("/(auth)/login" as any);
-                }}
+                onPress={handleLogout}
+                disabled={isLoggingOut}
                 activeOpacity={0.8}
                 className="flex-1 h-[50px] bg-[#FF4081] rounded-full items-center justify-center"
               >
                 <Text className="font-inter font-medium text-[15px] text-white">
-                  Yes, Logout
+                  {isLoggingOut ? "Logging out..." : "Yes, Logout"}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -735,15 +773,26 @@ export default function SettingsScreen() {
             <View className="h-px bg-[#FFB3CD]" />
 
             {/* Warning text */}
-            <Text className="font-inter text-base leading-6 text-[#222222] text-center mt-5 mb-10 px-12">
+            <Text className="font-inter text-base leading-6 text-[#222222] text-center mt-5 mb-4 px-12">
               Are you sure you want to delete this account? All data will be
               accessible for only 30 days after confirmation.
             </Text>
 
+            {/* Password confirmation */}
+            <View className="px-5 mb-8">
+              <TextInput
+                value={deletePassword}
+                onChangeText={setDeletePassword}
+                placeholder="Enter your password to confirm"
+                secureTextEntry
+                className="bg-white rounded-xl px-4 h-12 text-sm"
+              />
+            </View>
+
             {/* Buttons */}
             <View className="flex-row gap-3 px-5">
               <TouchableOpacity
-                onPress={() => setDeleteModalVisible(false)}
+                onPress={() => { setDeleteModalVisible(false); setDeletePassword(""); }}
                 activeOpacity={0.8}
                 className="flex-1 h-[50px] bg-[#FFF5F9] rounded-full items-center justify-center"
               >
@@ -753,15 +802,13 @@ export default function SettingsScreen() {
               </TouchableOpacity>
 
               <TouchableOpacity
-                onPress={() => {
-                  setDeleteModalVisible(false);
-                  router.replace("/(auth)/login" as any);
-                }}
+                onPress={handleDeleteAccount}
+                disabled={isDeletingAccount}
                 activeOpacity={0.8}
                 className="flex-1 h-[50px] bg-[#C62828] rounded-full items-center justify-center"
               >
                 <Text className="font-inter font-medium text-[15px] text-white">
-                  Yes, Delete
+                  {isDeletingAccount ? "Deleting..." : "Yes, Delete"}
                 </Text>
               </TouchableOpacity>
             </View>

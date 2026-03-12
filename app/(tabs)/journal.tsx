@@ -1,7 +1,9 @@
+import { JournalEntry, journalService } from '@/services/journal.service';
 import { Feather, Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
+  ScrollView,
   StatusBar,
   Text,
   TextInput,
@@ -18,32 +20,64 @@ const MONTHS = [
 
 export default function JournalScreen() {
   const insets = useSafeAreaInsets();
+  const today = new Date();
   const [searchText, setSearchText] = useState('');
-  const [currentMonth, setCurrentMonth] = useState(9); // October (0-indexed)
-  const [currentYear, setCurrentYear] = useState(2024);
-  const [selectedDate, setSelectedDate] = useState<number | null>(null);
+  const [currentMonth, setCurrentMonth] = useState(today.getMonth());
+  const [currentYear, setCurrentYear] = useState(today.getFullYear());
+  const [selectedDate, setSelectedDate] = useState<number | null>(today.getDate());
+  const [entries, setEntries] = useState<JournalEntry[]>([]);
 
-  // Get dates for the current week view (sample: showing 6-12)
+  // YYYY-MM for API
+  const monthKey = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}`;
+
+  useEffect(() => {
+    journalService.getByMonth(monthKey).then(setEntries).catch(() => {});
+  }, [monthKey]);
+
+  // Dates with entries this month
+  const datesWithEntries = new Set(
+    entries.map((e) => parseInt(e.entry_date.split('-')[2], 10))
+  );
+
+  // Filter by selected date and search
+  const visibleEntries = entries.filter((e) => {
+    const day = parseInt(e.entry_date.split('-')[2], 10);
+    const matchesDate = selectedDate == null || day === selectedDate;
+    const matchesSearch = !searchText.trim() ||
+      e.title?.toLowerCase().includes(searchText.toLowerCase()) ||
+      e.content.toLowerCase().includes(searchText.toLowerCase());
+    return matchesDate && matchesSearch;
+  });
+
+  // Week strip: 7 days centred on today within current month
   const getWeekDates = () => {
-    return [6, 7, 8, 9, 10, 11, 12];
+    const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+    const anchor = currentYear === today.getFullYear() && currentMonth === today.getMonth()
+      ? today.getDate()
+      : 1;
+    const start = Math.max(1, anchor - 3);
+    const end = Math.min(daysInMonth, start + 6);
+    return Array.from({ length: end - start + 1 }, (_, i) => start + i);
   };
 
   const handlePreviousMonth = () => {
     if (currentMonth === 0) {
       setCurrentMonth(11);
-      setCurrentYear(currentYear - 1);
+      setCurrentYear((y) => y - 1);
     } else {
-      setCurrentMonth(currentMonth - 1);
+      setCurrentMonth((m) => m - 1);
     }
+    setSelectedDate(null);
   };
 
   const handleNextMonth = () => {
     if (currentMonth === 11) {
       setCurrentMonth(0);
-      setCurrentYear(currentYear + 1);
+      setCurrentYear((y) => y + 1);
     } else {
-      setCurrentMonth(currentMonth + 1);
+      setCurrentMonth((m) => m + 1);
     }
+    setSelectedDate(null);
   };
 
   const handleBack = () => {
@@ -124,42 +158,71 @@ export default function JournalScreen() {
                 selectedDate === date ? 'bg-white' : ''
               }`}
             >
-              <Text
-                className={`text-sm ${
-                  selectedDate === date ? 'text-[#090909]' : 'text-[#090909]'
-                }`}
-              >
-                {date}
-              </Text>
+              <Text className="text-sm text-[#090909]">{date}</Text>
+              {datesWithEntries.has(date) && (
+                <View className="w-1.5 h-1.5 rounded-full bg-[#FF4081] mt-0.5" />
+              )}
             </TouchableOpacity>
           ))}
         </View>
       </View>
 
-      {/* Empty State */}
-      <View className="flex-1 items-center justify-center pb-20 mb-10">
-        {/* Empty Document Icon */}
-        <View className="w-20 h-20 items-center justify-center mb-2">
-          <Ionicons name="document-outline" size={80} color="#FFFFFF" />
-          <View className="absolute">
-            <Feather name="x" size={24} color="#FFFFFF" />
+      {/* Entry List or Empty State */}
+      <ScrollView className="flex-1 px-5" showsVerticalScrollIndicator={false}>
+        {visibleEntries.length === 0 ? (
+          <View className="items-center justify-center pt-16 pb-20">
+            <View className="w-20 h-20 items-center justify-center mb-2">
+              <Ionicons name="document-outline" size={80} color="#FFFFFF" />
+              <View className="absolute">
+                <Feather name="x" size={24} color="#FFFFFF" />
+              </View>
+            </View>
+            <Text className="text-[#FAFAFA] text-base font-medium mt-2">
+              No entry added
+            </Text>
+            <TouchableOpacity
+              onPress={handleAddEntry}
+              className="mt-6 px-4 py-2.5 border border-[#FFB4CD] rounded-full"
+              style={{ backgroundColor: '#FF4081' }}
+              activeOpacity={0.8}
+            >
+              <Text className="text-white text-sm font-medium">Add New Entry</Text>
+            </TouchableOpacity>
           </View>
-        </View>
-
-        <Text className="text-[#FAFAFA] text-base font-medium mt-2">
-          No entry added
-        </Text>
-
-        {/* Add New Entry Button */}
-        <TouchableOpacity
-          onPress={handleAddEntry}
-          className="mt-6 px-4 py-2.5 border border-[#FFB4CD] rounded-full"
-          style={{ backgroundColor: '#FF4081' }}
-          activeOpacity={0.8}
-        >
-          <Text className="text-white text-sm font-medium">Add New Entry</Text>
-        </TouchableOpacity>
-      </View>
+        ) : (
+          <>
+            {visibleEntries.map((entry) => (
+              <View
+                key={entry.id}
+                className="bg-white/20 rounded-2xl p-4 mb-4"
+              >
+                <View className="flex-row justify-between items-start mb-1">
+                  <Text className="text-white text-sm font-semibold flex-1 mr-2">
+                    {entry.title ?? entry.entry_date}
+                  </Text>
+                  <Text className="text-[#FAFAFA] text-xs opacity-70">
+                    {entry.entry_date}
+                  </Text>
+                </View>
+                <Text className="text-white text-sm leading-5" numberOfLines={3}>
+                  {entry.content}
+                </Text>
+                {entry.mood && (
+                  <Text className="text-[#FFD6E8] text-xs mt-2">{entry.mood}</Text>
+                )}
+              </View>
+            ))}
+            <TouchableOpacity
+              onPress={handleAddEntry}
+              className="self-center mt-2 mb-8 px-4 py-2.5 border border-[#FFB4CD] rounded-full"
+              style={{ backgroundColor: '#FF4081' }}
+              activeOpacity={0.8}
+            >
+              <Text className="text-white text-sm font-medium">Add New Entry</Text>
+            </TouchableOpacity>
+          </>
+        )}
+      </ScrollView>
 
       {/* Home Indicator Area */}
       <View
