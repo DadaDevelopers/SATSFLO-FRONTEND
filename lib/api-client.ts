@@ -1,7 +1,7 @@
 import axios, { AxiosRequestConfig, InternalAxiosRequestConfig } from 'axios';
 import { tokenStorage } from './token-storage';
 
-export const BASE_URL = 'http://localhost:3000/api/v1';
+export const BASE_URL = 'http://192.168.0.18:3000/api/v1';
 
 /**
  * Unwrap the { success, data } envelope the backend puts on every response.

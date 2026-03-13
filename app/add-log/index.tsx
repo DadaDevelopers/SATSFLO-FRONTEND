@@ -9,6 +9,7 @@ import {
   useWindowDimensions,
   Modal,
   Image,
+  ActivityIndicator,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -19,6 +20,9 @@ import Animated, {
 } from 'react-native-reanimated';
 import Svg, { Path, Rect } from 'react-native-svg';
 import { useAddLog } from '@/context/add-log-context';
+import { logService } from '@/services/log.service';
+import { healthService } from '@/services/health.service';
+import { handleApiError } from '@/utils/handleApiError';
 
 const MAX_CONTENT_WIDTH = 480;
 
@@ -413,11 +417,54 @@ export default function AddLogScreen() {
     implant: 'Implant', vRing: 'V-Ring', injection: 'Injection', spermicide: 'Spermicide',
   };
 
-  const handleSave = () => {
-    saveCurrentDay();
-    Alert.alert('Saved', 'Your log has been saved successfully!', [
-      { text: 'OK', onPress: () => router.back() }
-    ]);
+  const [isSaving, setIsSaving] = useState(false);
+
+  const handleSave = async () => {
+    if (isSaving) return;
+    setIsSaving(true);
+    try {
+      const dateKey = selectedDate.toISOString().split('T')[0]; // YYYY-MM-DD
+
+      // 1. Save main day log
+      const logBody: import('@/services/log.service').UpsertDayLogBody = {};
+      if (dayData.waterIntake > 0) logBody.water_ml = dayData.waterIntake;
+      if (dayData.weight) logBody.weight_kg = parseFloat(dayData.weight);
+      if (dayData.temperature) logBody.temperature = parseFloat(dayData.temperature);
+      if (dayData.note) logBody.notes = dayData.note;
+      if (Object.keys(logBody).length > 0) {
+        await logService.upsert(dateKey, logBody);
+      }
+
+      // 2. Save symptoms batch
+      if (dayData.symptoms.length > 0) {
+        await healthService.logSymptomsBatch(
+          dayData.symptoms.map((name) => ({
+            symptom_name: name,
+            severity: 3 as const,
+            logged_at: dateKey,
+          }))
+        );
+      }
+
+      // 3. Save moods batch
+      if (dayData.moods.length > 0) {
+        await healthService.logMoodsBatch(
+          dayData.moods.map((mood) => ({
+            mood,
+            intensity: 3 as const,
+            logged_at: dateKey,
+          }))
+        );
+      }
+
+      Alert.alert('Saved', 'Your log has been saved!', [
+        { text: 'OK', onPress: () => router.back() },
+      ]);
+    } catch (err) {
+      Alert.alert('Save Failed', handleApiError(err));
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   // Edit pen icon component
@@ -827,6 +874,7 @@ export default function AddLogScreen() {
         <View style={{ alignItems: "center", backgroundColor: "#FF3378" }}>
           <TouchableOpacity
             onPress={handleSave}
+            disabled={isSaving}
             style={{
               width: 250,
               height: 56,
@@ -838,21 +886,26 @@ export default function AddLogScreen() {
               justifyContent: "center",
               marginTop: 16,
               marginBottom: 20,
+              opacity: isSaving ? 0.7 : 1,
             }}
             activeOpacity={0.8}
           >
-            <Text
-              style={{
-                fontFamily: "Inter",
-                fontWeight: "500",
-                fontSize: 15,
-                lineHeight: 18,
-                color: "#FFFFFF",
-                textAlign: "center",
-              }}
-            >
-              Save
-            </Text>
+            {isSaving ? (
+              <ActivityIndicator color="#FFFFFF" size="small" />
+            ) : (
+              <Text
+                style={{
+                  fontFamily: "Inter",
+                  fontWeight: "500",
+                  fontSize: 15,
+                  lineHeight: 18,
+                  color: "#FFFFFF",
+                  textAlign: "center",
+                }}
+              >
+                Save
+              </Text>
+            )}
           </TouchableOpacity>
           <View
             style={{

@@ -87,7 +87,7 @@ export default function ThreadScreen() {
       threadService.getThreads({ limit: 20 }).then((res) => setThreads(res?.threads ?? [])).catch(() => {});
       return;
     }
-    threadService.getThreads({ search: text, limit: 20 }).then((res) => setThreads(res.threads)).catch(() => {});
+    threadService.getThreads({ search: text, limit: 20 }).then((res) => setThreads(res?.threads ?? [])).catch(() => {});
   };
 
   const handleLike = async (threadId: string, liked: boolean) => {

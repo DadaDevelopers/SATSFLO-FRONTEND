@@ -23,7 +23,7 @@ export interface LoginResponse extends AuthTokens {
 
 export const authService = {
   async register(name: string, email: string, password: string): Promise<LoginResponse> {
-    const { data } = await axios.post(`${BASE_URL}/auth/register`, { name, email, password });
+    const { data } = await axios.post(`${BASE_URL}/auth/register`, { name, email, password, acceptTerms: true });
     return unwrapEnvelope<LoginResponse>(data);
   },
 
