@@ -23,8 +23,8 @@ const Colors = {
     end: '#FF8C00',
   },
   luteal: {
-    start: '#F7D5FF',
-    end: '#C07FD4',
+    start: '#F0F0F1',
+    end: '#70A9FE',
   },
   currentDay: '#EC59C0',
   ringBackground: '#FFE6EE',
