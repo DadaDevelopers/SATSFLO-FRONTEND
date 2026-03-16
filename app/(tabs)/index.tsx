@@ -1,11 +1,12 @@
 import { BottomNavigation } from "@/components/home/bottom-navigation";
-import { CycleWheel } from "@/components/home/cycle-wheel";
+import { CycleTracker } from "@/components/home/cycle-tracker";
 import { FollicularPhaseModal } from "@/components/home/follicular-phase-modal";
 import { HomeHeader } from "@/components/home/home-header";
 import { LutealPhaseModal } from "@/components/home/luteal-phase-modal";
 import { MenstrualPhaseModal } from "@/components/home/menstrual-phase-modal";
 import { OvulationPhaseModal } from "@/components/home/ovulation-phase-modal";
 import { PhaseLegend } from "@/components/home/phase-legend";
+import { ResponsiveScreen } from "@/components/ui/responsive-container";
 import { Feather } from "@expo/vector-icons";
 import { router } from "expo-router";
 import React, { useState } from "react";
@@ -16,6 +17,7 @@ import {
   Text,
   TouchableOpacity,
   View,
+  useWindowDimensions,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -23,6 +25,8 @@ type TabName = "home" | "calendar" | "add" | "chat" | "settings";
 
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
+  const { width: windowWidth } = useWindowDimensions();
+  const trackerSize = Math.min(windowWidth - 40, 320);
   const [activeTab, setActiveTab] = useState<TabName>("home");
   const [showMenstrualModal, setShowMenstrualModal] = useState(false);
   const [showFollicularModal, setShowFollicularModal] = useState(false);
@@ -77,6 +81,7 @@ export default function HomeScreen() {
   };
 
   return (
+    <ResponsiveScreen>
     <View
       className="flex-1"
       style={{ paddingTop: insets.top, backgroundColor: "#FF4081" }}
@@ -95,16 +100,60 @@ export default function HomeScreen() {
         }}
         showsVerticalScrollIndicator={false}
       >
-        {/* Cycle Wheel */}
-        <View className="items-center mt-4">
-          <CycleWheel
+        {/* Cycle Tracker */}
+        <View className="items-center mt-4" style={{ width: trackerSize, height: trackerSize }}>
+          <CycleTracker
             currentDay={cycleData.currentDay}
             cycleLength={cycleData.cycleLength}
-            periodLength={cycleData.periodLength}
-            daysUntilPeriod={cycleData.daysUntilPeriod}
-            currentDate={cycleData.currentDate}
-            onEditPeriod={handleEditPeriod}
+            size={trackerSize}
           />
+          {/* Center overlay: date, countdown, edit button */}
+          <View
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <Text style={{ fontFamily: "Inter", fontSize: 12, color: "#FAFAFA", marginBottom: 6 }}>
+              Today: {cycleData.currentDate}
+            </Text>
+            <Text
+              style={{
+                fontFamily: "Poppins-SemiBold",
+                fontSize: 20,
+                color: "#FFFFFF",
+                textAlign: "center",
+                lineHeight: 30,
+              }}
+            >
+              {cycleData.daysUntilPeriod} days until your{"\n"}next period
+            </Text>
+            <TouchableOpacity
+              onPress={handleEditPeriod}
+              activeOpacity={0.8}
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                paddingHorizontal: 12,
+                paddingVertical: 10,
+                borderRadius: 20,
+                borderWidth: 1,
+                borderColor: "#FAFAFA",
+                gap: 5,
+                marginTop: 12,
+              }}
+            >
+              <Feather name="edit-2" size={10} color="#FFFFFF" />
+              <Text style={{ fontFamily: "Inter", fontSize: 12, color: "#FFFFFF" }}>
+                Edit Period
+              </Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
         {/* Phase Legend */}
@@ -187,5 +236,6 @@ export default function HomeScreen() {
         onClose={() => setShowOvulationModal(false)}
       />
     </View>
+    </ResponsiveScreen>
   );
 }

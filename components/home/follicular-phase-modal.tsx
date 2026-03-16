@@ -1,6 +1,7 @@
 import { BlurView } from 'expo-blur';
 import React, { useEffect, useRef } from 'react';
-import { Animated, Dimensions, Modal, StyleSheet, Text, TouchableWithoutFeedback, View } from 'react-native';
+import { Animated, Dimensions, Modal, ScrollView, StyleSheet, Text, TouchableWithoutFeedback, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Defs, LinearGradient, Path, Stop } from 'react-native-svg';
 
 const GradientStar = ({ size = 16 }: { size?: number }) => (
@@ -24,9 +25,9 @@ interface FollicularPhaseModalProps {
 }
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
-const OFFSET_Y = 248;
 
 export function FollicularPhaseModal({ visible, onClose }: FollicularPhaseModalProps) {
+  const insets = useSafeAreaInsets();
   const slideAnim = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
 
   const bulletPoints = [
@@ -82,11 +83,14 @@ export function FollicularPhaseModal({ visible, onClose }: FollicularPhaseModalP
             <Animated.View
               style={[
                 styles.modalContent,
-                { transform: [{ translateY: Animated.add(slideAnim, new Animated.Value(OFFSET_Y))}] }
+                {
+                  paddingHorizontal: 16,
+                  paddingBottom: insets.bottom + 16,
+                  transform: [{ translateY: slideAnim }],
+                },
               ]}
             >
-
-              <View className="bg-[#FFE5EE] rounded-3xl px-6 pt-8 pb-10 w-full shadow-lg">
+              <View className="bg-[#FFE5EE] rounded-3xl px-6 pt-8 pb-10 shadow-lg" style={{ maxHeight: SCREEN_HEIGHT * 0.82 }}>
                 {/* Header with stars and title */}
                 <View className="items-center mb-4">
                   <View className="w-12 h-1 bg-[#E84C8A] rounded-full mx-auto mb-6"></View>
@@ -108,16 +112,18 @@ export function FollicularPhaseModal({ visible, onClose }: FollicularPhaseModalP
                 <View className="h-[1px] bg-[#FFB2CD] mb-5" />
 
                 {/* Bullet points */}
-                <View className="gap-4 text-[#4D4D4D] font-inter">
-                  {bulletPoints.map((point, index) => (
-                    <View key={index} className="flex-row items-start">
-                      <Text className="text-[#333333] text-base mr-3">•</Text>
-                      <Text className="text-[#333333] text-base flex-1 leading-6">
-                        {point}
-                      </Text>
-                    </View>
-                  ))}
-                </View>
+                <ScrollView showsVerticalScrollIndicator={false}>
+                  <View className="gap-4 text-[#4D4D4D] font-inter">
+                    {bulletPoints.map((point, index) => (
+                      <View key={index} className="flex-row items-start">
+                        <Text className="text-[#333333] text-base mr-3">•</Text>
+                        <Text className="text-[#333333] text-base flex-1 leading-6">
+                          {point}
+                        </Text>
+                      </View>
+                    ))}
+                  </View>
+                </ScrollView>
               </View>
             </Animated.View>
           </TouchableWithoutFeedback>
@@ -130,15 +136,13 @@ export function FollicularPhaseModal({ visible, onClose }: FollicularPhaseModalP
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: 'flex-end',
   },
   overlay: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: 'rgba(0, 0, 0, 0.2)',
   },
   modalContent: {
-    justifyContent: 'center',
-    alignItems: 'center',
+    width: '100%',
   },
 });

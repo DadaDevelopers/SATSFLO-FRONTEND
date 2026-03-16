@@ -1,4 +1,5 @@
 import { Inter_400Regular, useFonts as useInter } from '@expo-google-fonts/inter';
+import { Manrope_500Medium, Manrope_700Bold, useFonts as useManrope } from '@expo-google-fonts/manrope';
 import { Poppins_400Regular, Poppins_600SemiBold, useFonts as usePoppins } from '@expo-google-fonts/poppins';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
@@ -21,7 +22,12 @@ export default function RootLayout() {
     Inter: Inter_400Regular,
   });
 
-  const fontsLoaded = poppinsLoaded && interLoaded;
+  const [manropeLoaded] = useManrope({
+    Manrope_500Medium,
+    Manrope_700Bold,
+  });
+
+  const fontsLoaded = poppinsLoaded && interLoaded && manropeLoaded;
 
   useEffect(() => {
     if (fontsLoaded) {

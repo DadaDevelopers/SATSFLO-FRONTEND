@@ -53,8 +53,8 @@ module.exports = {
         phase: {
           'menstrual-start': '#F43B3B',
           'menstrual-end': '#8E2222',
-          'ovulation-start': '#FFFF00',
-          'ovulation-end': '#FF8800',
+          'ovulation-start': '#FFD700',
+          'ovulation-end': '#FF8C00',
           'follicular-start': '#EC59C0',
           'follicular-end': '#F7D5FF',
           'luteal-start': '#F0F0F1',
