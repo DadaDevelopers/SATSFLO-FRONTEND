@@ -4,10 +4,9 @@
     "slug": "SATSFLO-FRONTEND",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/Logo-square.png",
+    "icon": "./assets/images/Logo.png",
     "scheme": "satsflofrontend",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.anonymous.SATSFLOFRONTEND",
@@ -18,23 +17,23 @@
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/images/logo-icon.png",
-        "backgroundImage": "./assets/images/logo-icon.png",
-        "monochromeImage": "./assets/images/logo-icon.png"
+        "foregroundImage": "./assets/images/Logo.png",
+        "backgroundImage": "./assets/images/Logo.png",
+        "monochromeImage": "./assets/images/Logo.png"
       },
-      "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.Satsflow"
     },
     "web": {
       "output": "static",
-      "favicon": "./assets/images/Logo-square.png"
+      "favicon": "./assets/images/Logo.png"
     },
     "plugins": [
       "expo-router",
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/Logo-square.png",
+          "image": "./assets/images/Logo.png",
           "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
