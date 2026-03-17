@@ -123,7 +123,10 @@ export default function InvitePartnerScreen() {
           </Text>
         </TouchableOpacity>
 
-        <TouchableOpacity activeOpacity={0.7}>
+        <TouchableOpacity
+          activeOpacity={0.7}
+          onPress={() => router.push("/(tabs)/enter-code" as any)}
+        >
           <Text className="font-inter text-sm text-white underline">
             Join with code
           </Text>
