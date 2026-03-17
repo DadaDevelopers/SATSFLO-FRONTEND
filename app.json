@@ -7,7 +7,6 @@
     "icon": "./assets/images/logo-icon.png",
     "scheme": "satsflo",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.dadadevelopers.satsflo",
@@ -17,9 +16,9 @@
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/images/logo-icon.png",
-        "backgroundImage": "./assets/images/logo-icon.png",
-        "monochromeImage": "./assets/images/logo-icon.png"
+        "foregroundImage": "./assets/images/Logo.png",
+        "backgroundImage": "./assets/images/Logo.png",
+        "monochromeImage": "./assets/images/Logo.png"
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
@@ -52,14 +51,14 @@
     },
     "web": {
       "output": "static",
-      "favicon": "./assets/images/Logo-square.png"
+      "favicon": "./assets/images/Logo.png"
     },
     "plugins": [
       "expo-router",
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/Logo-square.png",
+          "image": "./assets/images/Logo.png",
           "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
