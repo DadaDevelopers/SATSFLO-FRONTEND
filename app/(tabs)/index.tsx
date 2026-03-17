@@ -101,7 +101,8 @@ export default function HomeScreen() {
         showsVerticalScrollIndicator={false}
       >
         {/* Cycle Tracker */}
-        <View className="items-center mt-4" style={{ width: trackerSize, height: trackerSize }}>
+        <View style={{ width: '100%', alignItems: 'center', marginTop: 16 }}>
+        <View style={{ width: trackerSize, height: trackerSize }}>
           <CycleTracker
             currentDay={cycleData.currentDay}
             cycleLength={cycleData.cycleLength}
@@ -154,6 +155,7 @@ export default function HomeScreen() {
               </Text>
             </TouchableOpacity>
           </View>
+        </View>
         </View>
 
         {/* Phase Legend */}
