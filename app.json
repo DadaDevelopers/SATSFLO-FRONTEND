@@ -39,7 +39,6 @@
           }
         }
       ],
-      "expo-barcode-scanner",
       "@react-native-community/datetimepicker"
     ],
     "experiments": {

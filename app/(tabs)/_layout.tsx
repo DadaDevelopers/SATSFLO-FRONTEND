@@ -225,6 +225,13 @@ export default function TabLayout() {
           href: null,
         }}
       />
+      <Tabs.Screen
+        name="enter-code"
+        options={{
+          title: "Enter Code to Connect",
+          href: null,
+        }}
+      />
     </Tabs>
   );
 }
