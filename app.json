@@ -12,36 +12,17 @@
       "bundleIdentifier": "com.anonymous.SATSFLOFRONTEND",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
-      },
-      "associatedDomains": ["applinks:satsflo.app"]
+      }
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/Logo-square.png",
-        "backgroundColor": "#E6F4FE"
+        "backgroundColor": "#E6F4FE",
+        "foregroundImage": "./assets/images/logo-icon.png",
+        "backgroundImage": "./assets/images/logo-icon.png",
+        "monochromeImage": "./assets/images/logo-icon.png"
       },
-      "predictiveBackGestureEnabled": false,
-      "permissions": [
-        "android.permission.CAMERA"
-      ],
-      "package": "com.anonymous.SATSFLOFRONTEND",
-      "intentFilters": [
-        {
-          "action": "VIEW",
-          "autoVerify": true,
-          "data": [
-            {
-              "scheme": "https",
-              "host": "satsflo.app",
-              "pathPrefix": "/invite"
-            }
-          ],
-          "category": [
-            "BROWSABLE",
-            "DEFAULT"
-          ]
-        }
-      ]
+      "edgeToEdgeEnabled": true,
+      "predictiveBackGestureEnabled": false
     },
     "web": {
       "output": "static",

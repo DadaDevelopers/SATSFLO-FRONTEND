@@ -1,4 +1,3 @@
-import { api } from '@/lib/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Href, router } from 'expo-router';
 import { useEffect } from 'react';
@@ -8,19 +7,7 @@ export default function SplashScreen() {
   useEffect(() => {
     const navigate = async () => {
       const token = await AsyncStorage.getItem('accessToken');
-      if (!token) {
-        router.replace('/how-to-use' as Href);
-        return;
-      }
-      // Route paired users directly to the partner dashboard
-      try {
-        const { response, data } = await api.get('/partner', token);
-        if (response.ok && data?.data?.partner) {
-          router.replace('/partner' as Href);
-          return;
-        }
-      } catch {}
-      router.replace('/(tabs)' as Href);
+      router.replace((token ? '/(tabs)' : '/how-to-use') as Href);
     };
     const timer = setTimeout(navigate, 2000);
     return () => clearTimeout(timer);
