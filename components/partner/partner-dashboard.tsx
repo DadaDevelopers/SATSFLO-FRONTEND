@@ -5,12 +5,12 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
 import React, { useCallback, useEffect, useState } from "react";
 import {
-    ActivityIndicator,
-    ScrollView,
-    StatusBar,
-    Text,
-    TouchableOpacity,
-    View
+  ActivityIndicator,
+  ScrollView,
+  StatusBar,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Svg, { Path } from "react-native-svg";
@@ -180,7 +180,8 @@ export default function PartnerDashboardScreen() {
           <Feather name="arrow-left" size={24} color="#FFFFFF" />
         </TouchableOpacity>
         <Text className="flex-1 text-center text-white text-[18px] font-medium mr-6">
-          {partnerNickname}{"'"}s Cycle
+          {partnerNickname}
+          {"'"}s Cycle
         </Text>
         {loading && <ActivityIndicator size="small" color="#FFFFFF" />}
       </View>
@@ -249,13 +250,13 @@ export default function PartnerDashboardScreen() {
           {/* Today's Symptoms Card */}
           <View className="bg-[#F8F1FF] rounded-[24px] p-5 mb-4 shadow-sm">
             <Text className="text-[#B551E5] text-[18px] font-bold mb-2">
-              Today's Symptoms
+              Today`&apos;`s Symptoms
             </Text>
             {cycleData?.symptoms && cycleData.symptoms.length > 0 ? (
               <>
                 <Text className="text-[#616161] text-[15px] leading-5 mb-4">
-                  Here's what {partnerNickname} is logging. Each symptom matters
-                  — take note.
+                  Here`&apos;`s what {partnerNickname} is logging. Each symptom
+                  matters — take note.
                 </Text>
                 <View className="flex-row flex-wrap gap-2 mb-4">
                   {cycleData.symptoms.map((s, i) => (
