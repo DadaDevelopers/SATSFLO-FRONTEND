@@ -25,6 +25,8 @@
         "foregroundImage": "./assets/images/Logo-square.png",
         "backgroundColor": "#E6F4FE"
       },
+      "edgeToEdgeEnabled": true,
+      "predictiveBackGestureEnabled": false,
       "permissions": [
         "android.permission.CAMERA"
       ],

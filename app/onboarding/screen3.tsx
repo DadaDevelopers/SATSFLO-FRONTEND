@@ -50,6 +50,7 @@ export default function OnboardingScreen3() {
           backgroundColor: '#FFDBE7',
           paddingHorizontal: 32,
           paddingTop: 16,
+          paddingBottom: Math.max(insets.bottom, 16) + 12,
         }}
       >
         <Text className="text-2xl font-poppins font-semibold text-[#212121] text-center leading-8 mb-3">
@@ -70,19 +71,6 @@ export default function OnboardingScreen3() {
         >
           <Text className="text-white font-medium text-[15px]">Get Started</Text>
         </Pressable>
-        <View style={{ flex: 1 }} />
-        {/* Home indicator */}
-        <View
-          style={{
-            backgroundColor: '#FF3378',
-            alignItems: 'center',
-            paddingTop: 8,
-            paddingBottom: Math.max(insets.bottom, 8) + 3,
-            marginHorizontal: -32,
-          }}
-        >
-          <View style={{ width: 134, height: 5, backgroundColor: '#FF99BC', borderRadius: 100 }} />
-        </View>
       </View>
     </View>
   );
