@@ -19,7 +19,12 @@
         "monochromeImage": "./assets/images/logo-icon.png"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.CAMERA"
+      ],
+      "package": "com.anonymous.SATSFLOFRONTEND"
     },
     "web": {
       "output": "static",
