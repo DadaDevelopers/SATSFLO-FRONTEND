@@ -3,21 +3,58 @@ import { HomeIndicatorArea } from "@/components/signup/home-indicator-area";
 import { InputField } from "@/components/signup/input-field";
 import { PrimaryButton } from "@/components/signup/primary-button";
 import { TitleSection } from "@/components/signup/title-section";
+import { api } from "@/lib/api";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
-import { KeyboardAvoidingView, Platform, ScrollView, View } from "react-native";
+import {
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  Text,
+  View,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function ForgotPasswordScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [statusMessage, setStatusMessage] = useState<{
+    text: string;
+    type: "success" | "error";
+  } | null>(null);
 
   const isFormValid = email.trim() !== "";
 
-  const handleRecoverPassword = () => {
-    if (isFormValid) {
-      router.push("/(auth)/otp-verification");
+  const handleRecoverPassword = async () => {
+    if (!isFormValid) return;
+    setLoading(true);
+    setStatusMessage(null);
+    try {
+      const { response, data } = await api.post("/auth/forgot-password", {
+        email,
+      });
+      console.log("Forgot password response:", data);
+      if (response.ok) {
+        setStatusMessage({ text: "OTP sent! Check your email.", type: "success" });
+        setTimeout(() => {
+          router.push({
+            pathname: "/(auth)/otp-verification",
+            params: { email },
+          });
+        }, 800);
+      } else {
+        const message = data?.message || data?.error || "Failed to send OTP.";
+        setStatusMessage({ text: message, type: "error" });
+      }
+    } catch {
+      setStatusMessage({
+        text: "Error sending OTP. Please try again.",
+        type: "error",
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -36,21 +73,17 @@ export default function ForgotPasswordScreen() {
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
-          {/* Back Button - positioned at top */}
           <View className="pt-4 pb-2">
             <BackButton />
           </View>
 
-          {/* Content */}
           <View className="w-full pt-8 pb-8">
-            {/* Title Section */}
             <TitleSection
               title="Forgot Password"
               subtitle="Please, enter email address registered with this account to request for a new password."
               className="mb-4"
             />
 
-            {/* Form Section */}
             <View className="gap-5">
               <InputField
                 placeholder="Email"
@@ -64,13 +97,27 @@ export default function ForgotPasswordScreen() {
           </View>
         </ScrollView>
 
-        {/* Bottom Section - Fixed at bottom */}
         <View className="px-6 pb-4 pt-4">
-          <View className="items-center">
+          <View className="items-center gap-4">
+            {statusMessage && (
+              <View
+                className="w-full rounded-xl px-4 py-3"
+                style={{
+                  backgroundColor:
+                    statusMessage.type === "success"
+                      ? "rgba(255,255,255,0.25)"
+                      : "rgba(0,0,0,0.25)",
+                }}
+              >
+                <Text className="text-sm text-center font-medium text-white">
+                  {statusMessage.text}
+                </Text>
+              </View>
+            )}
             <PrimaryButton
-              title="Recover Password"
+              title={loading ? "Sending..." : "Recover Password"}
               onPress={handleRecoverPassword}
-              disabled={!isFormValid}
+              disabled={loading || !isFormValid}
             />
           </View>
         </View>

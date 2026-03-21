@@ -3,6 +3,8 @@ import { HomeIndicatorArea } from "@/components/signup/home-indicator-area";
 import { InputField } from "@/components/signup/input-field";
 import { PrimaryButton } from "@/components/signup/primary-button";
 import { TitleSection } from "@/components/signup/title-section";
+import { api } from "@/lib/api";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
@@ -17,6 +19,27 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Svg, { Path } from "react-native-svg";
 
+const FormWrapper =
+  Platform.OS === "web"
+    ? ({
+        children,
+        onSubmit,
+      }: {
+        children: React.ReactNode;
+        onSubmit: () => void;
+      }) => (
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            onSubmit();
+          }}
+          style={{ display: "contents" }}
+        >
+          {children}
+        </form>
+      )
+    : ({ children }: { children: React.ReactNode }) => <>{children}</>;
+
 const MAX_CONTENT_WIDTH = 480;
 
 export default function LoginScreen() {
@@ -28,11 +51,42 @@ export default function LoginScreen() {
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
 
+  const [loading, setLoading] = useState(false);
+  const [statusMessage, setStatusMessage] = useState<{
+    text: string;
+    type: "success" | "error";
+  } | null>(null);
+
   const isFormValid = email.trim() !== "" && password.trim() !== "";
 
-  const handleSignIn = () => {
-    if (isFormValid) {
-      router.replace("/(tabs)");
+  const handleSignIn = async () => {
+    if (!isFormValid) return;
+    setLoading(true);
+    setStatusMessage(null);
+    try {
+      const { response, data } = await api.post("/auth/login", {
+        email,
+        password,
+      });
+      if (response.ok) {
+        await AsyncStorage.multiSet([
+          ["accessToken", data.data.accessToken],
+          ["refreshToken", data.data.refreshToken],
+          ["user", JSON.stringify(data.data.user)],
+        ]);
+        setStatusMessage({ text: "Login successful!", type: "success" });
+        setTimeout(() => router.replace("/(tabs)"), 800);
+      } else {
+        const message = data?.message || data?.error || "Failed to sign in.";
+        setStatusMessage({ text: message, type: "error" });
+      }
+    } catch {
+      setStatusMessage({
+        text: "Error signing in. Please try again.",
+        type: "error",
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -111,49 +165,70 @@ export default function LoginScreen() {
               />
 
               {/* Form Section */}
-              <View className="gap-5">
-                <InputField
-                  placeholder="Email"
-                  value={email}
-                  onChangeText={setEmail}
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                  autoComplete="email"
-                />
-
-                <InputField
-                  placeholder="Password"
-                  value={password}
-                  onChangeText={setPassword}
-                  showPasswordToggle
-                  autoCapitalize="none"
-                  autoComplete="password"
-                />
-
-                {/* Remember me & Forgot Password Row */}
-                <View className="flex-row justify-between items-center ">
-                  <Checkbox
-                    checked={rememberMe}
-                    onToggle={() => setRememberMe(!rememberMe)}
-                    label="Remember me"
+              <FormWrapper onSubmit={handleSignIn}>
+                <View className="gap-5">
+                  <InputField
+                    placeholder="Email"
+                    value={email}
+                    onChangeText={setEmail}
+                    keyboardType="email-address"
+                    autoCapitalize="none"
+                    autoComplete="email"
                   />
-                  <TouchableOpacity
-                    onPress={handleForgotPassword}
-                    activeOpacity={0.7}
-                  >
-                    <Text className="text-md font-medium text-signup-title">
-                      Forgot Password?
-                    </Text>
-                  </TouchableOpacity>
+
+                  <InputField
+                    placeholder="Password"
+                    value={password}
+                    onChangeText={setPassword}
+                    showPasswordToggle
+                    autoCapitalize="none"
+                    autoComplete="password"
+                  />
+
+                  {/* Remember me & Forgot Password Row */}
+                  <View className="flex-row justify-between items-center">
+                    <Checkbox
+                      checked={rememberMe}
+                      onToggle={() => setRememberMe(!rememberMe)}
+                      label="Remember me"
+                    />
+                    <TouchableOpacity
+                      onPress={handleForgotPassword}
+                      activeOpacity={0.7}
+                    >
+                      <Text className="text-md font-medium text-signup-title">
+                        Forgot Password?
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
                 </View>
-              </View>
+              </FormWrapper>
             </View>
           </ScrollView>
 
           {/* Bottom Section - Fixed at bottom */}
           <View className="px-6 pb-4 pt-4">
             <View className="items-center gap-4">
-              <PrimaryButton title="Sign In" onPress={handleSignIn} />
+              {statusMessage && (
+                <View
+                  className="w-full rounded-xl px-4 py-3"
+                  style={{
+                    backgroundColor:
+                      statusMessage.type === "success"
+                        ? "rgba(255,255,255,0.25)"
+                        : "rgba(0,0,0,0.25)",
+                  }}
+                >
+                  <Text className="text-sm text-center font-medium text-white">
+                    {statusMessage.text}
+                  </Text>
+                </View>
+              )}
+              <PrimaryButton
+                title={loading ? "Signing in..." : "Sign In"}
+                onPress={handleSignIn}
+                disabled={loading || !isFormValid}
+              />
               <TouchableOpacity
                 onPress={handleCreateAccount}
                 activeOpacity={0.7}
