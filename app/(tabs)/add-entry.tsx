@@ -1,4 +1,6 @@
+import { api } from '@/lib/api';
 import { Feather } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as ImagePicker from 'expo-image-picker';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
@@ -40,10 +42,11 @@ const SYMPTOM_TAGS = [
 
 export default function AddEntryScreen() {
   const insets = useSafeAreaInsets();
+  const today = new Date();
   const [searchText, setSearchText] = useState('');
-  const [currentMonth, setCurrentMonth] = useState(9); // October (0-indexed)
-  const [currentYear, setCurrentYear] = useState(2025);
-  const [selectedDate, setSelectedDate] = useState(8);
+  const [currentMonth, setCurrentMonth] = useState(today.getMonth());
+  const [currentYear, setCurrentYear] = useState(today.getFullYear());
+  const [selectedDate, setSelectedDate] = useState(today.getDate());
   const [journalTitle, setJournalTitle] = useState('');
   const [selectedMood, setSelectedMood] = useState<string | null>(null);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
@@ -51,8 +54,13 @@ export default function AddEntryScreen() {
   const [selectedImages, setSelectedImages] = useState<string[]>([]);
   const [showMediaPicker, setShowMediaPicker] = useState(false);
 
-  const getWeekDates = () => {
-    return [6, 7, 8, 9, 10, 11, 12];
+  const getWeekDates = (): number[] => {
+    const refDate = new Date(currentYear, currentMonth, selectedDate);
+    const dayOfWeek = refDate.getDay();
+    return Array.from({ length: 7 }, (_, i) => {
+      const d = new Date(currentYear, currentMonth, selectedDate - dayOfWeek + i);
+      return d.getMonth() === currentMonth ? d.getDate() : 0;
+    }).filter((d) => d > 0);
   };
 
   const handlePreviousMonth = () => {
@@ -93,8 +101,23 @@ export default function AddEntryScreen() {
     }
   };
 
-  const handleSave = () => {
-    // Save entry logic
+  const handleSave = async () => {
+    const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(selectedDate).padStart(2, '0')}`;
+    try {
+      const token = await AsyncStorage.getItem('accessToken');
+      if (token) {
+        await api.post(
+          '/journal',
+          {
+            title: journalTitle || undefined,
+            content: notes,
+            mood: selectedMood || undefined,
+            date: dateStr,
+          },
+          token
+        );
+      }
+    } catch {}
     router.back();
   };
 

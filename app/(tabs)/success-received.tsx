@@ -1,10 +1,11 @@
-import { router } from 'expo-router';
+import { useLocalSearchParams, router } from 'expo-router';
 import React from 'react';
 import { Image, Pressable, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function SuccessReceivedScreen() {
   const insets = useSafeAreaInsets();
+  const { balance } = useLocalSearchParams<{ balance: string }>();
 
   const handleNext = () => {
     router.replace('/(tabs)');
@@ -32,7 +33,9 @@ export default function SuccessReceivedScreen() {
 
           {/* Success Message */}
           <Text className="text-white text-2xl font-semibold text-center">
-            Your wallet was credited with 10,009 SATS
+            {balance
+              ? `Your wallet balance is ${Number(balance).toLocaleString()} SATS`
+              : 'Your wallet was credited successfully!'}
           </Text>
         </View>
 

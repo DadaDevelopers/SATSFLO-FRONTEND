@@ -3,7 +3,9 @@ import { CalendarPicker } from "@/components/signup/calendar-picker";
 import { HomeIndicatorArea } from "@/components/signup/home-indicator-area";
 import { PrimaryButton } from "@/components/signup/primary-button";
 import { TitleSection } from "@/components/signup/title-section";
-import { useRouter } from "expo-router";
+import { api } from "@/lib/api";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useState } from "react";
 import { ScrollView, useWindowDimensions, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -17,12 +19,49 @@ export default function LastPeriodScreen() {
   const isDesktop = screenWidth > MAX_CONTENT_WIDTH;
 
   // Default to a date like October 12 (as shown in the design)
-  const [selectedDate, setSelectedDate] = useState<Date | null>(
-    new Date(2024, 9, 12),
-  );
+  const { cycleLength, periodLength, isEdit } = useLocalSearchParams<{
+    cycleLength: string;
+    periodLength: string;
+    isEdit: string;
+  }>();
+  const editing = isEdit === "true";
+  const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
+  const [loading, setLoading] = useState(false);
 
-  const handleFinish = () => {
-    router.replace("/(tabs)");
+  const handleFinish = async () => {
+    if (!selectedDate) return;
+    setLoading(true);
+    const dateStr = selectedDate.toISOString().split("T")[0];
+    try {
+      const token = await AsyncStorage.getItem("accessToken");
+      if (token) {
+        if (editing) {
+          await api.put(
+            "/cycle-profile",
+            { last_period_start: dateStr },
+            token
+          );
+        } else {
+          await api.post(
+            "/cycle-profile",
+            {
+              last_period_start: dateStr,
+              cycle_length: Number(cycleLength) || 28,
+              period_length: Number(periodLength) || 5,
+              luteal_phase_length: 14,
+              ignore_irregular_cycle: false,
+            },
+            token
+          );
+        }
+      }
+    } catch {}
+    setLoading(false);
+    if (editing) {
+      router.back();
+    } else {
+      router.replace("/(tabs)");
+    }
   };
 
   return (
@@ -72,9 +111,9 @@ export default function LastPeriodScreen() {
 
             {/* Title Section */}
             <TitleSection
-              title="Your last period"
+              title={editing ? "Edit Last Period" : "Your last period"}
               subtitle="When did your last period start?"
-              stepIndicator="3/3"
+              stepIndicator={editing ? undefined : "3/3"}
               className="mb-10"
             />
 
@@ -95,9 +134,9 @@ export default function LastPeriodScreen() {
           <View className="px-5 pb-3 pt-2">
             <View className="items-center">
               <PrimaryButton
-                title="Finish"
+                title={loading ? "Saving..." : editing ? "Save" : "Finish"}
                 onPress={handleFinish}
-                disabled={!selectedDate}
+                disabled={!selectedDate || loading}
               />
             </View>
           </View>

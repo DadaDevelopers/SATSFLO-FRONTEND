@@ -22,7 +22,7 @@ export default function OtpVerificationScreen() {
   const insets = useSafeAreaInsets();
   const { email } = useLocalSearchParams<{ email: string }>();
   const [otp, setOtp] = useState("");
-  const [countdown, setCountdown] = useState(15);
+  const [countdown, setCountdown] = useState(60);
   const [canResend, setCanResend] = useState(false);
   const [loading, setLoading] = useState(false);
   const [statusMessage, setStatusMessage] = useState<{
@@ -30,7 +30,7 @@ export default function OtpVerificationScreen() {
     type: "success" | "error";
   } | null>(null);
 
-  const isFormValid = otp.length === 4;
+  const isFormValid = otp.length === 6;
 
   useEffect(() => {
     if (countdown > 0) {
@@ -52,7 +52,7 @@ export default function OtpVerificationScreen() {
       });
       console.log("Verify OTP response:", data);
       if (response.ok) {
-        const token = data?.data?.token ?? data?.token;
+        const token = data?.data?.reset_token ?? data?.reset_token ?? data?.data?.token ?? data?.token;
         setStatusMessage({ text: "OTP verified!", type: "success" });
         setTimeout(() => {
           router.push({
@@ -77,7 +77,7 @@ export default function OtpVerificationScreen() {
 
   const handleResendCode = async () => {
     if (!canResend) return;
-    setCountdown(15);
+    setCountdown(60);
     setCanResend(false);
     setOtp("");
     setStatusMessage(null);
@@ -124,12 +124,12 @@ export default function OtpVerificationScreen() {
           <View className="w-full pt-8 pb-8">
             <TitleSection
               title="Enter OTP Code"
-              subtitle="Enter the 4 digits code that was sent to your email address."
+              subtitle="Enter the 6 digit code that was sent to your email address."
               className="mb-10"
             />
 
             <View className="items-center gap-6">
-              <OtpInput length={4} value={otp} onChange={setOtp} />
+              <OtpInput length={6} value={otp} onChange={setOtp} />
 
               <TouchableOpacity
                 onPress={handleResendCode}

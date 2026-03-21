@@ -1,7 +1,10 @@
+import { api } from "@/lib/api";
 import { Feather } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
 import React, { useRef, useState } from "react";
 import {
+  Alert,
   Text,
   TextInput,
   TouchableOpacity,
@@ -43,8 +46,25 @@ export default function EnterCodeScreen() {
     inputRefs.current[target]?.focus();
   };
 
-  const handleConnect = () => {
+  const handleConnect = async () => {
     if (!isComplete) return;
+    try {
+      const token = await AsyncStorage.getItem("accessToken");
+      if (token) {
+        const { response, data } = await api.post(
+          "/partner/accept",
+          { invite_code: code.join("") },
+          token
+        );
+        if (!response.ok) {
+          Alert.alert("Error", data?.message || "Invalid or expired code.");
+          return;
+        }
+      }
+    } catch {
+      Alert.alert("Error", "Could not connect. Please try again.");
+      return;
+    }
     router.push("/(tabs)/whats-your-partner-name" as any);
   };
 

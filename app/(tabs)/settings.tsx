@@ -1,9 +1,11 @@
 import { BottomNavigation } from "@/components/home/bottom-navigation";
 import { useTheme } from "@/context/theme-context";
+import { api, clearAuthStorage } from "@/lib/api";
 import { Feather } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { BlurView } from "expo-blur";
 import { router } from "expo-router";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Image,
   Modal,
@@ -11,6 +13,7 @@ import {
   ScrollView,
   StatusBar,
   Text,
+  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
@@ -284,7 +287,65 @@ export default function SettingsScreen() {
   const [rating, setRating] = useState(3);
   const [logoutModalVisible, setLogoutModalVisible] = useState(false);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+  const [deletePassword, setDeletePassword] = useState("");
   const { selectedTheme, setSelectedTheme } = useTheme();
+  const [user, setUser] = useState<{ name: string; email: string } | null>(
+    null
+  );
+
+  useEffect(() => {
+    const loadUser = async () => {
+      const userJson = await AsyncStorage.getItem("user");
+      if (userJson) {
+        const stored = JSON.parse(userJson);
+        setUser({ name: stored.name ?? "", email: stored.email ?? "" });
+      }
+      const token = await AsyncStorage.getItem("accessToken");
+      if (!token) return;
+      try {
+        const { response, data } = await api.get("/auth/me", token);
+        if (response.ok) {
+          const u = data?.data ?? data;
+          setUser({ name: u.name ?? "", email: u.email ?? "" });
+          await AsyncStorage.setItem("user", JSON.stringify(u));
+        }
+      } catch {}
+    };
+    loadUser();
+  }, []);
+
+  const handleLogout = async () => {
+    setLogoutModalVisible(false);
+    try {
+      const [[, accessToken], [, refreshToken]] = await AsyncStorage.multiGet([
+        "accessToken",
+        "refreshToken",
+      ]);
+      if (accessToken) {
+        await api.post(
+          "/auth/logout",
+          { refreshToken: refreshToken ?? "" },
+          accessToken
+        );
+      }
+    } catch {}
+    await clearAuthStorage();
+    router.replace("/(auth)/login" as any);
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!deletePassword.trim()) return;
+    try {
+      const token = await AsyncStorage.getItem("accessToken");
+      if (token) {
+        await api.delete("/users/account", { password: deletePassword }, token);
+      }
+    } catch {}
+    setDeletePassword("");
+    setDeleteModalVisible(false);
+    await clearAuthStorage();
+    router.replace("/(auth)/login" as any);
+  };
 
   const handleTabPress = (tab: TabName) => {
     switch (tab) {
@@ -354,10 +415,10 @@ export default function SettingsScreen() {
               />
               <View className="gap-1">
                 <Text className="text-sm font-medium text-[#1E1E1E]">
-                  Sarah Abraham
+                  {user?.name ?? ""}
                 </Text>
                 <Text className="text-xs text-[#616161]">
-                  sarahabraham@gmail.com
+                  {user?.email ?? ""}
                 </Text>
               </View>
             </View>
@@ -686,10 +747,7 @@ export default function SettingsScreen() {
               </TouchableOpacity>
 
               <TouchableOpacity
-                onPress={() => {
-                  setLogoutModalVisible(false);
-                  router.replace("/(auth)/login" as any);
-                }}
+                onPress={handleLogout}
                 activeOpacity={0.8}
                 className="flex-1 h-[50px] bg-[#FF4081] rounded-full items-center justify-center"
               >
@@ -707,7 +765,7 @@ export default function SettingsScreen() {
         visible={deleteModalVisible}
         transparent
         animationType="slide"
-        onRequestClose={() => setDeleteModalVisible(false)}
+        onRequestClose={() => { setDeleteModalVisible(false); setDeletePassword(""); }}
       >
         <View className="flex-1">
           {/* Blur overlay */}
@@ -735,15 +793,27 @@ export default function SettingsScreen() {
             <View className="h-px bg-[#FFB3CD]" />
 
             {/* Warning text */}
-            <Text className="font-inter text-base leading-6 text-[#222222] text-center mt-5 mb-10 px-12">
+            <Text className="font-inter text-base leading-6 text-[#222222] text-center mt-5 mb-5 px-12">
               Are you sure you want to delete this account? All data will be
               accessible for only 30 days after confirmation.
             </Text>
 
+            {/* Password confirmation */}
+            <View className="px-5 mb-8">
+              <TextInput
+                value={deletePassword}
+                onChangeText={setDeletePassword}
+                placeholder="Enter your password to confirm"
+                placeholderTextColor="#999"
+                secureTextEntry
+                className="bg-[#FFE0EB] rounded-xl px-4 h-12 text-sm text-[#1E1E1E]"
+              />
+            </View>
+
             {/* Buttons */}
             <View className="flex-row gap-3 px-5">
               <TouchableOpacity
-                onPress={() => setDeleteModalVisible(false)}
+                onPress={() => { setDeleteModalVisible(false); setDeletePassword(""); }}
                 activeOpacity={0.8}
                 className="flex-1 h-[50px] bg-[#FFF5F9] rounded-full items-center justify-center"
               >
@@ -753,10 +823,7 @@ export default function SettingsScreen() {
               </TouchableOpacity>
 
               <TouchableOpacity
-                onPress={() => {
-                  setDeleteModalVisible(false);
-                  router.replace("/(auth)/login" as any);
-                }}
+                onPress={handleDeleteAccount}
                 activeOpacity={0.8}
                 className="flex-1 h-[50px] bg-[#C62828] rounded-full items-center justify-center"
               >
