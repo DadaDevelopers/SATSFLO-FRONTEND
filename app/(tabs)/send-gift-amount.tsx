@@ -1,9 +1,11 @@
-import { Feather } from "@expo/vector-icons";
-import * as Clipboard from "expo-clipboard";
-import { router } from "expo-router";
-import React, { useState } from "react";
-import { Alert, Pressable, Text, TextInput, View } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { api } from '@/lib/api';
+import { Feather } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as Clipboard from 'expo-clipboard';
+import { router } from 'expo-router';
+import React, { useState } from 'react';
+import { Alert, Pressable, Text, TextInput, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 type CurrencyType = "USD" | "EUR" | "KES" | "NGN";
 type CurrencyType = "USD" | "EUR" | "KES" | "NGN";
@@ -156,6 +158,8 @@ export default function SendGiftAmountScreen() {
     return Math.round(satsEquivalent).toLocaleString();
   };
 
+  const [validating, setValidating] = useState(false);
+
   const handleProceed = async () => {
     if (!destination || !amount) {
       Alert.alert(
@@ -164,8 +168,31 @@ export default function SendGiftAmountScreen() {
       );
       return;
     }
-    console.log("Proceeding with:", { destination, amount, currency, note });
-    router.push("/gift-token/create-invoice");
+    setValidating(true);
+    try {
+      const token = await AsyncStorage.getItem('accessToken');
+      if (token) {
+        const { response, data } = await api.post(
+          '/payments/validate',
+          { lightning_address: destination },
+          token
+        );
+        if (!response.ok) {
+          Alert.alert('Invalid Address', data?.message || 'Please check the lightning address and try again.');
+          return;
+        }
+      }
+    } catch {
+      Alert.alert('Error', 'Could not validate address. Please try again.');
+      return;
+    } finally {
+      setValidating(false);
+    }
+    const amountSats = calculateSatsEquivalent().replace(/,/g, '');
+    router.push({
+      pathname: '/(tabs)/select-wallet' as any,
+      params: { lightning_address: destination, amount_sats: amountSats, note },
+    });
   };
 
   return (
@@ -429,12 +456,12 @@ export default function SendGiftAmountScreen() {
       >
         <Pressable
           onPress={handleProceed}
-          disabled={creating || validating}
+          disabled={validating}
           className="w-[250px] py-4 bg-[#FF82AD] rounded-full items-center justify-center active:opacity-80 border-[0.5px] border-[#FF669A] mb-5"
           style={{ opacity: creating || validating ? 0.7 : 1 }}
         >
           <Text className="text-white font-inter font-medium text-[15px]">
-            Create Invoice
+            {validating ? 'Validating...' : 'Proceed'}
           </Text>
         </Pressable>
         <View className="w-full h-[34px] bg-[#FF3378] items-center justify-center">

@@ -2,7 +2,7 @@ import { api } from "@/lib/api";
 import { Feather } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router, useLocalSearchParams } from "expo-router";
-import React, { useEffect, useState } from "react";
+import { default as React, default as React, useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Image,
@@ -12,7 +12,7 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  View,
+  View
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Svg, { Path } from "react-native-svg";
@@ -46,8 +46,19 @@ interface Comment {
   content: string;
   user?: { name?: string };
   created_at?: string;
+  content: string;
+  user?: { name?: string };
+  created_at?: string;
 }
 
+interface ThreadDetail {
+  id: string;
+  title?: string;
+  content: string;
+  user?: { name?: string };
+  created_at?: string;
+  comments_count?: number;
+}
 interface ThreadDetail {
   id: string;
   title?: string;
@@ -60,7 +71,55 @@ interface ThreadDetail {
 export default function ViewCommentsScreen() {
   const insets = useSafeAreaInsets();
   const { threadId } = useLocalSearchParams<{ threadId: string }>();
+  const { threadId } = useLocalSearchParams<{ threadId: string }>();
   const [commentText, setCommentText] = useState("");
+  const [comments, setComments] = useState<Comment[]>([]);
+  const [thread, setThread] = useState<ThreadDetail | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [sending, setSending] = useState(false);
+
+  useEffect(() => {
+    if (!threadId) return;
+    const loadData = async () => {
+      setLoading(true);
+      try {
+        const [threadRes, commentsRes] = await Promise.all([
+          api.get(`/threads/${threadId}`),
+          api.get(`/threads/${threadId}/comments`),
+        ]);
+        if (threadRes.response.ok) {
+          setThread(threadRes.data?.data ?? threadRes.data);
+        }
+        if (commentsRes.response.ok) {
+          const list = commentsRes.data?.data ?? commentsRes.data ?? [];
+          setComments(Array.isArray(list) ? list : []);
+        }
+      } catch {}
+      setLoading(false);
+    };
+    loadData();
+  }, [threadId]);
+
+  const handleSendComment = async () => {
+    if (!commentText.trim() || !threadId) return;
+    setSending(true);
+    try {
+      const token = await AsyncStorage.getItem("accessToken");
+      if (token) {
+        const { response, data } = await api.post(
+          `/threads/${threadId}/comments`,
+          { content: commentText.trim() },
+          token
+        );
+        if (response.ok) {
+          const newComment = data?.data ?? data;
+          setComments((prev) => [...prev, newComment]);
+          setCommentText("");
+        }
+      }
+    } catch {}
+    setSending(false);
+  };
   const [comments, setComments] = useState<Comment[]>([]);
   const [thread, setThread] = useState<ThreadDetail | null>(null);
   const [loading, setLoading] = useState(false);
@@ -147,8 +206,12 @@ export default function ViewCommentsScreen() {
               <View className="flex-1 ml-3">
                 <Text className="text-xs font-inter font-semibold text-white">
                   {thread?.user?.name ?? "User"}
+                  {thread?.user?.name ?? "User"}
                 </Text>
                 <Text className="text-[10px] font-inter text-[#FAFAFA] mt-0.5">
+                  {thread?.created_at
+                    ? new Date(thread.created_at).toLocaleDateString()
+                    : ""}
                   {thread?.created_at
                     ? new Date(thread.created_at).toLocaleDateString()
                     : ""}
@@ -158,10 +221,16 @@ export default function ViewCommentsScreen() {
                     {thread.title}
                   </Text>
                 ) : null}
+                {thread?.title ? (
+                  <Text className="text-xs font-inter font-semibold text-white mt-2">
+                    {thread.title}
+                  </Text>
+                ) : null}
                 <Text
                   className="text-xs font-inter mt-2 leading-[15px]"
                   style={{ color: "rgba(250, 250, 250, 0.8)" }}
                 >
+                  {thread?.content ?? ""}
                   {thread?.content ?? ""}
                 </Text>
               </View>
@@ -189,10 +258,16 @@ export default function ViewCommentsScreen() {
               </Text>
               <Text className="text-xs font-inter font-semibold text-[#FAFAFA]">
                 {comments.length}
+                {comments.length}
               </Text>
             </View>
             <View className="h-[1px] bg-[#FF669A]" />
           </View>
+
+          {/* Loading indicator */}
+          {loading && (
+            <ActivityIndicator color="#FFFFFF" style={{ marginTop: 20 }} />
+          )}
 
           {/* Loading indicator */}
           {loading && (
@@ -204,9 +279,11 @@ export default function ViewCommentsScreen() {
             {comments.map((comment) => (
               <View key={comment.id} className="flex-row">
                 <View className="relative">
-                  <View className="w-10 h-10 rounded-full bg-[#FFE6EE] items-center justify-center">
-                    <Feather name="user" size={20} color="#FF82AD" />
-                  </View>
+                  <Image
+                    source={require("@/assets/images/zuri.png")}
+                    className="w-10 h-10 rounded-full"
+                    resizeMode="cover"
+                  />
                   <View className="absolute -top-0.5 -right-0.5 w-3 h-3 rounded-full bg-white items-center justify-center">
                     <Feather name="plus-circle" size={12} color="#FF4081" />
                   </View>
@@ -214,7 +291,13 @@ export default function ViewCommentsScreen() {
                 <View className="flex-1 ml-3">
                   <Text className="text-[14px] font-inter font-semibold text-white">
                     {comment.user?.name ?? "User"}
+                    {comment.user?.name ?? "User"}
                   </Text>
+                  {comment.created_at ? (
+                    <Text className="text-[10px] font-inter text-[#FAFAFA]">
+                      {new Date(comment.created_at).toLocaleDateString()}
+                    </Text>
+                  ) : null}
                   {comment.created_at ? (
                     <Text className="text-[10px] font-inter text-[#FAFAFA]">
                       {new Date(comment.created_at).toLocaleDateString()}
@@ -224,6 +307,7 @@ export default function ViewCommentsScreen() {
                     className="text-xs font-inter mt-2 leading-[15px]"
                     style={{ color: "#F7F7F7" }}
                   >
+                    {comment.content}
                     {comment.content}
                   </Text>
                   <View className="flex-row items-center justify-between mt-3">
@@ -263,7 +347,9 @@ export default function ViewCommentsScreen() {
               value={commentText}
               onChangeText={setCommentText}
               editable={!sending}
+              editable={!sending}
             />
+            <TouchableOpacity className="ml-2" onPress={handleSendComment} disabled={sending}>
             <TouchableOpacity className="ml-2" onPress={handleSendComment} disabled={sending}>
               <SendIcon />
             </TouchableOpacity>

@@ -1,10 +1,9 @@
-import { api } from "@/lib/api";
-import { Feather } from "@expo/vector-icons";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { router, useFocusEffect } from "expo-router";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import { api } from '@/lib/api';
+import { Feather, Ionicons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { router } from 'expo-router';
+import React, { useEffect, useState } from 'react';
 import {
-  Alert,
   ScrollView,
   StatusBar,
   Text,
@@ -31,138 +30,58 @@ const MONTHS = [
   "December",
 ];
 
-function formatDate(d: Date): string {
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-}
-
-const MOOD_LABEL: Record<string, string> = {
-  inlove: "In love",
-  peaceful: "Peaceful",
-  lonely: "Lonely",
-  angry: "Angry",
-  normal: "Normal",
-  happy: "Happy",
-  calm: "Calm",
-  hyped: "Hyped",
-};
-
 interface JournalEntry {
   id: string;
   date: string;
   title?: string;
   content?: string;
   mood?: string;
-  symptoms?: string[];
-  images?: string[];
-  cycle_day?: number;
 }
 
 export default function JournalScreen() {
   const insets = useSafeAreaInsets();
-  const [searchText, setSearchText] = useState("");
+  const [searchText, setSearchText] = useState('');
   const today = new Date();
   const [currentMonth, setCurrentMonth] = useState(today.getMonth());
   const [currentYear, setCurrentYear] = useState(today.getFullYear());
-  const [selectedDate, setSelectedDate] = useState<string>(() =>
-    formatDate(today),
-  );
+  const [selectedDate, setSelectedDate] = useState<number | null>(today.getDate());
   const [entries, setEntries] = useState<JournalEntry[]>([]);
-  const [searchResults, setSearchResults] = useState<JournalEntry[]>([]);
-  const [totalCount, setTotalCount] = useState(0);
-  const [deletingId, setDeletingId] = useState<string | null>(null);
-  const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const loadEntries = useCallback(async () => {
-    const token = await AsyncStorage.getItem("accessToken");
-    if (!token) return;
-    const mm = String(currentMonth + 1).padStart(2, "0");
-    try {
-      const [monthRes, totalRes] = await Promise.all([
-        api.get(`/journal?month=${currentYear}-${mm}`, token),
-        api.get("/journal", token),
-      ]);
-      if (monthRes.response.ok) {
-        const list = monthRes.data?.data ?? monthRes.data ?? [];
-        setEntries(Array.isArray(list) ? list : []);
-      }
-      if (totalRes.response.ok) {
-        const all = totalRes.data?.data ?? totalRes.data ?? [];
-        setTotalCount(Array.isArray(all) ? all.length : 0);
-      }
-    } catch {}
-  }, [currentMonth, currentYear]);
-
-  const handleDelete = (id: string) => {
-    Alert.alert("Delete Entry", "Are you sure you want to delete this entry?", [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Delete",
-        style: "destructive",
-        onPress: async () => {
-          setDeletingId(id);
-          try {
-            const token = await AsyncStorage.getItem("accessToken");
-            if (!token) return;
-            const { response } = await api.delete(`/journal/${id}`, {}, token);
-            if (response.ok) {
-              setEntries((prev) => prev.filter((e) => e.id !== id));
-              setSearchResults((prev) => prev.filter((e) => e.id !== id));
-              setTotalCount((prev) => Math.max(0, prev - 1));
-            }
-          } catch {}
-          setDeletingId(null);
-        },
-      },
-    ]);
-  };
-
-  // Reload when screen comes back into focus (e.g. after add-entry)
-  useFocusEffect(
-    useCallback(() => {
-      loadEntries();
-    }, [loadEntries]),
-  );
-
-  // Debounced server-side search
   useEffect(() => {
-    if (!searchText.trim()) {
-      setSearchResults([]);
-      return;
-    }
-    if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
-    searchTimerRef.current = setTimeout(async () => {
-      const token = await AsyncStorage.getItem("accessToken");
+    const loadEntries = async () => {
+      const token = await AsyncStorage.getItem('accessToken');
       if (!token) return;
-      const mm = String(currentMonth + 1).padStart(2, "0");
+      const mm = String(currentMonth + 1).padStart(2, '0');
       try {
-        const { response, data } = await api.get(
-          `/journal/search?q=${encodeURIComponent(searchText.trim())}&month=${currentYear}-${mm}`,
-          token,
-        );
+        const { response, data } = await api.get(`/journal?month=${currentYear}-${mm}`, token);
         if (response.ok) {
           const list = data?.data ?? data ?? [];
-          setSearchResults(Array.isArray(list) ? list : []);
+          setEntries(Array.isArray(list) ? list : []);
         }
       } catch {}
-    }, 400);
-    return () => {
-      if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
     };
-  }, [searchText, currentMonth, currentYear]);
+    loadEntries();
+  }, [currentMonth, currentYear]);
 
-  // Get all 7 dates for the week containing selectedDate
-  const getWeekDates = (): Date[] => {
-    const [y, m, d] = selectedDate.split("-").map(Number);
-    const refDate = new Date(y, m - 1, d);
+  // Get dates for the current week containing selectedDate
+  const getWeekDates = (): number[] => {
+    const ref = selectedDate ?? today.getDate();
+    const refDate = new Date(currentYear, currentMonth, ref);
     const dayOfWeek = refDate.getDay();
-    return Array.from(
-      { length: 7 },
-      (_, i) => new Date(y, m - 1, d - dayOfWeek + i),
-    );
+    return Array.from({ length: 7 }, (_, i) => {
+      const d = new Date(currentYear, currentMonth, ref - dayOfWeek + i);
+      return d.getMonth() === currentMonth ? d.getDate() : 0;
+    }).filter((d) => d > 0);
   };
 
-  // When searching: show server results; when not: show entries for selected date
-  const filteredEntries = searchText.trim() ? searchResults : entries;
+  const filteredEntries = entries.filter((e) => {
+    const matchesSearch = !searchText ||
+      e.title?.toLowerCase().includes(searchText.toLowerCase()) ||
+      e.content?.toLowerCase().includes(searchText.toLowerCase());
+    const matchesDate = !selectedDate ||
+      parseInt((e.date ?? '').split('T')[0].split('-')[2] ?? '0', 10) === selectedDate;
+    return matchesSearch && matchesDate;
+  });
 
   const handlePreviousMonth = () => {
     if (currentMonth === 0) {
@@ -558,90 +477,64 @@ export default function JournalScreen() {
                     ) : null}
                   </View>
 
-                  {/* Delete row */}
-                  <View
-                    style={{
-                      borderTopWidth: 0.5,
-                      borderTopColor: "#FFB3CC",
-                      marginTop: 4,
-                      paddingTop: 10,
-                      alignItems: "flex-end",
-                    }}
-                  >
-                    <TouchableOpacity
-                      onPress={() => handleDelete(entry.id)}
-                      disabled={deletingId === entry.id}
-                      hitSlop={{ top: 6, bottom: 6, left: 12, right: 6 }}
-                      style={{ flexDirection: "row", alignItems: "center", gap: 5 }}
-                    >
-                      <Feather
-                        name="trash-2"
-                        size={14}
-                        color={deletingId === entry.id ? "#cccccc" : "#F43B3B"}
-                      />
-                      <Text
-                        style={{
-                          fontSize: 12,
-                          fontWeight: "500",
-                          color: deletingId === entry.id ? "#cccccc" : "#F43B3B",
-                        }}
-                      >
-                        {deletingId === entry.id ? "Deleting…" : "Delete"}
-                      </Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              </TouchableOpacity>
-            );
-          })}
-
+      {/* Entries or Empty State */}
+      {filteredEntries.length > 0 ? (
+        <ScrollView
+          className="flex-1 px-5 mt-4"
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: 20 }}
+        >
+          {filteredEntries.map((entry) => (
+            <View
+              key={entry.id}
+              className="bg-[#FFE6EE] rounded-xl px-4 py-3 mb-3"
+            >
+              {entry.title ? (
+                <Text className="text-[#1E1E1E] font-medium text-sm mb-1">{entry.title}</Text>
+              ) : null}
+              {entry.content ? (
+                <Text className="text-[#4D4D4D] text-xs" numberOfLines={3}>{entry.content}</Text>
+              ) : null}
+              <Text className="text-[#999] text-xs mt-1">{new Date(entry.date).toDateString()}</Text>
+            </View>
+          ))}
+          <TouchableOpacity
+            onPress={handleAddEntry}
+            className="mt-2 px-4 py-2.5 border border-[#FFB4CD] rounded-full self-center"
+            style={{ backgroundColor: '#FF4081' }}
+            activeOpacity={0.8}
+          >
+            <Text className="text-white text-sm font-medium">Add New Entry</Text>
+          </TouchableOpacity>
         </ScrollView>
       ) : (
         <View className="flex-1 items-center justify-center pb-20 mb-10">
           {/* Empty Document Icon */}
-          <Svg width={55} height={65} viewBox="0 0 55 65" fill="none">
-            <Path
-              d="M54.2688 18.2313L36.7688 0.731251C36.5364 0.499165 36.2606 0.31513 35.9571 0.18966C35.6536 0.0641895 35.3284 -0.000257465 35 7.72996e-07H5C3.67392 7.72996e-07 2.40215 0.526785 1.46447 1.46447C0.526784 2.40215 0 3.67392 0 5V60C0 61.3261 0.526784 62.5979 1.46447 63.5355C2.40215 64.4732 3.67392 65 5 65H50C51.3261 65 52.5979 64.4732 53.5355 63.5355C54.4732 62.5979 55 61.3261 55 60V20C55.0003 19.6716 54.9358 19.3464 54.8103 19.0429C54.6849 18.7394 54.5008 18.4636 54.2688 18.2313ZM37.5 8.53438L46.4656 17.5H37.5V8.53438ZM50 60H5V5H32.5V20C32.5 20.663 32.7634 21.2989 33.2322 21.7678C33.7011 22.2366 34.337 22.5 35 22.5H50V60ZM36.7688 34.2688L31.0344 40L36.7688 45.7312C37.001 45.9635 37.1853 46.2393 37.311 46.5428C37.4367 46.8462 37.5014 47.1715 37.5014 47.5C37.5014 47.8285 37.4367 48.1538 37.311 48.4572C37.1853 48.7607 37.001 49.0365 36.7688 49.2688C36.5365 49.501 36.2607 49.6853 35.9572 49.811C35.6538 49.9367 35.3285 50.0014 35 50.0014C34.6715 50.0014 34.3462 49.9367 34.0428 49.811C33.7393 49.6853 33.4635 49.501 33.2312 49.2688L27.5 43.5344L21.7688 49.2688C21.5365 49.501 21.2607 49.6853 20.9572 49.811C20.6538 49.9367 20.3285 50.0014 20 50.0014C19.6715 50.0014 19.3462 49.9367 19.0428 49.811C18.7393 49.6853 18.4635 49.501 18.2312 49.2688C17.999 49.0365 17.8147 48.7607 17.689 48.4572C17.5633 48.1538 17.4986 47.8285 17.4986 47.5C17.4986 47.1715 17.5633 46.8462 17.689 46.5428C17.8147 46.2393 17.999 45.9635 18.2312 45.7312L23.9656 40L18.2312 34.2688C17.7621 33.7996 17.4986 33.1634 17.4986 32.5C17.4986 31.8366 17.7621 31.2003 18.2312 30.7312C18.7003 30.2621 19.3366 29.9986 20 29.9986C20.6634 29.9986 21.2997 30.2621 21.7688 30.7312L27.5 36.4656L33.2312 30.7312C33.4635 30.499 33.7393 30.3147 34.0428 30.189C34.3462 30.0633 34.6715 29.9986 35 29.9986C35.3285 29.9986 35.6538 30.0633 35.9572 30.189C36.2607 30.3147 36.5365 30.499 36.7688 30.7312C37.001 30.9635 37.1853 31.2393 37.311 31.5428C37.4367 31.8462 37.5014 32.1715 37.5014 32.5C37.5014 32.8285 37.4367 33.1538 37.311 33.4572C37.1853 33.7607 37.001 34.0365 36.7688 34.2688Z"
-              fill="white"
-            />
-          </Svg>
+          <View className="w-20 h-20 items-center justify-center mb-2">
+            <Ionicons name="document-outline" size={80} color="#FFFFFF" />
+            <View className="absolute">
+              <Feather name="x" size={24} color="#FFFFFF" />
+            </View>
+          </View>
 
           <Text className="text-[#FAFAFA] text-base font-medium mt-2">
             No entry added
           </Text>
+          <Text className="text-[#FAFAFA] text-base font-medium mt-2">
+            No entry added
+          </Text>
 
+          {/* Add New Entry Button */}
+          <TouchableOpacity
+            onPress={handleAddEntry}
+            className="mt-6 px-4 py-2.5 border border-[#FFB4CD] rounded-full"
+            style={{ backgroundColor: '#FF4081' }}
+            activeOpacity={0.8}
+          >
+            <Text className="text-white text-sm font-medium">Add New Entry</Text>
+          </TouchableOpacity>
         </View>
       )}
-
-      {/* Floating Add New Entry button — bottom-right */}
-      <TouchableOpacity
-        onPress={handleAddEntry}
-        activeOpacity={0.8}
-        style={{
-          position: 'absolute',
-          bottom: (insets.bottom > 0 ? insets.bottom : 8) + 48,
-          right: 20,
-          backgroundColor: '#FF4081',
-          borderWidth: 1,
-          borderColor: '#FFB4CD',
-          borderRadius: 999,
-          flexDirection: 'row',
-          alignItems: 'center',
-          paddingHorizontal: 16,
-          paddingVertical: 10,
-          gap: 6,
-          elevation: 4,
-          shadowColor: '#000',
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: 0.15,
-          shadowRadius: 4,
-        }}
-      >
-        <Svg width={14} height={14} viewBox="0 0 14 14" fill="none">
-          <Path d="M12.4688 7C12.4688 7.17405 12.3996 7.34097 12.2765 7.46404C12.1535 7.58711 11.9865 7.65625 11.8125 7.65625H7.65625V11.8125C7.65625 11.9865 7.58711 12.1535 7.46404 12.2765C7.34097 12.3996 7.17405 12.4688 7 12.4688C6.82595 12.4688 6.65903 12.3996 6.53596 12.2765C6.41289 12.1535 6.34375 11.9865 6.34375 11.8125V7.65625H2.1875C2.01345 7.65625 1.84653 7.58711 1.72346 7.46404C1.60039 7.34097 1.53125 7.17405 1.53125 7C1.53125 6.82595 1.60039 6.65903 1.72346 6.53596C1.84653 6.41289 2.01345 6.34375 2.1875 6.34375H6.34375V2.1875C6.34375 2.01345 6.41289 1.84653 6.53596 1.72346C6.65903 1.60039 6.82595 1.53125 7 1.53125C7.17405 1.53125 7.34097 1.60039 7.46404 1.72346C7.58711 1.84653 7.65625 2.01345 7.65625 2.1875V6.34375H11.8125C11.9865 6.34375 12.1535 6.41289 12.2765 6.53596C12.3996 6.65903 12.4688 6.82595 12.4688 7Z" fill="white"/>
-        </Svg>
-        <Text style={{ fontFamily: 'Inter', fontWeight: '500', fontSize: 14, color: '#FFFFFF' }}>Add New Entry</Text>
-      </TouchableOpacity>
 
       {/* Home Indicator Area */}
       <View

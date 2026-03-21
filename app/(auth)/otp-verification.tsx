@@ -22,7 +22,7 @@ export default function OtpVerificationScreen() {
   const insets = useSafeAreaInsets();
   const { email } = useLocalSearchParams<{ email: string }>();
   const [otp, setOtp] = useState("");
-  const [countdown, setCountdown] = useState(15);
+  const [countdown, setCountdown] = useState(60);
   const [canResend, setCanResend] = useState(false);
   const [loading, setLoading] = useState(false);
   const [statusMessage, setStatusMessage] = useState<{
@@ -58,7 +58,7 @@ export default function OtpVerificationScreen() {
       });
       console.log("Verify OTP response:", data);
       if (response.ok) {
-        const token = data?.data?.token ?? data?.token;
+        const token = data?.data?.reset_token ?? data?.reset_token ?? data?.data?.token ?? data?.token;
         setStatusMessage({ text: "OTP verified!", type: "success" });
         setTimeout(() => {
           router.push({
@@ -83,7 +83,7 @@ export default function OtpVerificationScreen() {
 
   const handleResendCode = async () => {
     if (!canResend) return;
-    setCountdown(15);
+    setCountdown(60);
     setCanResend(false);
     setOtp("");
     setStatusMessage(null);

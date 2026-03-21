@@ -1,10 +1,9 @@
 import { api } from "@/lib/api";
-import { uploadAvatar } from "@/services/upload.service";
 import { Feather } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import DateTimePicker, { DateTimePickerEvent } from "@react-native-community/datetimepicker";
 import * as ImagePicker from "expo-image-picker";
 import { router } from "expo-router";
+import React, { useEffect, useState } from "react";
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -56,11 +55,11 @@ export default function MyProfileScreen() {
 
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
   const [selectedCountry, setSelectedCountry] = useState(countries[0]);
   const [phone, setPhone] = useState("");
   const [dateOfBirth, setDateOfBirth] = useState("");
-  const [showDatePicker, setShowDatePicker] = useState(false);
-  const [datePickerValue, setDatePickerValue] = useState(new Date());
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -85,7 +84,6 @@ export default function MyProfileScreen() {
           setFullName(profile.name ?? "");
           setEmail(profile.email ?? "");
           setPhone(profile.phone ?? "");
-          if (profile.avatar_url) setProfileImage(profile.avatar_url);
           if (profile.date_of_birth) {
             const parts = profile.date_of_birth.split("T")[0].split("-");
             if (parts.length === 3)
@@ -103,6 +101,7 @@ export default function MyProfileScreen() {
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
   const handleSave = async () => {
+  const handleSave = async () => {
     if (!fullName.trim()) {
       Alert.alert("Validation Error", "Full name is required.");
       return;
@@ -114,7 +113,40 @@ export default function MyProfileScreen() {
     const token = await AsyncStorage.getItem("accessToken");
     if (!token) {
       Alert.alert("Error", "Session expired. Please log in again.");
+    const token = await AsyncStorage.getItem("accessToken");
+    if (!token) {
+      Alert.alert("Error", "Session expired. Please log in again.");
       return;
+    }
+    // Convert DD-MM-YYYY display format to YYYY-MM-DD for API
+    let dateForApi = dateOfBirth;
+    if (dateOfBirth.includes("-")) {
+      const parts = dateOfBirth.split("-");
+      if (parts.length === 3 && parts[2].length === 4) {
+        dateForApi = `${parts[2]}-${parts[1]}-${parts[0]}`;
+      }
+    }
+    try {
+      const { response, data } = await api.put(
+        "/users/profile",
+        {
+          name: fullName,
+          phone: `${selectedCountry.code}${phone}`,
+          date_of_birth: dateForApi,
+        },
+        token
+      );
+      if (response.ok) {
+        const updated = data?.data ?? data;
+        await AsyncStorage.setItem("user", JSON.stringify(updated));
+        Alert.alert("Success", "Profile saved successfully.", [
+          { text: "OK", onPress: () => router.push("/(tabs)/settings" as any) },
+        ]);
+      } else {
+        Alert.alert("Error", data?.message || "Failed to save profile.");
+      }
+    } catch {
+      Alert.alert("Error", "Error saving profile. Please try again.");
     }
     // Convert DD-MM-YYYY display format to YYYY-MM-DD for API
     let dateForApi = dateOfBirth;

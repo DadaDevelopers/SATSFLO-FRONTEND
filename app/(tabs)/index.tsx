@@ -7,9 +7,11 @@ import { MenstrualPhaseModal } from "@/components/home/menstrual-phase-modal";
 import { OvulationPhaseModal } from "@/components/home/ovulation-phase-modal";
 import { PhaseLegend } from "@/components/home/phase-legend";
 import { ResponsiveScreen } from "@/components/ui/responsive-container";
+import { api } from "@/lib/api";
 import { Feather } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Image,
   ScrollView,
@@ -23,6 +25,25 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 type TabName = "home" | "calendar" | "add" | "chat" | "settings";
 
+const MONTHS = [
+  "January","February","March","April","May","June",
+  "July","August","September","October","November","December",
+];
+
+function formatCurrentDate(date: Date): string {
+  return `${MONTHS[date.getMonth()]} ${date.getDate()}${getOrdinalSuffix(date.getDate())}`;
+}
+
+function getOrdinalSuffix(day: number): string {
+  if (day > 3 && day < 21) return "th";
+  switch (day % 10) {
+    case 1: return "st";
+    case 2: return "nd";
+    case 3: return "rd";
+    default: return "th";
+  }
+}
+
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const { width: windowWidth } = useWindowDimensions();
@@ -33,14 +54,46 @@ export default function HomeScreen() {
   const [showLutealModal, setShowLutealModal] = useState(false);
   const [showOvulationModal, setShowOvulationModal] = useState(false);
 
-  // Sample data - in a real app, this would come from user's data/state
-  const cycleData = {
-    currentDay: 26,
-    cycleLength: 31,
+  const today = new Date();
+  const [cycleData, setCycleData] = useState({
+    currentDay: 1,
+    cycleLength: 28,
     periodLength: 5,
-    daysUntilPeriod: 13,
-    currentDate: "October 26th",
-  };
+    daysUntilPeriod: 0,
+    currentDate: formatCurrentDate(today),
+  });
+
+  useEffect(() => {
+    const loadCycleData = async () => {
+      const token = await AsyncStorage.getItem("accessToken");
+      if (!token) return;
+      try {
+        const { response, data } = await api.get("/cycles/current", token);
+        if (response.ok) {
+          const d = data?.data ?? data;
+          setCycleData({
+            currentDay: d?.current_day ?? 1,
+            cycleLength: d?.cycle_length ?? 28,
+            periodLength: d?.period_length ?? 5,
+            daysUntilPeriod: d?.days_until_next_period ?? 0,
+            currentDate: formatCurrentDate(today),
+          });
+        } else {
+          // fallback to cycle-profile
+          const { response: r2, data: d2 } = await api.get("/cycle-profile", token);
+          if (r2.ok) {
+            const p = d2?.data ?? d2;
+            setCycleData((prev) => ({
+              ...prev,
+              cycleLength: p?.cycle_length ?? prev.cycleLength,
+              periodLength: p?.period_length ?? prev.periodLength,
+            }));
+          }
+        }
+      } catch {}
+    };
+    loadCycleData();
+  }, []);
 
   const handleTabPress = (tab: TabName) => {
     setActiveTab(tab);
@@ -64,7 +117,10 @@ export default function HomeScreen() {
   };
 
   const handleEditPeriod = () => {
-    router.push("/edit-period");
+    router.push({
+      pathname: "/(auth)/last-period",
+      params: { isEdit: "true" },
+    });
   };
 
   const handleNotificationPress = () => {

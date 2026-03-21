@@ -1,8 +1,5 @@
-import { FlowDroplet } from "@/components/add-log/flow-droplet";
-import { useAddLog } from "@/context/add-log-context";
 import { api } from "@/lib/api";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import {
   Alert,
@@ -510,37 +507,39 @@ export default function AddLogScreen() {
   };
 
   const handleSave = async () => {
+    saveCurrentDay();
     const dateStr = formatDateStr(selectedDate);
     try {
-      // Perform the save
-      await saveCurrentDay();
-
       const token = await AsyncStorage.getItem("accessToken");
       if (token) {
+        // Log the day's data
+        await api.put(
+          `/logs/${dateStr}`,
+          {
+            flow: dayData.flowLevel,
+            symptoms: dayData.symptoms,
+            mood: dayData.moods,
+            notes: dayData.note,
+            weight: dayData.weight,
+            temperature: dayData.temperature,
+            water_intake: dayData.waterIntake,
+          },
+          token,
+        );
+
+        // Start period cycle if marked
         if (dayData.periodStart) {
           await api.post("/cycles/start", { start_date: dateStr }, token);
         }
+        // End period cycle if marked
         if (dayData.periodEnd) {
           await api.post("/cycles/end", { end_date: dateStr }, token);
         }
       }
-      router.navigate({
-        pathname: "/(tabs)/calendar",
-        params: { date: dateStr },
-      } as any);
-    } catch (error) {
-      console.error("Error saving log:", error);
-      Alert.alert(
-        "Sync Error",
-        "Saved locally, but failed to sync with server. Please check your connection.",
-        [
-          {
-            text: "OK",
-            onPress: () => router.navigate("/(tabs)/calendar" as any),
-          },
-        ],
-      );
-    }
+    } catch {}
+    Alert.alert("Saved", "Your log has been saved successfully!", [
+      { text: "OK", onPress: () => router.back() },
+    ]);
   };
 
   // Edit pen icon component

@@ -2,12 +2,17 @@ import { api } from "@/lib/api";
 import { Feather } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Clipboard from "expo-clipboard";
-import { router, useLocalSearchParams } from "expo-router";
-import React, { useEffect, useRef, useState } from "react";
-import { ActivityIndicator, Alert, Share, Text, TouchableOpacity, View } from "react-native";
+import { router } from "expo-router";
+import React, { useEffect, useState } from "react";
+import {
+  ActivityIndicator,
+  Alert,
+  Share,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-
-type InviteStatus = "pending" | "accepted" | "expired";
 
 function formatTime(seconds: number): string {
   const h = Math.floor(seconds / 3600);
@@ -18,114 +23,28 @@ function formatTime(seconds: number): string {
 
 export default function GenerateInviteScreen() {
   const insets = useSafeAreaInsets();
-  const params = useLocalSearchParams<{
-    share_period_dates?: string;
-    share_fertile_window?: string;
-    share_symptoms_moods?: string;
-    share_cycle_insights?: string;
-    share_sex_drive?: string;
-  }>();
   const [code, setCode] = useState("");
-  const [shareUrl, setShareUrl] = useState("");
-  const [timeLeft, setTimeLeft] = useState(0);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [inviteStatus, setInviteStatus] = useState<InviteStatus>("pending");
-  const [statusChecking, setStatusChecking] = useState(false);
+  const [timeLeft, setTimeLeft] = useState(24 * 60 * 60 - 1);
 
-  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const codeRef = useRef("");
-
-  const stopPolling = () => {
-    if (pollRef.current) {
-      clearInterval(pollRef.current);
-      pollRef.current = null;
-    }
-  };
-
-  const checkStatus = async () => {
-    try {
-      const token = await AsyncStorage.getItem("accessToken");
-      if (!token) return;
-      setStatusChecking(true);
-      const { response, data } = await api.get("/partner/invite/status", token);
-      if (!response.ok) return;
-      const d = data?.data ?? data;
-      const status: InviteStatus = d?.status ?? "pending";
-      setInviteStatus(status);
-      if (status === "accepted") {
-        stopPolling();
-        router.push("/(tabs)/partner-pairing-success" as any);
-      } else if (status === "expired") {
-        stopPolling();
-        setTimeLeft(0);
-      }
-    } catch {
-      // silent — polling will retry on next interval
-    } finally {
-      setStatusChecking(false);
-    }
-  };
-
-  const startPolling = () => {
-    stopPolling();
-    pollRef.current = setInterval(checkStatus, 3000);
-  };
-
-  const fetchCode = async () => {
-    setLoading(true);
-    setError(null);
-    setInviteStatus("pending");
-    stopPolling();
-    try {
-      const token = await AsyncStorage.getItem("accessToken");
-      if (!token) {
-        setError("Session expired. Please log in again.");
-        setLoading(false);
-        return;
-      }
-      const shareBody = {
-        share_period_dates: params.share_period_dates !== "false",
-        share_fertile_window: params.share_fertile_window !== "false",
-        share_symptoms_moods: params.share_symptoms_moods === "true",
-        share_cycle_insights: params.share_cycle_insights === "true",
-        share_sex_drive: params.share_sex_drive === "true",
-      };
-      const { response, data } = await api.post("/partner/invite", shareBody, token);
-      if (!response.ok) {
-        console.error("Invite API error:", response.status, JSON.stringify(data));
-        const msg =
-          data?.message || data?.error || `Server error (${response.status}). Please try again.`;
-        setError(msg);
-        setLoading(false);
-        return;
-      }
-      const d = data?.data ?? data;
-      const inviteCode: string = d?.invite_code ?? d?.code ?? "";
-      const expiresAt: string | undefined = d?.expires_at;
-
-      codeRef.current = inviteCode;
-      setCode(inviteCode);
-      if (d?.share_url) setShareUrl(d.share_url);
-
-      if (expiresAt) {
-        const secondsLeft = Math.max(
-          0,
-          Math.floor((new Date(expiresAt).getTime() - Date.now()) / 1000)
-        );
-        setTimeLeft(secondsLeft);
-      } else {
-        setTimeLeft(24 * 60 * 60);
-      }
-
-      startPolling();
-    } catch {
-      setError("Unable to connect. Check your connection and try again.");
-    } finally {
-      setLoading(false);
-    }
-  };
+  useEffect(() => {
+    const fetchCode = async () => {
+      try {
+        const token = await AsyncStorage.getItem("accessToken");
+        if (token) {
+          const { response, data } = await api.post(
+            "/partner/invite",
+            {},
+            token,
+          );
+          if (response.ok) {
+            const d = data?.data ?? data;
+            setCode(d?.invite_code ?? d?.code ?? "");
+          }
+        }
+      } catch {}
+    };
+    fetchCode();
+  }, []);
 
   useEffect(() => {
     fetchCode();
@@ -162,7 +81,8 @@ export default function GenerateInviteScreen() {
 
   const handleShare = async () => {
     try {
-      const content = shareUrl || `Join me on SATSFLO! Use my invite code: ${code}`;
+      const content =
+        shareUrl || `Join me on SATSFLO! Use my invite code: ${code}`;
       await Share.share({ message: content });
     } catch {
       // share dismissed
@@ -174,24 +94,24 @@ export default function GenerateInviteScreen() {
   const expiryLabel = loading
     ? "Generating code..."
     : isExpired
-    ? "Code expired — generate a new one"
-    : `Code expires in ${formatTime(timeLeft)}`;
+      ? "Code expired — generate a new one"
+      : `Code expires in ${formatTime(timeLeft)}`;
 
   const statusLabel =
     inviteStatus === "accepted"
       ? "Partner joined! Redirecting..."
       : inviteStatus === "expired"
-      ? "This code is no longer valid."
-      : statusChecking
-      ? "Checking status..."
-      : "Waiting for your partner to join...";
+        ? "This code is no longer valid."
+        : statusChecking
+          ? "Checking status..."
+          : "Waiting for your partner to join...";
 
   const statusColor =
     inviteStatus === "accepted"
       ? "#4DC721"
       : inviteStatus === "expired"
-      ? "#FF6B6B"
-      : "#FAFAFA";
+        ? "#FF6B6B"
+        : "#FAFAFA";
 
   return (
     <View className="flex-1 bg-[#FF4081]">
@@ -219,8 +139,13 @@ export default function GenerateInviteScreen() {
       {error && (
         <View className="mx-5 mt-6 px-4 py-3 bg-red-100 rounded-xl flex-row items-center justify-between">
           <Text className="text-red-600 text-sm flex-1">{error}</Text>
-          <TouchableOpacity onPress={fetchCode} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-            <Text className="text-red-500 text-sm font-semibold ml-3">Retry</Text>
+          <TouchableOpacity
+            onPress={fetchCode}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          >
+            <Text className="text-red-500 text-sm font-semibold ml-3">
+              Retry
+            </Text>
           </TouchableOpacity>
         </View>
       )}
@@ -276,8 +201,11 @@ export default function GenerateInviteScreen() {
                 className="w-2 h-2 rounded-full"
                 style={{
                   backgroundColor:
-                    inviteStatus === "accepted" ? "#4DC721" :
-                    inviteStatus === "expired" ? "#FF6B6B" : "#FFD6E4",
+                    inviteStatus === "accepted"
+                      ? "#4DC721"
+                      : inviteStatus === "expired"
+                        ? "#FF6B6B"
+                        : "#FFD6E4",
                 }}
               />
             )}
@@ -320,7 +248,9 @@ export default function GenerateInviteScreen() {
           disabled={loading || isExpired}
           activeOpacity={0.8}
           className="w-[250px] h-14 rounded-full items-center justify-center"
-          style={{ backgroundColor: loading || isExpired ? "#FFAABB" : "#FF82AD" }}
+          style={{
+            backgroundColor: loading || isExpired ? "#FFAABB" : "#FF82AD",
+          }}
         >
           <Text className="font-inter font-medium text-[15px] text-white">
             Share my code

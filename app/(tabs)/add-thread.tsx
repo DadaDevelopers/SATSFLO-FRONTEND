@@ -10,7 +10,7 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  View,
+  View
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Svg, { Path } from "react-native-svg";
@@ -44,7 +44,36 @@ export default function AddThreadScreen() {
         const { response, data } = await api.post(
           "/threads",
           { title: "", content: threadText.trim(), category: "general" },
-          token
+          token,
+        );
+        if (!response.ok) {
+          Alert.alert("Error", data?.message || "Could not post thread.");
+          return;
+        }
+      }
+    } catch {
+      Alert.alert("Error", "Could not post. Please try again.");
+      return;
+    } finally {
+      setPosting(false);
+    }
+    router.replace("/(tabs)/thread");
+  };
+  const [posting, setPosting] = useState(false);
+
+  const handlePost = async () => {
+    if (!threadText.trim()) {
+      Alert.alert("Empty post", "Please write something before posting.");
+      return;
+    }
+    setPosting(true);
+    try {
+      const token = await AsyncStorage.getItem("accessToken");
+      if (token) {
+        const { response, data } = await api.post(
+          "/threads",
+          { title: "", content: threadText.trim(), category: "general" },
+          token,
         );
         if (!response.ok) {
           Alert.alert("Error", data?.message || "Could not post thread.");
@@ -72,7 +101,8 @@ export default function AddThreadScreen() {
           <TouchableOpacity onPress={() => router.replace("/(tabs)/thread")}>
             <BackArrowIcon />
           </TouchableOpacity>
-          <Text className="flex-1 text-center text-white text-xl font-inter font-medium mr-6"
+          <Text
+            className="flex-1 text-center text-white text-xl font-inter font-medium mr-6"
             style={{ letterSpacing: -0.3 }}
           >
             Add a thread
@@ -93,7 +123,10 @@ export default function AddThreadScreen() {
               {/* Vertical line */}
               <View
                 className="w-[1px] h-12"
-                style={{ backgroundColor: "rgba(250, 250, 250, 0.63)", opacity: 0.5 }}
+                style={{
+                  backgroundColor: "rgba(250, 250, 250, 0.63)",
+                  opacity: 0.5,
+                }}
               />
               {/* Bottom dot */}
               <View className="w-2.5 h-2.5 rounded-full bg-[#FD7BA7]" />
@@ -139,6 +172,29 @@ export default function AddThreadScreen() {
 
         {/* Spacer to push content up when keyboard shows */}
         <View className="flex-1" />
+
+        {/* Post Button */}
+        <View className="items-center pb-4 pt-2">
+          <TouchableOpacity
+            onPress={handlePost}
+            disabled={posting}
+            style={{
+              width: 250,
+              height: 50,
+              backgroundColor: "#FF82AD",
+              borderRadius: 1000,
+              alignItems: "center",
+              justifyContent: "center",
+              borderWidth: 0.5,
+              borderColor: "#FF669A",
+            }}
+            activeOpacity={0.8}
+          >
+            <Text style={{ color: "#fff", fontWeight: "500", fontSize: 15 }}>
+              {posting ? "Posting..." : "Post"}
+            </Text>
+          </TouchableOpacity>
+        </View>
 
         {/* Post Button */}
         <View className="items-center pb-4 pt-2">

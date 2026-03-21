@@ -3,8 +3,8 @@ import { HomeIndicatorArea } from "@/components/signup/home-indicator-area";
 import { api } from "@/lib/api";
 import { Feather } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { router, useFocusEffect } from "expo-router";
-import React, { useCallback, useRef, useState } from "react";
+import { router } from "expo-router";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Alert,
   Animated,
@@ -18,8 +18,16 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 const KNOB_OFF = 1;
 const KNOB_ON = 11;
 
-function CustomToggle({ value, onToggle }: { value: boolean; onToggle: () => void }) {
-  const knobPos = useRef(new Animated.Value(value ? KNOB_ON : KNOB_OFF)).current;
+function CustomToggle({
+  value,
+  onToggle,
+}: {
+  value: boolean;
+  onToggle: () => void;
+}) {
+  const knobPos = useRef(
+    new Animated.Value(value ? KNOB_ON : KNOB_OFF),
+  ).current;
 
   const handlePress = () => {
     Animated.timing(knobPos, {
@@ -32,14 +40,36 @@ function CustomToggle({ value, onToggle }: { value: boolean; onToggle: () => voi
 
   return (
     <TouchableOpacity activeOpacity={0.8} onPress={handlePress}>
-      <View style={{ width: 27, height: 16, justifyContent: "center", alignItems: "center" }}>
-        <View style={{ width: 24, height: 14.67, backgroundColor: value ? "#FF4081" : "#D9D9D9", borderRadius: 100 }}>
+      <View
+        style={{
+          width: 27,
+          height: 16,
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        <View
+          style={{
+            width: 24,
+            height: 14.67,
+            backgroundColor: value ? "#FF4081" : "#D9D9D9",
+            borderRadius: 100,
+          }}
+        >
           <Animated.View
             style={{
-              width: 12, height: 12, top: 1.33, left: knobPos,
-              position: "absolute", backgroundColor: "#FFFFFF", borderRadius: 100,
-              shadowColor: "#FF4081", shadowOffset: { width: 0, height: 1.39 },
-              shadowOpacity: 0.21, shadowRadius: 3.72, elevation: 2,
+              width: 12,
+              height: 12,
+              top: 1.33,
+              left: knobPos,
+              position: "absolute",
+              backgroundColor: "#FFFFFF",
+              borderRadius: 100,
+              shadowColor: "#FF4081",
+              shadowOffset: { width: 0, height: 1.39 },
+              shadowOpacity: 0.21,
+              shadowRadius: 3.72,
+              elevation: 2,
             }}
           />
         </View>
@@ -55,53 +85,50 @@ export default function LutealPhaseSettingsScreen() {
   const [selectedLength, setSelectedLength] = useState(14);
   const [ignoreIrregular, setIgnoreIrregular] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [successMsg, setSuccessMsg] = useState("");
 
-  useFocusEffect(
-    useCallback(() => {
-      setSuccessMsg("");
-      const loadProfile = async () => {
-        const token = await AsyncStorage.getItem("accessToken");
-        if (!token) return;
-        try {
-          const { response, data } = await api.get("/cycle-profile", token);
-          if (response.ok) {
-            const profile = data?.data ?? data;
-            if (profile?.luteal_phase_length) setSelectedLength(profile.luteal_phase_length);
-            if (profile?.ignore_irregular_cycle !== undefined)
-              setIgnoreIrregular(profile.ignore_irregular_cycle);
-          }
-        } catch {}
-      };
-      loadProfile();
-    }, [])
-  );
+  useEffect(() => {
+    const loadProfile = async () => {
+      const token = await AsyncStorage.getItem("accessToken");
+      if (!token) return;
+      try {
+        const { response, data } = await api.get("/cycle-profile", token);
+        if (response.ok) {
+          const profile = data?.data ?? data;
+          if (profile?.luteal_phase_length)
+            setSelectedLength(profile.luteal_phase_length);
+          if (profile?.ignore_irregular_cycle !== undefined)
+            setIgnoreIrregular(profile.ignore_irregular_cycle);
+        }
+      } catch {}
+    };
+    loadProfile();
+  }, []);
 
   const handleSave = async () => {
     setSaving(true);
-    setSuccessMsg("");
     try {
       const token = await AsyncStorage.getItem("accessToken");
-      if (!token) { Alert.alert("Error", "Not logged in. Please sign in again."); return; }
-      const { response, data } = await api.put(
-        "/cycle-profile",
-        { luteal_phase_length: selectedLength, ignore_irregular_cycle: ignoreIrregular },
-        token
-      );
-      if (!response.ok) {
-        Alert.alert("Error", data?.message || data?.error || "Failed to save. Please try again.");
-        return;
+      if (token) {
+        const { response, data } = await api.put(
+          "/cycle-profile",
+          {
+            luteal_phase_length: selectedLength,
+            ignore_irregular_cycle: ignoreIrregular,
+          },
+          token,
+        );
+        if (!response.ok) {
+          Alert.alert("Error", data?.message || "Failed to save.");
+          return;
+        }
       }
-      setSuccessMsg("Luteal phase length saved successfully!");
-      setTimeout(() => {
-        setSuccessMsg("");
-        router.push("/(tabs)/settings" as any);
-      }, 1000);
     } catch {
-      Alert.alert("Error", "Network error. Please check your connection.");
+      Alert.alert("Error", "Could not save. Please try again.");
+      return;
     } finally {
       setSaving(false);
     }
+    router.push("/(tabs)/settings" as any);
   };
 
   return (
@@ -109,8 +136,13 @@ export default function LutealPhaseSettingsScreen() {
       <StatusBar barStyle="light-content" backgroundColor="#FF4081" />
 
       {/* Header */}
-      <View className="flex-row items-center px-5" style={{ marginTop: insets.top + 28 }}>
-        <TouchableOpacity onPress={() => router.push("/(tabs)/settings" as any)}>
+      <View
+        className="flex-row items-center px-5"
+        style={{ marginTop: insets.top + 28 }}
+      >
+        <TouchableOpacity
+          onPress={() => router.push("/(tabs)/settings" as any)}
+        >
           <Feather name="arrow-left" size={24} color="#FAFAFA" />
         </TouchableOpacity>
         <Text className="flex-1 text-center text-white font-inter font-medium text-xl">
@@ -129,26 +161,38 @@ export default function LutealPhaseSettingsScreen() {
         />
         <View className="bg-[#FFE6EE] rounded-lg flex-row items-center justify-between px-3 py-4 mt-6">
           <Text className="text-sm text-[#1E1E1E]">Ignore irregular cycle</Text>
-          <CustomToggle value={ignoreIrregular} onToggle={() => setIgnoreIrregular((v) => !v)} />
+          <CustomToggle
+            value={ignoreIrregular}
+            onToggle={() => setIgnoreIrregular((v) => !v)}
+          />
         </View>
       </View>
 
       {/* Save Button + success message */}
       <View style={{ alignItems: "center", paddingBottom: 24, gap: 10 }}>
         {successMsg ? (
-          <Text style={{ color: "#fff", fontSize: 13, fontWeight: "500" }}>{successMsg}</Text>
+          <Text style={{ color: "#fff", fontSize: 13, fontWeight: "500" }}>
+            {successMsg}
+          </Text>
         ) : null}
         <TouchableOpacity
           onPress={handleSave}
           disabled={saving}
           activeOpacity={0.8}
           style={{
-            width: 250, height: 56, backgroundColor: "#FF82AD",
-            borderRadius: 1000, alignItems: "center", justifyContent: "center",
-            borderWidth: 0.5, borderColor: "#FF669A", opacity: saving ? 0.7 : 1,
+            width: 250,
+            height: 56,
+            backgroundColor: "#FF82AD",
+            borderRadius: 1000,
+            alignItems: "center",
+            justifyContent: "center",
+            borderWidth: 0.5,
+            borderColor: "#FF669A",
+            opacity: saving ? 0.7 : 1,
           }}
         >
           <Text style={{ color: "#fff", fontWeight: "500", fontSize: 15 }}>
+            {saving ? "Saving..." : "Save"}
             {saving ? "Saving..." : "Save"}
           </Text>
         </TouchableOpacity>
