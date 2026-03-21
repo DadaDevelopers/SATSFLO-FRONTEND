@@ -5,7 +5,7 @@ import { PrimaryButton } from "@/components/signup/primary-button";
 import { TitleSection } from "@/components/signup/title-section";
 import { api } from "@/lib/api";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
   KeyboardAvoidingView,
@@ -18,6 +18,27 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Svg, { Path } from "react-native-svg";
+
+const FormWrapper =
+  Platform.OS === "web"
+    ? ({
+        children,
+        onSubmit,
+      }: {
+        children: React.ReactNode;
+        onSubmit: () => void;
+      }) => (
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            onSubmit();
+          }}
+          style={{ display: "contents" }}
+        >
+          {children}
+        </form>
+      )
+    : ({ children }: { children: React.ReactNode }) => <>{children}</>;
 
 const FormWrapper =
   Platform.OS === "web"
@@ -59,6 +80,12 @@ export default function LoginScreen() {
     type: "success" | "error";
   } | null>(null);
 
+  const [loading, setLoading] = useState(false);
+  const [statusMessage, setStatusMessage] = useState<{
+    text: string;
+    type: "success" | "error";
+  } | null>(null);
+
   const isFormValid = email.trim() !== "" && password.trim() !== "";
 
   const handleSignIn = async () => {
@@ -71,30 +98,13 @@ export default function LoginScreen() {
         password,
       });
       if (response.ok) {
-        const accessToken = data.data.accessToken;
         await AsyncStorage.multiSet([
-          ["accessToken", accessToken],
+          ["accessToken", data.data.accessToken],
           ["refreshToken", data.data.refreshToken],
           ["user", JSON.stringify(data.data.user)],
         ]);
         setStatusMessage({ text: "Login successful!", type: "success" });
-
-        // Check if user already has an active partner pairing
-        let isPaired = false;
-        try {
-          const { response: partnerRes, data: partnerData } = await api.get("/partner", accessToken);
-          isPaired = partnerRes.ok && !!partnerData?.data?.partner;
-        } catch {}
-
-        setTimeout(() => {
-          if (isPaired) {
-            router.replace("/partner" as any);
-          } else if (isPartnerFlow) {
-            router.replace("/partner-welcome" as any);
-          } else {
-            router.replace("/(tabs)");
-          }
-        }, 800);
+        setTimeout(() => router.replace("/(tabs)"), 800);
       } else {
         const message = data?.message || data?.error || "Failed to sign in.";
         setStatusMessage({ text: message, type: "error" });
@@ -115,7 +125,7 @@ export default function LoginScreen() {
 
   const handleCreateAccount = () => {
     router.push(
-      isPartnerFlow ? ("/(auth)/signup?flow=partner" as any) : "/(auth)/signup"
+      isPartnerFlow ? ("/(auth)/signup?flow=partner" as any) : "/(auth)/signup",
     );
   };
 
@@ -166,7 +176,11 @@ export default function LoginScreen() {
             <View className="w-full pt-4 pb-8">
               {/* Back Button */}
               <TouchableOpacity
-                onPress={() => router.canGoBack() ? router.back() : router.replace('/how-to-use' as any)}
+                onPress={() =>
+                  router.canGoBack()
+                    ? router.back()
+                    : router.replace("/how-to-use" as any)
+                }
                 className="w-10 h-10 justify-center items-center -ml-2 mb-4"
                 hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
               >
@@ -196,16 +210,52 @@ export default function LoginScreen() {
                     autoCapitalize="none"
                     autoComplete="email"
                   />
+                  <FormWrapper onSubmit={handleSignIn}>
+                    <View className="gap-5">
+                      <InputField
+                        placeholder="Email"
+                        value={email}
+                        onChangeText={setEmail}
+                        keyboardType="email-address"
+                        autoCapitalize="none"
+                        autoComplete="email"
+                      />
 
-                  <InputField
-                    placeholder="Password"
-                    value={password}
-                    onChangeText={setPassword}
-                    showPasswordToggle
-                    autoCapitalize="none"
-                    autoComplete="password"
-                  />
+                      <InputField
+                        placeholder="Password"
+                        value={password}
+                        onChangeText={setPassword}
+                        showPasswordToggle
+                        autoCapitalize="none"
+                        autoComplete="password"
+                      />
+                      <InputField
+                        placeholder="Password"
+                        value={password}
+                        onChangeText={setPassword}
+                        showPasswordToggle
+                        autoCapitalize="none"
+                        autoComplete="password"
+                      />
 
+                      {/* Remember me & Forgot Password Row */}
+                      <View className="flex-row justify-between items-center">
+                        <Checkbox
+                          checked={rememberMe}
+                          onToggle={() => setRememberMe(!rememberMe)}
+                          label="Remember me"
+                        />
+                        <TouchableOpacity
+                          onPress={handleForgotPassword}
+                          activeOpacity={0.7}
+                        >
+                          <Text className="text-md font-medium text-signup-title">
+                            Forgot Password?
+                          </Text>
+                        </TouchableOpacity>
+                      </View>
+                    </View>
+                  </FormWrapper>
                   {/* Remember me & Forgot Password Row */}
                   <View className="flex-row justify-between items-center">
                     <Checkbox
@@ -230,6 +280,26 @@ export default function LoginScreen() {
           {/* Bottom Section - Fixed at bottom */}
           <View className="px-6 pb-4 pt-4">
             <View className="items-center gap-4">
+              {statusMessage && (
+                <View
+                  className="w-full rounded-xl px-4 py-3"
+                  style={{
+                    backgroundColor:
+                      statusMessage.type === "success"
+                        ? "rgba(255,255,255,0.25)"
+                        : "rgba(0,0,0,0.25)",
+                  }}
+                >
+                  <Text className="text-sm text-center font-medium text-white">
+                    {statusMessage.text}
+                  </Text>
+                </View>
+              )}
+              <PrimaryButton
+                title={loading ? "Signing in..." : "Sign In"}
+                onPress={handleSignIn}
+                disabled={loading || !isFormValid}
+              />
               {statusMessage && (
                 <View
                   className="w-full rounded-xl px-4 py-3"

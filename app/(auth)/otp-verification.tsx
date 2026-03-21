@@ -4,17 +4,16 @@ import { OtpInput } from "@/components/signup/otp-input";
 import { PrimaryButton } from "@/components/signup/primary-button";
 import { TitleSection } from "@/components/signup/title-section";
 import { api } from "@/lib/api";
-import logger from "@/lib/logger";
 import { cn } from "@/lib/utils";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
-    KeyboardAvoidingView,
-    Platform,
-    ScrollView,
-    Text,
-    TouchableOpacity,
-    View,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -23,8 +22,13 @@ export default function OtpVerificationScreen() {
   const insets = useSafeAreaInsets();
   const { email } = useLocalSearchParams<{ email: string }>();
   const [otp, setOtp] = useState("");
-  const [countdown, setCountdown] = useState(60);
+  const [countdown, setCountdown] = useState(15);
   const [canResend, setCanResend] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [statusMessage, setStatusMessage] = useState<{
+    text: string;
+    type: "success" | "error";
+  } | null>(null);
   const [loading, setLoading] = useState(false);
   const [statusMessage, setStatusMessage] = useState<{
     text: string;
@@ -35,6 +39,7 @@ export default function OtpVerificationScreen() {
 
   useEffect(() => {
     if (countdown > 0) {
+      const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
       const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
       return () => clearTimeout(timer);
     } else {
@@ -51,13 +56,9 @@ export default function OtpVerificationScreen() {
         email,
         otp,
       });
-      logger.log("Verify OTP response:", data);
+      console.log("Verify OTP response:", data);
       if (response.ok) {
-        const token =
-          data?.data?.reset_token ??
-          data?.reset_token ??
-          data?.data?.token ??
-          data?.token;
+        const token = data?.data?.token ?? data?.token;
         setStatusMessage({ text: "OTP verified!", type: "success" });
         setTimeout(() => {
           router.push({
@@ -82,7 +83,7 @@ export default function OtpVerificationScreen() {
 
   const handleResendCode = async () => {
     if (!canResend) return;
-    setCountdown(60);
+    setCountdown(15);
     setCanResend(false);
     setOtp("");
     setStatusMessage(null);
@@ -90,7 +91,7 @@ export default function OtpVerificationScreen() {
       const { response, data } = await api.post("/auth/forgot-password", {
         email,
       });
-      logger.log("Resend OTP response:", data);
+      console.log("Resend OTP response:", data);
       if (response.ok) {
         setStatusMessage({
           text: "OTP resent! Check your email.",
@@ -110,6 +111,7 @@ export default function OtpVerificationScreen() {
   return (
     <View className="flex-1 bg-signup-bg" style={{ paddingTop: insets.top }}>
       <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         className="flex-1"
       >
@@ -144,9 +146,10 @@ export default function OtpVerificationScreen() {
                 <Text
                   className={cn(
                     "text-sm font-normal text-[#FAFAFA]",
-                    canResend && "font-semibold underline",
+                    canResend && "font-semibold underline"
                   )}
                 >
+                  {canResend ? "Resend code" : `Resend code in ${countdown}s`}
                   {canResend ? "Resend code" : `Resend code in ${countdown}s`}
                 </Text>
               </TouchableOpacity>
@@ -155,6 +158,27 @@ export default function OtpVerificationScreen() {
         </ScrollView>
 
         <View className="px-6 pb-4 pt-4">
+          <View className="items-center gap-4">
+            {statusMessage && (
+              <View
+                className="w-full rounded-xl px-4 py-3"
+                style={{
+                  backgroundColor:
+                    statusMessage.type === "success"
+                      ? "rgba(255,255,255,0.25)"
+                      : "rgba(0,0,0,0.25)",
+                }}
+              >
+                <Text className="text-sm text-center font-medium text-white">
+                  {statusMessage.text}
+                </Text>
+              </View>
+            )}
+            <PrimaryButton
+              title={loading ? "Verifying..." : "Verify Password"}
+              onPress={handleVerify}
+              disabled={loading || !isFormValid}
+            />
           <View className="items-center gap-4">
             {statusMessage && (
               <View

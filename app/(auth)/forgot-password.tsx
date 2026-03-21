@@ -4,15 +4,14 @@ import { InputField } from "@/components/signup/input-field";
 import { PrimaryButton } from "@/components/signup/primary-button";
 import { TitleSection } from "@/components/signup/title-section";
 import { api } from "@/lib/api";
-import logger from "@/lib/logger";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
-    KeyboardAvoidingView,
-    Platform,
-    ScrollView,
-    Text,
-    View,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  Text,
+  View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -20,6 +19,11 @@ export default function ForgotPasswordScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [statusMessage, setStatusMessage] = useState<{
+    text: string;
+    type: "success" | "error";
+  } | null>(null);
   const [loading, setLoading] = useState(false);
   const [statusMessage, setStatusMessage] = useState<{
     text: string;
@@ -36,7 +40,7 @@ export default function ForgotPasswordScreen() {
       const { response, data } = await api.post("/auth/forgot-password", {
         email,
       });
-      logger.log("Forgot password response:", data);
+      console.log("Forgot password response:", data);
       if (response.ok) {
         setStatusMessage({ text: "OTP sent! Check your email.", type: "success" });
         setTimeout(() => {
@@ -115,9 +119,27 @@ export default function ForgotPasswordScreen() {
                 </Text>
               </View>
             )}
+          <View className="items-center gap-4">
+            {statusMessage && (
+              <View
+                className="w-full rounded-xl px-4 py-3"
+                style={{
+                  backgroundColor:
+                    statusMessage.type === "success"
+                      ? "rgba(255,255,255,0.25)"
+                      : "rgba(0,0,0,0.25)",
+                }}
+              >
+                <Text className="text-sm text-center font-medium text-white">
+                  {statusMessage.text}
+                </Text>
+              </View>
+            )}
             <PrimaryButton
               title={loading ? "Sending..." : "Recover Password"}
+              title={loading ? "Sending..." : "Recover Password"}
               onPress={handleRecoverPassword}
+              disabled={loading || !isFormValid}
               disabled={loading || !isFormValid}
             />
           </View>
