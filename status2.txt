@@ -1,0 +1,31 @@
+﻿On branch feature/partnerdashboard
+Your branch is up to date with 'origin/feature/partnerdashboard'.
+
+Changes not staged for commit:
+  (use "git add/rm <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	deleted:    app/(tabs)/connect-wallet.tsx
+	deleted:    app/(tabs)/generate-invite.tsx
+	deleted:    app/(tabs)/invite-partner.tsx
+	deleted:    app/(tabs)/language-settings.tsx
+	deleted:    app/(tabs)/luteal-phase-settings.tsx
+	deleted:    app/(tabs)/made-for-you.tsx
+	deleted:    app/(tabs)/partner-nickname.tsx
+	deleted:    app/(tabs)/partner-pairing-success.tsx
+	deleted:    app/(tabs)/reminders.tsx
+	deleted:    app/(tabs)/sharing-invite.tsx
+	deleted:    app/(tabs)/whats-your-partner-name.tsx
+	deleted:    app/partner/calendar.tsx
+	deleted:    app/partner/index.tsx
+	deleted:    app/partner/insights.tsx
+	deleted:    app/partner/my-partner.tsx
+	deleted:    app/partner/settings.tsx
+	deleted:    app/start-partnership.tsx
+	modified:   assets/images/GiftTokenSATS.png
+	deleted:    assets/images/connectwalletsettings.png
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	status.txt
+
+no changes added to commit (use "git add" and/or "git commit -a")

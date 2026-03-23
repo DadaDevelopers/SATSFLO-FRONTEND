@@ -1,25 +1,43 @@
-import React from 'react';
-import { TouchableOpacity, View, Text } from 'react-native';
-import Svg, { Path } from 'react-native-svg';
-import { cn } from '@/lib/utils';
+import { cn } from "@/lib/utils";
+import React from "react";
+import { Text, TouchableOpacity, View } from "react-native";
+import Svg, { Path } from "react-native-svg";
 
 type CheckboxProps = {
   checked: boolean;
   onToggle: () => void;
-  label: string;
+  label?: string;
   className?: string;
+  /** Called when the "Terms & Conditions" link is tapped */
+  onTermsPress?: () => void;
+  /** Called when the "Privacy Policy" link is tapped */
+  onPrivacyPress?: () => void;
 };
 
-export function Checkbox({ checked, onToggle, label, className }: CheckboxProps) {
+export function Checkbox({
+  checked,
+  onToggle,
+  label,
+  className,
+  onTermsPress,
+  onPrivacyPress,
+}: CheckboxProps) {
+  const hasLinks = onTermsPress || onPrivacyPress;
+
   return (
     <TouchableOpacity
-      className={cn('flex-row items-center gap-1', className)}
+      className={cn("flex-row items-center gap-1", className)}
       onPress={onToggle}
       activeOpacity={0.7}
     >
+      {/* Tick box */}
       <View
         className="w-5 h-5 border-[1.5px] border-signup-checkbox-border rounded justify-center items-center"
-        style={checked ? { backgroundColor: '#FAFAFA', borderColor: '#FAFAFA' } : undefined}
+        style={
+          checked
+            ? { backgroundColor: "#FAFAFA", borderColor: "#FAFAFA" }
+            : undefined
+        }
       >
         {checked && (
           <Svg width={13} height={13} viewBox="0 0 13 13" fill="none">
@@ -30,7 +48,36 @@ export function Checkbox({ checked, onToggle, label, className }: CheckboxProps)
           </Svg>
         )}
       </View>
-      <Text className="text-xs font-normal leading-[18px] text-signup-body">{label}</Text>
+
+      {/* Label – plain or with blue links */}
+      {hasLinks ? (
+        <Text className="text-xs font-normal leading-[18px] text-signup-body flex-shrink flex-wrap">
+          I agree to the{" "}
+          <Text
+            style={{ color: "#2563EB", fontWeight: "600" }}
+            onPress={(e) => {
+              e.stopPropagation?.();
+              onTermsPress?.();
+            }}
+          >
+            Terms &amp; Conditions
+          </Text>
+          {" and "}
+          <Text
+            style={{ color: "#2563EB", fontWeight: "600" }}
+            onPress={(e) => {
+              e.stopPropagation?.();
+              onPrivacyPress?.();
+            }}
+          >
+            Privacy Policy
+          </Text>
+        </Text>
+      ) : (
+        <Text className="text-xs font-normal leading-[18px] text-signup-body">
+          {label}
+        </Text>
+      )}
     </TouchableOpacity>
   );
 }
