@@ -4,6 +4,7 @@ import { HomeIndicatorArea } from "@/components/signup/home-indicator-area";
 import { InputField } from "@/components/signup/input-field";
 import { PrimaryButton } from "@/components/signup/primary-button";
 import { TitleSection } from "@/components/signup/title-section";
+import { TermsModal } from "@/app/(auth)/terms-and-conditions";
 import { api } from "@/lib/api";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
@@ -54,6 +55,8 @@ export default function SignupScreen() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [agreeToTerms, setAgreeToTerms] = useState(false);
+  const [termsModalVisible, setTermsModalVisible] = useState(false);
+  const [termsInitialTab, setTermsInitialTab] = useState<"terms" | "privacy">("terms");
   const [loading, setLoading] = useState(false);
   const [statusMessage, setStatusMessage] = useState<{
     text: string;
@@ -244,7 +247,14 @@ export default function SignupScreen() {
                   <Checkbox
                     checked={agreeToTerms}
                     onToggle={() => setAgreeToTerms(!agreeToTerms)}
-                    label="I agree to terms and conditions"
+                    onTermsPress={() => {
+                      setTermsInitialTab("terms");
+                      setTermsModalVisible(true);
+                    }}
+                    onPrivacyPress={() => {
+                      setTermsInitialTab("privacy");
+                      setTermsModalVisible(true);
+                    }}
                   />
                 </View>
               </FormWrapper>
