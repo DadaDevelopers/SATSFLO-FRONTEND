@@ -105,7 +105,15 @@ export default function WeightScreen() {
                 style={{ padding: 2, height: 44 }}
               >
                 <TouchableOpacity
-                  onPress={() => setLocalUnit("kg")}
+                  onPress={() => {
+                    if (localUnit === "lb") {
+                      const val = parseFloat(localWeight);
+                      if (!isNaN(val) && val > 0) {
+                        setLocalWeight((val / 2.20462).toFixed(1));
+                      }
+                    }
+                    setLocalUnit("kg");
+                  }}
                   className="items-center justify-center rounded-lg"
                   style={{
                     width: 155,
@@ -127,7 +135,15 @@ export default function WeightScreen() {
                   </Text>
                 </TouchableOpacity>
                 <TouchableOpacity
-                  onPress={() => setLocalUnit("lb")}
+                  onPress={() => {
+                    if (localUnit === "kg") {
+                      const val = parseFloat(localWeight);
+                      if (!isNaN(val) && val > 0) {
+                        setLocalWeight((val * 2.20462).toFixed(1));
+                      }
+                    }
+                    setLocalUnit("lb");
+                  }}
                   className="flex-1 items-center justify-center rounded-lg"
                   style={{
                     height: 40,
@@ -184,6 +200,7 @@ export default function WeightScreen() {
                       fontSize: 40,
                       fontWeight: "300",
                       color: "#1E1E1E",
+                      lineHeight: 48,
                       textAlign: "center",
                       minWidth: 80,
                     }}
