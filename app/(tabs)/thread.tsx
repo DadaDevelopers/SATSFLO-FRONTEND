@@ -1,8 +1,11 @@
 import { BottomNavigation } from "@/components/home/bottom-navigation";
+import { api } from "@/lib/api";
 import { Feather } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
+  ActivityIndicator,
   Image,
   Pressable,
   ScrollView,
@@ -59,48 +62,97 @@ const getHeaderPath = (tab: TabType): string => {
   }
 };
 
-interface Post {
+interface Thread {
   id: string;
-  avatar: any;
-  name: string;
-  handle: string;
-  status: string;
+  title?: string;
   content: string;
-  image?: any;
-  comments: string;
-  likes: string;
+  category?: string;
+  user?: { name?: string; username?: string };
+  comments_count?: number;
+  likes_count?: number;
+  is_liked?: boolean;
+  created_at?: string;
 }
 
-const posts: Post[] = [
-  {
-    id: "1",
-    avatar: require("@/assets/images/zuri.png"),
-    name: "Zuri Hassan",
-    handle: "@hassan",
-    status: "Active 5m ago",
-    content:
-      "Feeling Anxious\nMy period's a little late, and I'm starting to feel anxious about it. Anyone else get that nervous feeling when your cycle is off? \u{1F61F}",
-    comments: "500",
-    likes: "10",
-  },
-  {
-    id: "2",
-    avatar: require("@/assets/images/zuri.png"),
-    name: "Janet",
-    handle: "@jelly",
-    status: "Online",
-    content: "Crazy cravings with heavy crumps!!",
-    image: require("@/assets/images/cravings.png"),
-    comments: "500",
-    likes: "10",
-  },
-];
+interface Group {
+  id: string;
+  name: string;
+  description?: string;
+  members_count?: number;
+}
 
 type NavTab = "home" | "calendar" | "add" | "chat" | "settings";
 
 export default function ThreadScreen() {
   const insets = useSafeAreaInsets();
   const [activeTab, setActiveTab] = useState<TabType>("threads");
+  const [threads, setThreads] = useState<Thread[]>([]);
+  const [groups, setGroups] = useState<Group[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [likedIds, setLikedIds] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    const loadThreads = async () => {
+      setLoading(true);
+      try {
+        const { response, data } = await api.get("/threads");
+        if (response.ok) {
+          const list = data?.data ?? data ?? [];
+          setThreads(Array.isArray(list) ? list : []);
+          const liked = new Set<string>(
+            (Array.isArray(list) ? list : [])
+              .filter((t: Thread) => t.is_liked)
+              .map((t: Thread) => t.id)
+          );
+          setLikedIds(liked);
+        }
+      } catch {}
+      setLoading(false);
+    };
+    loadThreads();
+  }, []);
+
+  useEffect(() => {
+    if (activeTab !== "groups") return;
+    const loadGroups = async () => {
+      try {
+        const token = await AsyncStorage.getItem("accessToken");
+        if (!token) return;
+        const { response, data } = await api.get("/groups", token);
+        if (response.ok) {
+          const list = data?.data ?? data ?? [];
+          setGroups(Array.isArray(list) ? list : []);
+        }
+      } catch {}
+    };
+    loadGroups();
+  }, [activeTab]);
+
+  const handleLikeToggle = async (threadId: string) => {
+    const isLiked = likedIds.has(threadId);
+    setLikedIds((prev) => {
+      const next = new Set(prev);
+      isLiked ? next.delete(threadId) : next.add(threadId);
+      return next;
+    });
+    setThreads((prev) =>
+      prev.map((t) =>
+        t.id === threadId
+          ? { ...t, likes_count: (t.likes_count ?? 0) + (isLiked ? -1 : 1) }
+          : t
+      )
+    );
+    try {
+      const token = await AsyncStorage.getItem("accessToken");
+      if (token) {
+        if (isLiked) {
+          await api.delete(`/threads/${threadId}/like`, undefined, token);
+        } else {
+          await api.post(`/threads/${threadId}/like`, {}, token);
+        }
+      }
+    } catch {}
+  };
 
   const handleNavTabPress = (tab: NavTab) => {
     switch (tab) {
@@ -215,123 +267,163 @@ export default function ThreadScreen() {
         className="flex-1 px-5 mt-4"
         showsVerticalScrollIndicator={false}
       >
-        {/* What's on your mind */}
-        <View
-          className="flex-row items-center px-6 py-3 rounded-2xl mb-4"
-          style={{
-            borderWidth: 1,
-            borderColor: "#FFB3CD",
-          }}
-        >
-          <Image
-            source={require("@/assets/images/zuri.png")}
-            className="w-10 h-10 rounded-full"
-            resizeMode="cover"
-          />
-          <Text className="ml-6 text-[13px] font-inter text-[#FAFAFA] opacity-65">
-            whats on your mind today?
-          </Text>
-        </View>
-
-        {/* Posts */}
-        {posts.map((post) => (
-          <View
-            key={post.id}
-            className="bg-[#FFE6EE] rounded-2xl mb-6 overflow-hidden"
-            style={{
-              shadowColor: "#000",
-              shadowOffset: { width: 0, height: 10 },
-              shadowOpacity: 0.1,
-              shadowRadius: 20,
-              elevation: 4,
-            }}
-          >
-            {/* Post Header */}
-            <View className="flex-row items-center px-5 pt-5">
-              {/* Avatar with plus icon */}
-              <View className="relative">
-                <Image
-                  source={post.avatar}
-                  className="w-[56px] h-[56px] rounded-full"
-                  style={{ borderWidth: 4, borderColor: "#FFE6EE" }}
-                  resizeMode="cover"
-                />
-                <View className="absolute bottom-0 right-0 w-4 h-4 rounded-full bg-[#FD71A1] items-center justify-center">
-                  <Feather name="plus" size={10} color="#FFFFFF" />
-                </View>
-              </View>
-
-              {/* Name, Handle, Status */}
-              <View className="ml-3">
-                <View className="flex-row items-center gap-1.5">
-                  <Text className="text-[13px] font-inter font-semibold text-[#1E1E1E]">
-                    {post.name}
+        {activeTab === "groups" ? (
+          /* Groups List */
+          <>
+            {groups.length === 0 ? (
+              <Text className="text-center text-white/70 mt-10">No groups yet.</Text>
+            ) : (
+              groups.map((group) => (
+                <View
+                  key={group.id}
+                  className="bg-[#FFE6EE] rounded-2xl mb-4 px-5 py-4"
+                >
+                  <Text className="text-[14px] font-inter font-semibold text-[#1E1E1E]">
+                    {group.name}
                   </Text>
-                  <Text className="text-[11px] font-inter text-black/50">
-                    {post.handle}
-                  </Text>
+                  {group.description ? (
+                    <Text className="text-[12px] font-inter text-black/60 mt-1">
+                      {group.description}
+                    </Text>
+                  ) : null}
+                  {group.members_count !== undefined ? (
+                    <Text className="text-[11px] font-inter text-[#FD71A1] mt-1">
+                      {group.members_count} members
+                    </Text>
+                  ) : null}
                 </View>
-                <Text className="text-[11px] font-inter text-black/50 mt-1">
-                  {post.status}
-                </Text>
-              </View>
-            </View>
-
-            {/* Post Content */}
-            <View className="px-8 py-4">
-              <Text className="text-sm font-inter text-[#1E1E1E] leading-5">
-                {post.content}
+              ))
+            )}
+          </>
+        ) : (
+          /* Threads List */
+          <>
+            {/* What's on your mind */}
+            <View
+              className="flex-row items-center px-6 py-3 rounded-2xl mb-4"
+              style={{ borderWidth: 1, borderColor: "#FFB3CD" }}
+            >
+              <Image
+                source={require("@/assets/images/zuri.png")}
+                className="w-10 h-10 rounded-full"
+                resizeMode="cover"
+              />
+              <Text className="ml-6 text-[13px] font-inter text-[#FAFAFA] opacity-65">
+                whats on your mind today?
               </Text>
             </View>
 
-            {/* Post Image (if any) */}
-            {post.image && (
-              <View className="px-6 pb-4">
-                <Image
-                  source={post.image}
-                  className="w-full h-[160px] rounded-[10px]"
-                  resizeMode="cover"
-                />
-              </View>
+            {loading && (
+              <ActivityIndicator color="#FFFFFF" style={{ marginTop: 20 }} />
             )}
 
-            {/* Action Bar */}
-            <View className="flex-row items-center justify-between px-6 pb-5">
-              <View className="flex-row items-center gap-5">
-                {/* Comments */}
-                <Pressable
-                  onPress={() => router.push("/(tabs)/view-comments")}
-                  className="flex-row items-center gap-1.5"
-                >
-                  <Feather name="message-circle" size={20} color="#FD71A1" />
-                  <Text className="text-[10px] font-inter font-light text-[#FD71A1]">
-                    {post.comments}
-                  </Text>
-                </Pressable>
+            {!loading && threads.length === 0 && (
+              <Text className="text-center text-white/70 mt-10">No threads yet.</Text>
+            )}
 
-                {/* Likes */}
-                <View className="flex-row items-center gap-1.5">
-                  <Feather name="heart" size={20} color="#FD71A1" />
-                  <Text className="text-[10px] font-inter font-light text-[#FD71A1]">
-                    {post.likes}
+            {threads.map((thread) => (
+              <View
+                key={thread.id}
+                className="bg-[#FFE6EE] rounded-2xl mb-6 overflow-hidden"
+                style={{
+                  shadowColor: "#000",
+                  shadowOffset: { width: 0, height: 10 },
+                  shadowOpacity: 0.1,
+                  shadowRadius: 20,
+                  elevation: 4,
+                }}
+              >
+                {/* Post Header */}
+                <View className="flex-row items-center px-5 pt-5">
+                  <View className="relative">
+                    <Image
+                      source={require("@/assets/images/zuri.png")}
+                      className="w-[56px] h-[56px] rounded-full"
+                      style={{ borderWidth: 4, borderColor: "#FFE6EE" }}
+                      resizeMode="cover"
+                    />
+                    <View className="absolute bottom-0 right-0 w-4 h-4 rounded-full bg-[#FD71A1] items-center justify-center">
+                      <Feather name="plus" size={10} color="#FFFFFF" />
+                    </View>
+                  </View>
+                  <View className="ml-3">
+                    <View className="flex-row items-center gap-1.5">
+                      <Text className="text-[13px] font-inter font-semibold text-[#1E1E1E]">
+                        {thread.user?.name ?? "User"}
+                      </Text>
+                      {thread.user?.username ? (
+                        <Text className="text-[11px] font-inter text-black/50">
+                          @{thread.user.username}
+                        </Text>
+                      ) : null}
+                    </View>
+                    {thread.created_at ? (
+                      <Text className="text-[11px] font-inter text-black/50 mt-1">
+                        {new Date(thread.created_at).toLocaleDateString()}
+                      </Text>
+                    ) : null}
+                  </View>
+                </View>
+
+                {/* Post Content */}
+                <View className="px-8 py-4">
+                  {thread.title ? (
+                    <Text className="text-sm font-inter font-semibold text-[#1E1E1E] mb-1">
+                      {thread.title}
+                    </Text>
+                  ) : null}
+                  <Text className="text-sm font-inter text-[#1E1E1E] leading-5">
+                    {thread.content}
                   </Text>
                 </View>
 
-                {/* Share */}
-                <Feather name="send" size={18} color="#FD71A1" />
-              </View>
+                {/* Action Bar */}
+                <View className="flex-row items-center justify-between px-6 pb-5">
+                  <View className="flex-row items-center gap-5">
+                    <Pressable
+                      onPress={() =>
+                        router.push({
+                          pathname: "/(tabs)/view-comments" as any,
+                          params: { threadId: thread.id },
+                        })
+                      }
+                      className="flex-row items-center gap-1.5"
+                    >
+                      <Feather name="message-circle" size={20} color="#FD71A1" />
+                      <Text className="text-[10px] font-inter font-light text-[#FD71A1]">
+                        {thread.comments_count ?? 0}
+                      </Text>
+                    </Pressable>
 
-              {/* BTC Icon */}
-              <Pressable onPress={() => router.push("/(tabs)/select-wallet")}>
-                <Image
-                  source={require("@/assets/images/btc.png")}
-                  className="w-[22px] h-[22px]"
-                  resizeMode="contain"
-                />
-              </Pressable>
-            </View>
-          </View>
-        ))}
+                    <Pressable
+                      onPress={() => handleLikeToggle(thread.id)}
+                      className="flex-row items-center gap-1.5"
+                    >
+                      <Feather
+                        name="heart"
+                        size={20}
+                        color={likedIds.has(thread.id) ? "#FF4081" : "#FD71A1"}
+                      />
+                      <Text className="text-[10px] font-inter font-light text-[#FD71A1]">
+                        {thread.likes_count ?? 0}
+                      </Text>
+                    </Pressable>
+
+                    <Feather name="send" size={18} color="#FD71A1" />
+                  </View>
+
+                  <Pressable onPress={() => router.push("/(tabs)/select-wallet")}>
+                    <Image
+                      source={require("@/assets/images/btc.png")}
+                      className="w-[22px] h-[22px]"
+                      resizeMode="contain"
+                    />
+                  </Pressable>
+                </View>
+              </View>
+            ))}
+          </>
+        )}
 
         {/* Bottom spacing */}
         <View className="h-4" />

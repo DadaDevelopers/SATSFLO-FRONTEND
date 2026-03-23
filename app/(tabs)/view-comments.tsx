@@ -1,7 +1,10 @@
+import { api } from "@/lib/api";
 import { Feather } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router, useLocalSearchParams } from "expo-router";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
+  ActivityIndicator,
   Image,
   KeyboardAvoidingView,
   Platform,
@@ -40,39 +43,71 @@ const SendIcon = () => (
 
 interface Comment {
   id: string;
-  avatar: any;
-  name: string;
-  time: string;
-  text: string;
+  content: string;
+  user?: { name?: string };
+  created_at?: string;
 }
 
-const comments: Comment[] = [
-  {
-    id: "1",
-    avatar: require("@/assets/images/zuri.png"),
-    name: "Janet",
-    time: "3 hours ago",
-    text: "Hope you feel better soon. Hope you feel better soon. Hope you feel better soon.",
-  },
-  {
-    id: "2",
-    avatar: require("@/assets/images/zuri.png"),
-    name: "Janet",
-    time: "3 hours ago",
-    text: "Hope you feel better soon. Hope you feel better soon. Hope you feel better soon.",
-  },
-  {
-    id: "3",
-    avatar: require("@/assets/images/zuri.png"),
-    name: "Janet",
-    time: "3 hours ago",
-    text: "Hope you feel better soon. Hope you feel better soon. Hope you feel better soon.",
-  },
-];
+interface ThreadDetail {
+  id: string;
+  title?: string;
+  content: string;
+  user?: { name?: string };
+  created_at?: string;
+  comments_count?: number;
+}
 
 export default function ViewCommentsScreen() {
   const insets = useSafeAreaInsets();
+  const { threadId } = useLocalSearchParams<{ threadId: string }>();
   const [commentText, setCommentText] = useState("");
+  const [comments, setComments] = useState<Comment[]>([]);
+  const [thread, setThread] = useState<ThreadDetail | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [sending, setSending] = useState(false);
+
+  useEffect(() => {
+    if (!threadId) return;
+    const loadData = async () => {
+      setLoading(true);
+      try {
+        const [threadRes, commentsRes] = await Promise.all([
+          api.get(`/threads/${threadId}`),
+          api.get(`/threads/${threadId}/comments`),
+        ]);
+        if (threadRes.response.ok) {
+          setThread(threadRes.data?.data ?? threadRes.data);
+        }
+        if (commentsRes.response.ok) {
+          const list = commentsRes.data?.data ?? commentsRes.data ?? [];
+          setComments(Array.isArray(list) ? list : []);
+        }
+      } catch {}
+      setLoading(false);
+    };
+    loadData();
+  }, [threadId]);
+
+  const handleSendComment = async () => {
+    if (!commentText.trim() || !threadId) return;
+    setSending(true);
+    try {
+      const token = await AsyncStorage.getItem("accessToken");
+      if (token) {
+        const { response, data } = await api.post(
+          `/threads/${threadId}/comments`,
+          { content: commentText.trim() },
+          token
+        );
+        if (response.ok) {
+          const newComment = data?.data ?? data;
+          setComments((prev) => [...prev, newComment]);
+          setCommentText("");
+        }
+      }
+    } catch {}
+    setSending(false);
+  };
 
   return (
     <KeyboardAvoidingView
@@ -101,7 +136,6 @@ export default function ViewCommentsScreen() {
           {/* Original Post */}
           <View className="px-5">
             <View className="flex-row">
-              {/* Avatar */}
               <View className="relative">
                 <Image
                   source={require("@/assets/images/zuri.png")}
@@ -113,27 +147,28 @@ export default function ViewCommentsScreen() {
                   <Feather name="plus-circle" size={12} color="#FF4081" />
                 </View>
               </View>
-
-              {/* Post content */}
               <View className="flex-1 ml-3">
                 <Text className="text-xs font-inter font-semibold text-white">
-                  Zuri Hassan
+                  {thread?.user?.name ?? "User"}
                 </Text>
                 <Text className="text-[10px] font-inter text-[#FAFAFA] mt-0.5">
-                  3 hours ago
+                  {thread?.created_at
+                    ? new Date(thread.created_at).toLocaleDateString()
+                    : ""}
                 </Text>
+                {thread?.title ? (
+                  <Text className="text-xs font-inter font-semibold text-white mt-2">
+                    {thread.title}
+                  </Text>
+                ) : null}
                 <Text
                   className="text-xs font-inter mt-2 leading-[15px]"
                   style={{ color: "rgba(250, 250, 250, 0.8)" }}
                 >
-                  Feeling Anxious{"\n"}My period's a little late, and I'm
-                  starting to feel anxious about it. Anyone else get that nervous
-                  feeling when your cycle is off? {"\u{1F61F}"}
+                  {thread?.content ?? ""}
                 </Text>
               </View>
             </View>
-
-            {/* Post action bar */}
             <View className="flex-row items-center justify-between mt-3">
               <View className="flex-row items-center gap-4">
                 <Feather name="message-circle" size={15} color="#FAFAFA" />
@@ -156,20 +191,24 @@ export default function ViewCommentsScreen() {
                 Comments
               </Text>
               <Text className="text-xs font-inter font-semibold text-[#FAFAFA]">
-                200
+                {comments.length}
               </Text>
             </View>
             <View className="h-[1px] bg-[#FF669A]" />
           </View>
 
+          {/* Loading indicator */}
+          {loading && (
+            <ActivityIndicator color="#FFFFFF" style={{ marginTop: 20 }} />
+          )}
+
           {/* Comments list */}
           <View className="px-5 mt-5 gap-6">
             {comments.map((comment) => (
               <View key={comment.id} className="flex-row">
-                {/* Comment avatar */}
                 <View className="relative">
                   <Image
-                    source={comment.avatar}
+                    source={require("@/assets/images/zuri.png")}
                     className="w-10 h-10 rounded-full"
                     resizeMode="cover"
                   />
@@ -177,23 +216,21 @@ export default function ViewCommentsScreen() {
                     <Feather name="plus-circle" size={12} color="#FF4081" />
                   </View>
                 </View>
-
-                {/* Comment content */}
                 <View className="flex-1 ml-3">
                   <Text className="text-[14px] font-inter font-semibold text-white">
-                    {comment.name}
+                    {comment.user?.name ?? "User"}
                   </Text>
-                  <Text className="text-[10px] font-inter text-[#FAFAFA]">
-                    {comment.time}
-                  </Text>
+                  {comment.created_at ? (
+                    <Text className="text-[10px] font-inter text-[#FAFAFA]">
+                      {new Date(comment.created_at).toLocaleDateString()}
+                    </Text>
+                  ) : null}
                   <Text
                     className="text-xs font-inter mt-2 leading-[15px]"
                     style={{ color: "#F7F7F7" }}
                   >
-                    {comment.text}
+                    {comment.content}
                   </Text>
-
-                  {/* Comment action bar */}
                   <View className="flex-row items-center justify-between mt-3">
                     <View className="flex-row items-center gap-4">
                       <Feather name="message-circle" size={15} color="#FAFAFA" />
@@ -233,8 +270,9 @@ export default function ViewCommentsScreen() {
               placeholderTextColor="#FFFFFF"
               value={commentText}
               onChangeText={setCommentText}
+              editable={!sending}
             />
-            <TouchableOpacity className="ml-2">
+            <TouchableOpacity className="ml-2" onPress={handleSendComment} disabled={sending}>
               <SendIcon />
             </TouchableOpacity>
           </View>

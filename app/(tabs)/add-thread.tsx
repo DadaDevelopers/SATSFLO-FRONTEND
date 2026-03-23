@@ -1,14 +1,17 @@
+import { api } from "@/lib/api";
 import { Feather } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
 import React, { useState } from "react";
 import {
+  Alert,
   Image,
+  KeyboardAvoidingView,
+  Platform,
+  Text,
   TextInput,
   TouchableOpacity,
   View,
-  Text,
-  KeyboardAvoidingView,
-  Platform,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Svg, { Path } from "react-native-svg";
@@ -28,6 +31,35 @@ const BackArrowIcon = () => (
 export default function AddThreadScreen() {
   const insets = useSafeAreaInsets();
   const [threadText, setThreadText] = useState("");
+  const [posting, setPosting] = useState(false);
+
+  const handlePost = async () => {
+    if (!threadText.trim()) {
+      Alert.alert("Empty post", "Please write something before posting.");
+      return;
+    }
+    setPosting(true);
+    try {
+      const token = await AsyncStorage.getItem("accessToken");
+      if (token) {
+        const { response, data } = await api.post(
+          "/threads",
+          { title: "", content: threadText.trim(), category: "general" },
+          token
+        );
+        if (!response.ok) {
+          Alert.alert("Error", data?.message || "Could not post thread.");
+          return;
+        }
+      }
+    } catch {
+      Alert.alert("Error", "Could not post. Please try again.");
+      return;
+    } finally {
+      setPosting(false);
+    }
+    router.replace("/(tabs)/thread");
+  };
 
   return (
     <KeyboardAvoidingView
@@ -110,6 +142,29 @@ export default function AddThreadScreen() {
 
         {/* Spacer to push content up when keyboard shows */}
         <View className="flex-1" />
+
+        {/* Post Button */}
+        <View className="items-center pb-4 pt-2">
+          <TouchableOpacity
+            onPress={handlePost}
+            disabled={posting}
+            style={{
+              width: 250,
+              height: 50,
+              backgroundColor: "#FF82AD",
+              borderRadius: 1000,
+              alignItems: "center",
+              justifyContent: "center",
+              borderWidth: 0.5,
+              borderColor: "#FF669A",
+            }}
+            activeOpacity={0.8}
+          >
+            <Text style={{ color: "#fff", fontWeight: "500", fontSize: 15 }}>
+              {posting ? "Posting..." : "Post"}
+            </Text>
+          </TouchableOpacity>
+        </View>
 
         {/* Home Indicator */}
         <View

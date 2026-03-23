@@ -1,5 +1,7 @@
 import { useAddLog } from "@/context/add-log-context";
 import { useResponsive } from "@/hooks/use-responsive";
+import { api } from "@/lib/api";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { Text, TouchableOpacity, View } from "react-native";
@@ -87,10 +89,38 @@ export default function DrinkWaterScreen() {
     setLocalCupStyle(cupStyle);
   }, [waterTarget, cupCapacity, cupStyle]);
 
-  const handleSave = () => {
+  useEffect(() => {
+    const loadWaterSettings = async () => {
+      const token = await AsyncStorage.getItem("accessToken");
+      if (!token) return;
+      try {
+        const { response, data } = await api.get("/water-settings", token);
+        if (response.ok) {
+          const d = data?.data ?? data;
+          if (d?.daily_goal_ml) {
+            setLocalTarget(d.daily_goal_ml);
+            setWaterTarget(d.daily_goal_ml);
+          }
+        }
+      } catch {}
+    };
+    loadWaterSettings();
+  }, []);
+
+  const handleSave = async () => {
     setWaterTarget(localTarget);
     setCupCapacity(localCupCapacity);
     setCupStyle(localCupStyle);
+    try {
+      const token = await AsyncStorage.getItem("accessToken");
+      if (token) {
+        await api.put(
+          "/water-settings",
+          { daily_goal_ml: localTarget },
+          token
+        );
+      }
+    } catch {}
     router.back();
   };
 

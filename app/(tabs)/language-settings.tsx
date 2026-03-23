@@ -1,4 +1,6 @@
+import { api } from "@/lib/api";
 import { Feather } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
 import React, { useState } from "react";
 import {
@@ -28,6 +30,19 @@ const LANGUAGES = [
 export default function LanguageSettingsScreen() {
   const insets = useSafeAreaInsets();
   const [selected, setSelected] = useState("English");
+  const [saving, setSaving] = useState(false);
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      const token = await AsyncStorage.getItem("accessToken");
+      if (token) {
+        await api.put("/users/profile", { language: selected }, token);
+      }
+    } catch {}
+    setSaving(false);
+    router.push("/(tabs)/settings" as any);
+  };
 
   return (
     <View style={{ flex: 1, backgroundColor: "#FF4081" }}>
@@ -126,7 +141,8 @@ export default function LanguageSettingsScreen() {
       {/* Bottom: Save button + home indicator */}
       <View style={{ alignItems: "center", gap: 20 }}>
         <TouchableOpacity
-          onPress={() => router.push("/(tabs)/settings" as any)}
+          onPress={handleSave}
+          disabled={saving}
           activeOpacity={0.8}
           style={{
             width: 250,
@@ -148,7 +164,7 @@ export default function LanguageSettingsScreen() {
               color: "#FFFFFF",
             }}
           >
-            Save
+            {saving ? "Saving..." : "Save"}
           </Text>
         </TouchableOpacity>
 

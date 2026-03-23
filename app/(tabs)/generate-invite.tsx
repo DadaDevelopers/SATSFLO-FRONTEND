@@ -1,13 +1,11 @@
+import { api } from "@/lib/api";
 import { Feather } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Clipboard from "expo-clipboard";
 import { router } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { Alert, Share, Text, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-
-function generateCode(): string {
-  return Math.random().toString(36).substring(2, 8).toUpperCase();
-}
 
 function formatTime(seconds: number): string {
   const h = Math.floor(seconds / 3600);
@@ -18,8 +16,24 @@ function formatTime(seconds: number): string {
 
 export default function GenerateInviteScreen() {
   const insets = useSafeAreaInsets();
-  const [code] = useState(generateCode);
+  const [code, setCode] = useState("");
   const [timeLeft, setTimeLeft] = useState(24 * 60 * 60 - 1);
+
+  useEffect(() => {
+    const fetchCode = async () => {
+      try {
+        const token = await AsyncStorage.getItem("accessToken");
+        if (token) {
+          const { response, data } = await api.post("/partner/invite", {}, token);
+          if (response.ok) {
+            const d = data?.data ?? data;
+            setCode(d?.invite_code ?? d?.code ?? "");
+          }
+        }
+      } catch {}
+    };
+    fetchCode();
+  }, []);
 
   useEffect(() => {
     const timer = setInterval(() => {

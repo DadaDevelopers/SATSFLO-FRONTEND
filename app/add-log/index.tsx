@@ -1,3 +1,5 @@
+import { api } from '@/lib/api';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
@@ -413,8 +415,40 @@ export default function AddLogScreen() {
     implant: 'Implant', vRing: 'V-Ring', injection: 'Injection', spermicide: 'Spermicide',
   };
 
-  const handleSave = () => {
+  const formatDateStr = (date: Date) => {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+  };
+
+  const handleSave = async () => {
     saveCurrentDay();
+    const dateStr = formatDateStr(selectedDate);
+    try {
+      const token = await AsyncStorage.getItem('accessToken');
+      if (token) {
+        // Log the day's data
+        await api.put(`/logs/${dateStr}`, {
+          flow: dayData.flowLevel,
+          symptoms: dayData.symptoms,
+          mood: dayData.moods,
+          notes: dayData.note,
+          weight: dayData.weight,
+          temperature: dayData.temperature,
+          water_intake: dayData.waterIntake,
+        }, token);
+
+        // Start period cycle if marked
+        if (dayData.periodStart) {
+          await api.post('/cycles/start', { start_date: dateStr }, token);
+        }
+        // End period cycle if marked
+        if (dayData.periodEnd) {
+          await api.post('/cycles/end', { end_date: dateStr }, token);
+        }
+      }
+    } catch {}
     Alert.alert('Saved', 'Your log has been saved successfully!', [
       { text: 'OK', onPress: () => router.back() }
     ]);

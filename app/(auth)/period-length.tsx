@@ -3,7 +3,7 @@ import { DayPicker } from "@/components/signup/day-picker";
 import { HomeIndicatorArea } from "@/components/signup/home-indicator-area";
 import { PrimaryButton } from "@/components/signup/primary-button";
 import { TitleSection } from "@/components/signup/title-section";
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useState } from "react";
 import { View, useWindowDimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -16,10 +16,14 @@ export default function PeriodLengthScreen() {
   const insets = useSafeAreaInsets();
   const { width: screenWidth } = useWindowDimensions();
   const isDesktop = screenWidth > MAX_CONTENT_WIDTH;
+  const { cycleLength } = useLocalSearchParams<{ cycleLength: string }>();
   const [selectedLength, setSelectedLength] = useState(5);
 
   const handleNext = () => {
-    router.push("/(auth)/last-period");
+    router.push({
+      pathname: "/(auth)/last-period",
+      params: { cycleLength, periodLength: selectedLength },
+    });
   };
 
   return (

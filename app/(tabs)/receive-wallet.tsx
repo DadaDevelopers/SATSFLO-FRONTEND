@@ -1,7 +1,9 @@
+import { api } from '@/lib/api';
 import { Feather } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
-import { Image, Pressable, Text, View } from 'react-native';
+import { Alert, Image, Pressable, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 type WalletType = 'blink' | 'walletOfSatoshi' | null;
@@ -35,13 +37,30 @@ export default function ReceiveWalletScreen() {
     }
   };
 
-  const handleProceed = () => {
+  const [loading, setLoading] = useState(false);
+
+  const handleProceed = async () => {
     if (!selectedWallet) {
-      console.log('Please select a wallet');
+      Alert.alert('Select Wallet', 'Please select a wallet to continue.');
       return;
     }
-    console.log('Selected wallet:', selectedWallet);
-    router.push('/(tabs)/success-received');
+    setLoading(true);
+    let balance = '';
+    try {
+      const token = await AsyncStorage.getItem('accessToken');
+      if (token) {
+        const { response, data } = await api.get('/lightning/wallet', token);
+        if (response.ok) {
+          const d = data?.data ?? data;
+          balance = String(d?.balance_sats ?? d?.balance ?? '');
+        }
+      }
+    } catch {}
+    setLoading(false);
+    router.push({
+      pathname: '/(tabs)/success-received' as any,
+      params: { balance },
+    });
   };
 
   return (
@@ -96,10 +115,11 @@ export default function ReceiveWalletScreen() {
       <View className="items-center pb-0" style={{ paddingBottom: insets.bottom }}>
         <Pressable
           onPress={handleProceed}
+          disabled={loading}
           className="w-[250px] py-4 bg-[#FF82AD] rounded-full items-center justify-center active:opacity-80 border-[0.5px] border-[#FF669A] mb-5"
         >
           <Text className="text-white font-inter font-medium text-[15px]">
-            Proceed
+            {loading ? 'Loading...' : 'Proceed'}
           </Text>
         </Pressable>
         <View className="w-full h-[34px] bg-[#FF3378] items-center justify-center">
