@@ -2,7 +2,6 @@ import React, { useRef, useState } from "react";
 import {
   Animated,
   Modal,
-  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -25,7 +24,7 @@ type Props = {
 // ─── Content ──────────────────────────────────────────────────────────────────
 const TERMS_SECTIONS = [
   {
-    heading: "1. YOUR HEALTH DATA",
+    heading: "1.  YOUR HEALTH DATA",
     body: "We collect cycle dates, symptoms, moods, and notes you log. This data is encrypted on your device and stored securely. We never sell, rent, or share your personal health information with advertisers or third parties without your explicit consent.",
   },
   {
@@ -40,11 +39,23 @@ const TERMS_SECTIONS = [
     heading: "4.  AGE REQUIREMENT",
     body: "You must be at least 13 years of age to use this app. If you are under 18, please review these terms with a trusted adult before continuing.",
   },
+  {
+    heading: "5.  HEALTH DISCLAIMER",
+    body: "Our insights are for informational purposes only and do not constitute medical advice. Always consult a qualified healthcare professional for medical decisions.",
+  },
+  {
+    heading: "6.  NOTIFICATIONS",
+    body: "By creating an account, you agree to receive cycle predictions and optional health reminders via push notifications. You can manage or disable notifications at any time in your device settings.",
+  },
+  {
+    heading: "7.  CHANGES TO THESE TERMS",
+    body: "We may update these terms from time to time. We'll notify you of significant changes via the app or email. Continued use after changes means you accept the updated terms.",
+  },
 ];
 
 const PRIVACY_SECTIONS = [
   {
-    heading: "1. WHAT WE COLLECT",
+    heading: "1.  WHAT WE COLLECT",
     body: "We collect your name, email address, and the health data you log including cycle dates, symptoms, moods, and notes. We also collect anonymised usage data to improve the app experience.",
   },
   {
@@ -61,7 +72,15 @@ const PRIVACY_SECTIONS = [
   },
   {
     heading: "5.  COOKIES & ANALYTICS",
-    body: "We use minimal analytics to understand how the app is used and to improve its performance. No personal health data is ever included in analytics reports.",
+    body: "We use minimal analytics to understand app usage in aggregate. We do not use advertising trackers or sell data to ad networks of any kind.",
+  },
+  {
+    heading: "6.  YOUR RIGHTS",
+    body: "Under the Kenya Data Protection Act 2019 and applicable global laws, you have the right to access, correct, port, or delete your data. To exercise these rights, contact us at hello@satsflo.com, we respond within 48 hours.",
+  },
+  {
+    heading: "7.  POLICY UPDATES",
+    body: "We may update this policy occasionally. We'll notify you of material changes via the app or email. Your continued use of Satsflo after changes constitutes acceptance of the revised policy.",
   },
 ];
 
@@ -71,7 +90,6 @@ export function TermsModal({ visible, onAgree, onDismiss, initialTab = "terms" }
   const [activeTab, setActiveTab] = useState<Tab>(initialTab);
   const translateY = useRef(new Animated.Value(600)).current;
 
-  // Animate sheet in/out
   React.useEffect(() => {
     if (visible) {
       Animated.spring(translateY, {
@@ -89,7 +107,6 @@ export function TermsModal({ visible, onAgree, onDismiss, initialTab = "terms" }
     }
   }, [visible]);
 
-  // Reset to initial tab when newly opened
   React.useEffect(() => {
     if (visible) setActiveTab(initialTab);
   }, [visible, initialTab]);
@@ -143,10 +160,8 @@ export function TermsModal({ visible, onAgree, onDismiss, initialTab = "terms" }
             onPress={() => setActiveTab("terms")}
             activeOpacity={0.8}
           >
-            <Text
-              style={[styles.tabLabel, activeTab === "terms" && styles.tabLabelActive]}
-            >
-              Terms &amp; Conditions
+            <Text style={[styles.tabLabel, activeTab === "terms" && styles.tabLabelActive]}>
+              Terms & Conditions
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
@@ -154,9 +169,7 @@ export function TermsModal({ visible, onAgree, onDismiss, initialTab = "terms" }
             onPress={() => setActiveTab("privacy")}
             activeOpacity={0.8}
           >
-            <Text
-              style={[styles.tabLabel, activeTab === "privacy" && styles.tabLabelActive]}
-            >
+            <Text style={[styles.tabLabel, activeTab === "privacy" && styles.tabLabelActive]}>
               Privacy Policy
             </Text>
           </TouchableOpacity>
@@ -211,7 +224,6 @@ const styles = StyleSheet.create({
     maxHeight: "88%",
     paddingHorizontal: 20,
     paddingTop: 12,
-    // Shadow
     shadowColor: "#000",
     shadowOffset: { width: 0, height: -4 },
     shadowOpacity: 0.1,
@@ -222,7 +234,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 4,
     borderRadius: 2,
-    backgroundColor: "#F06292",
+    backgroundColor: "#FF4081",
     alignSelf: "center",
     marginBottom: 16,
   },
@@ -259,7 +271,7 @@ const styles = StyleSheet.create({
   // Tabs
   tabRow: {
     flexDirection: "row",
-    backgroundColor: PINK_SHEET,
+    backgroundColor: "transparent",
     borderRadius: 12,
     padding: 4,
     marginBottom: 16,
@@ -271,13 +283,13 @@ const styles = StyleSheet.create({
     paddingVertical: 9,
     borderRadius: 10,
     alignItems: "center",
-    backgroundColor: "transparent",
+    backgroundColor: "#fff",
   },
   tabActive: {
-    backgroundColor: "#fff",
-    shadowColor: "#000",
+    backgroundColor: PINK_SHEET,
+    shadowColor: PINK,
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.06,
+    shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 2,
   },
