@@ -77,7 +77,7 @@ export default function SendGiftAmountScreen() {
   return (
     <View className="flex-1 bg-[#FF4081]">
       {/* Header */}
-      <View className="flex-row items-center px-5 py-6 gap-[85px]">
+      <View className="flex-row items-center justify-between px-5 py-6">
         <Pressable onPress={handleBack} className="p-1">
           <Feather name="arrow-left" size={24} color="#FAFAFA" />
         </Pressable>
@@ -161,7 +161,7 @@ export default function SendGiftAmountScreen() {
                 <View className="flex-row justify-between items-center">
                   <View>
                     <Text className="text-white font-inter font-semibold text-base">USD</Text>
-                    <Text className="text-white/80 font-inter text-md mt-0.5">US Dollar</Text>
+                    <Text className="text-white/80 font-inter text-xs mt-0.5">US Dollar</Text>
                   </View>
                   {currency === 'USD' && (
                     <Feather name="check-circle" size={18} color="#4DC721" />

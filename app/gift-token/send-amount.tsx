@@ -1,16 +1,16 @@
-import React, { useState } from 'react';
+import * as Clipboard from "expo-clipboard";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import React, { useState } from "react";
 import {
-  View,
-  Text,
-  TouchableOpacity,
-  TextInput,
   Alert,
+  Text,
+  TextInput,
+  TouchableOpacity,
   useWindowDimensions,
-} from 'react-native';
-import { useRouter, useLocalSearchParams } from 'expo-router';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Svg, { Path } from 'react-native-svg';
-import * as Clipboard from 'expo-clipboard';
+  View,
+} from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import Svg, { Path } from "react-native-svg";
 
 const MAX_CONTENT_WIDTH = 480;
 
@@ -84,7 +84,7 @@ const CheckCircleIcon = () => (
   </Svg>
 );
 
-type CurrencyType = 'USD' | 'EUR' | 'KES' | 'NGN';
+type CurrencyType = "USD" | "EUR" | "KES" | "NGN";
 
 const conversionRates: Record<CurrencyType, number> = {
   USD: 1056,
@@ -94,10 +94,10 @@ const conversionRates: Record<CurrencyType, number> = {
 };
 
 const currencyNames: Record<CurrencyType, string> = {
-  USD: 'US Dollar',
-  EUR: 'Euro',
-  KES: 'Kenyan Shilling',
-  NGN: 'Nigerian Naira',
+  USD: "US Dollar",
+  EUR: "Euro",
+  KES: "Kenyan Shilling",
+  NGN: "Nigerian Naira",
 };
 
 export default function SendAmountScreen() {
@@ -107,13 +107,16 @@ export default function SendAmountScreen() {
   const { width: screenWidth } = useWindowDimensions();
   const isDesktop = screenWidth > MAX_CONTENT_WIDTH;
 
-  const [destination, setDestination] = useState('');
-  const [amount, setAmount] = useState('');
-  const [note, setNote] = useState('');
-  const [currency, setCurrency] = useState<CurrencyType>('USD');
+  const [destination, setDestination] = useState("");
+  const [amount, setAmount] = useState("");
+  const [note, setNote] = useState("");
+  const [currency, setCurrency] = useState<CurrencyType>("USD");
   const [showCurrencyDropdown, setShowCurrencyDropdown] = useState(false);
   const handleScanQR = () => {
-    Alert.alert('QR Scanning', 'Please type or paste the destination address manually.');
+    Alert.alert(
+      "QR Scanning",
+      "Please type or paste the destination address manually.",
+    );
   };
 
   const handlePaste = async () => {
@@ -121,13 +124,13 @@ export default function SendAmountScreen() {
       const text = await Clipboard.getStringAsync();
       if (text) {
         setDestination(text);
-        Alert.alert('Pasted', `Destination set to: ${text}`);
+        Alert.alert("Pasted", `Destination set to: ${text}`);
       } else {
-        Alert.alert('Clipboard Empty', 'No text found in clipboard');
+        Alert.alert("Clipboard Empty", "No text found in clipboard");
       }
     } catch (error) {
-      console.error('Paste error:', error);
-      Alert.alert('Error', 'Failed to paste from clipboard');
+      console.error("Paste error:", error);
+      Alert.alert("Error", "Failed to paste from clipboard");
     }
   };
 
@@ -143,7 +146,7 @@ export default function SendAmountScreen() {
   const calculateSatsEquivalent = (): string => {
     const amountValue = parseFloat(amount);
     if (isNaN(amountValue) || amountValue <= 0) {
-      return '0';
+      return "0";
     }
     const satsEquivalent = amountValue * conversionRates[currency];
     return Math.round(satsEquivalent).toLocaleString();
@@ -151,14 +154,16 @@ export default function SendAmountScreen() {
 
   const handleProceed = () => {
     if (!destination || !amount) {
-      Alert.alert('Required Fields', 'Please fill in Destination and Amount to continue');
+      Alert.alert(
+        "Required Fields",
+        "Please fill in Destination and Amount to continue",
+      );
       return;
     }
 
     router.push({
-      pathname: '/gift-token/select-wallet',
+      pathname: "/gift-token/create-invoice",
       params: {
-        action: 'send',
         category: params.category,
         destination,
         amount,
@@ -173,18 +178,22 @@ export default function SendAmountScreen() {
     <View
       className="flex-1"
       style={{
-        backgroundColor: '#FF4081',
+        backgroundColor: "#FF4081",
         paddingTop: insets.top,
       }}
     >
       {/* Desktop wrapper */}
       <View
         className="flex-1"
-        style={isDesktop ? {
-          maxWidth: MAX_CONTENT_WIDTH,
-          width: '100%',
-          alignSelf: 'center',
-        } : undefined}
+        style={
+          isDesktop
+            ? {
+                maxWidth: MAX_CONTENT_WIDTH,
+                width: "100%",
+                alignSelf: "center",
+              }
+            : undefined
+        }
       >
         {/* Header */}
         <View className="flex-row items-center px-4 py-4">
@@ -209,7 +218,10 @@ export default function SendAmountScreen() {
               <Text className="text-white text-sm font-medium mb-2">
                 Destination
               </Text>
-              <View className="flex-row items-center px-4 py-3 rounded-lg" style={{ backgroundColor: '#FF6B9D' }}>
+              <View
+                className="flex-row items-center px-4 py-3 rounded-lg"
+                style={{ backgroundColor: "#FF6B9D" }}
+              >
                 <TextInput
                   className="flex-1 text-white text-base"
                   placeholder="Sarahabraham@blink.sv"
@@ -233,11 +245,14 @@ export default function SendAmountScreen() {
               <Text className="text-white text-sm font-medium mb-2">
                 Amount
               </Text>
-              <View className="flex-row items-center px-4 py-3 rounded-lg gap-3" style={{ backgroundColor: '#FF6B9D' }}>
+              <View
+                className="flex-row items-center px-4 py-3 rounded-lg gap-3"
+                style={{ backgroundColor: "#FF6B9D" }}
+              >
                 <TouchableOpacity
                   onPress={toggleCurrency}
                   className="flex-row items-center gap-1 px-3 py-2 rounded"
-                  style={{ backgroundColor: '#FF4081' }}
+                  style={{ backgroundColor: "#FF4081" }}
                 >
                   <Text className="text-white text-sm font-semibold">
                     {currency}
@@ -256,30 +271,35 @@ export default function SendAmountScreen() {
 
               {/* Currency Dropdown */}
               {showCurrencyDropdown && (
-                <View className="absolute top-20 left-0 right-0 rounded-lg overflow-hidden shadow-lg" style={{ backgroundColor: '#FF6B9D', zIndex: 20 }}>
-                  {(['USD', 'EUR', 'KES', 'NGN'] as CurrencyType[]).map((curr, index) => (
-                    <TouchableOpacity
-                      key={curr}
-                      onPress={() => selectCurrency(curr)}
-                      className="px-4 py-3"
-                      style={{
-                        borderBottomWidth: index < 3 ? 1 : 0,
-                        borderBottomColor: '#FF99BC',
-                      }}
-                    >
-                      <View className="flex-row justify-between items-center">
-                        <View>
-                          <Text className="text-white font-semibold text-base">
-                            {curr}
-                          </Text>
-                          <Text className="text-white opacity-80 text-xs mt-0.5">
-                            {currencyNames[curr]}
-                          </Text>
+                <View
+                  className="absolute top-20 left-0 right-0 rounded-lg overflow-hidden shadow-lg"
+                  style={{ backgroundColor: "#FF6B9D", zIndex: 20 }}
+                >
+                  {(["USD", "EUR", "KES", "NGN"] as CurrencyType[]).map(
+                    (curr, index) => (
+                      <TouchableOpacity
+                        key={curr}
+                        onPress={() => selectCurrency(curr)}
+                        className="px-4 py-3"
+                        style={{
+                          borderBottomWidth: index < 3 ? 1 : 0,
+                          borderBottomColor: "#FF99BC",
+                        }}
+                      >
+                        <View className="flex-row justify-between items-center">
+                          <View>
+                            <Text className="text-white font-semibold text-base">
+                              {curr}
+                            </Text>
+                            <Text className="text-white opacity-80 text-xs mt-0.5">
+                              {currencyNames[curr]}
+                            </Text>
+                          </View>
+                          {currency === curr && <CheckCircleIcon />}
                         </View>
-                        {currency === curr && <CheckCircleIcon />}
-                      </View>
-                    </TouchableOpacity>
-                  ))}
+                      </TouchableOpacity>
+                    ),
+                  )}
                 </View>
               )}
 
@@ -298,7 +318,10 @@ export default function SendAmountScreen() {
               <Text className="text-white text-sm font-medium mb-2">
                 Note (Optional)
               </Text>
-              <View className="px-4 py-3 rounded-lg" style={{ backgroundColor: '#FF6B9D' }}>
+              <View
+                className="px-4 py-3 rounded-lg"
+                style={{ backgroundColor: "#FF6B9D" }}
+              >
                 <TextInput
                   className="text-white text-base"
                   placeholder="For flowers"
@@ -313,21 +336,25 @@ export default function SendAmountScreen() {
         </View>
 
         {/* Proceed Button */}
-        <View className="px-4 pb-8" style={{ paddingBottom: insets.bottom + 32 }}>
+        <View
+          className="px-4 pb-8"
+          style={{ paddingBottom: insets.bottom + 32 }}
+        >
           <TouchableOpacity
             onPress={handleProceed}
             disabled={!destination || !amount}
             className="py-4 rounded-full items-center"
             style={{
-              backgroundColor: (destination && amount) ? '#FFB6C1' : '#FF8FAB',
-              opacity: (destination && amount) ? 1 : 0.7,
+              backgroundColor: destination && amount ? "#FFB6C1" : "#FF8FAB",
+              opacity: destination && amount ? 1 : 0.7,
             }}
           >
-            <Text className="text-white text-base font-semibold">Proceed</Text>
+            <Text className="text-white text-base font-semibold">
+              Create Invoice
+            </Text>
           </TouchableOpacity>
         </View>
       </View>
-
     </View>
   );
 }
