@@ -165,12 +165,7 @@ export function TermsModal({
             onPress={() => setActiveTab("terms")}
             activeOpacity={0.8}
           >
-            <Text
-              style={[
-                styles.tabLabel,
-                activeTab === "terms" && styles.tabLabelActive,
-              ]}
-            >
+            <Text style={[styles.tabLabel, activeTab === "terms" && styles.tabLabelActive]}>
               Terms & Conditions
             </Text>
           </TouchableOpacity>
@@ -179,12 +174,7 @@ export function TermsModal({
             onPress={() => setActiveTab("privacy")}
             activeOpacity={0.8}
           >
-            <Text
-              style={[
-                styles.tabLabel,
-                activeTab === "privacy" && styles.tabLabelActive,
-              ]}
-            >
+            <Text style={[styles.tabLabel, activeTab === "privacy" && styles.tabLabelActive]}>
               Privacy Policy
             </Text>
           </TouchableOpacity>
