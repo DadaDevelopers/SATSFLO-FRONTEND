@@ -96,14 +96,22 @@ export default function TemperatureScreen() {
         >
           {/* Temperature Input Card */}
           <View className="px-4">
-            <View className="bg-pink-100 rounded-3xl p-4">
+            <View className="bg-pink-100 rounded-3xl p-8">
               {/* Unit Toggle */}
               <View
                 className="flex-row items-center rounded-[10px] bg-white mb-6"
                 style={{ padding: 2, height: 44 }}
               >
                 <TouchableOpacity
-                  onPress={() => setLocalUnit("C")}
+                  onPress={() => {
+                    if (localUnit === "F") {
+                      const val = parseFloat(localTemp);
+                      if (!isNaN(val)) {
+                        setLocalTemp((((val - 32) * 5) / 9).toFixed(1));
+                      }
+                    }
+                    setLocalUnit("C");
+                  }}
                   className="items-center justify-center rounded-lg"
                   style={{
                     width: 155,
@@ -125,7 +133,15 @@ export default function TemperatureScreen() {
                   </Text>
                 </TouchableOpacity>
                 <TouchableOpacity
-                  onPress={() => setLocalUnit("F")}
+                  onPress={() => {
+                    if (localUnit === "C") {
+                      const val = parseFloat(localTemp);
+                      if (!isNaN(val)) {
+                        setLocalTemp(((val * 9) / 5 + 32).toFixed(1));
+                      }
+                    }
+                    setLocalUnit("F");
+                  }}
                   className="flex-1 items-center justify-center rounded-lg"
                   style={{
                     height: 40,
@@ -194,7 +210,7 @@ export default function TemperatureScreen() {
                       lineHeight: 48,
                       color: "#090909",
                       textAlign: "center",
-                      width: 85,
+                      maxWidth: 85,
                     }}
                   />
                 </View>
