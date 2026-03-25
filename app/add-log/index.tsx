@@ -1,4 +1,4 @@
-import { FlowDroplet, flowLevelLabel } from "@/components/add-log/flow-droplet";
+import { FlowDroplet } from "@/components/add-log/flow-droplet";
 import { useAddLog } from "@/context/add-log-context";
 import { api } from "@/lib/api";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -99,6 +99,121 @@ const generateDates = () => {
   return dates;
 };
 
+// Flow droplet component
+const FlowDroplet = ({
+  level,
+  selected,
+}: {
+  level: "light" | "medium" | "heavy" | "veryHeavy";
+  selected: boolean;
+}) => {
+  if (level === "light") {
+    return (
+      <Svg width={56} height={56} viewBox="0 0 62 62">
+        <Rect
+          x="0.340732"
+          y="0.340732"
+          width="60.6818"
+          height="60.6818"
+          rx="30.3409"
+          stroke={selected ? "#CC1675" : "#FFDFEA"}
+          strokeWidth="0.681818"
+          fill="none"
+        />
+        <Path
+          d="M30.6825 43.6361C27.6598 43.6361 25.0859 42.5907 22.9609 40.4998C20.8359 38.4089 19.7734 35.8634 19.7734 32.8634C19.7734 31.4316 20.0518 30.0623 20.6087 28.7555C21.1655 27.4486 21.9553 26.2952 22.978 25.2952L30.6825 17.7271L38.3871 25.2952C39.4098 26.2952 40.1996 27.4486 40.7564 28.7555C41.3132 30.0623 41.5916 31.4316 41.5916 32.8634C41.5916 35.8634 40.5291 38.4089 38.4041 40.4998C36.2791 42.5907 33.7053 43.6361 30.6825 43.6361Z"
+          fill="#FF4081"
+        />
+      </Svg>
+    );
+  }
+
+  if (level === "medium") {
+    return (
+      <Svg width={56} height={56} viewBox="0 0 62 62">
+        <Rect
+          x="0.340732"
+          y="0.340732"
+          width="60.6818"
+          height="60.6818"
+          rx="30.3409"
+          stroke={selected ? "#CC1675" : "#FFDFEA"}
+          strokeWidth="0.681818"
+          fill="none"
+        />
+        <Path
+          d="M41.136 28.4085C39.1209 28.4085 37.4049 27.7115 35.9883 26.3176C34.5716 24.9236 33.8633 23.2267 33.8633 21.2267C33.8633 20.2721 34.0489 19.3592 34.4201 18.488C34.7913 17.6168 35.3178 16.8479 35.9996 16.1812L41.136 11.1357L46.2724 16.1812C46.9542 16.8479 47.4807 17.6168 47.8519 18.488C48.2231 19.3592 48.4087 20.2721 48.4087 21.2267C48.4087 23.2267 47.7004 24.9236 46.2837 26.3176C44.8671 27.7115 43.1512 28.4085 41.136 28.4085Z"
+          fill="#FF4081"
+        />
+        <Path
+          d="M24.288 48.5907C21.2653 48.5907 18.6914 47.5453 16.5664 45.4544C14.4414 43.3635 13.3789 40.818 13.3789 37.818C13.3789 36.3862 13.6573 35.0169 14.2141 33.7101C14.771 32.4032 15.5607 31.2498 16.5835 30.2498L24.288 22.6816L31.9925 30.2498C33.0153 31.2498 33.805 32.4032 34.3619 33.7101C34.9187 35.0169 35.1971 36.3862 35.1971 37.818C35.1971 40.818 34.1346 43.3635 32.0096 45.4544C29.8846 47.5453 27.3107 48.5907 24.288 48.5907Z"
+          fill="#FF4081"
+        />
+      </Svg>
+    );
+  }
+
+  if (level === "heavy") {
+    return (
+      <Svg width={56} height={56} viewBox="0 0 66 62">
+        <Rect
+          x="0.342685"
+          y="0.340732"
+          width="64.7727"
+          height="60.6818"
+          rx="30.3409"
+          stroke={selected ? "#CC1675" : "#FFDFEA"}
+          strokeWidth="0.681818"
+          fill="none"
+        />
+        <Path
+          d="M44.3819 26.2707C42.2293 26.2707 40.3964 25.5262 38.8832 24.0373C37.3699 22.5483 36.6133 20.7356 36.6133 18.5992C36.6133 17.5796 36.8115 16.6045 37.2081 15.6739C37.6046 14.7433 38.167 13.9219 38.8953 13.2098L44.3819 7.82031L49.8684 13.2098C50.5968 13.9219 51.1592 14.7433 51.5557 15.6739C51.9522 16.6045 52.1505 17.5796 52.1505 18.5992C52.1505 20.7356 51.3938 22.5483 49.8806 24.0373C48.3673 25.5262 46.5344 26.2707 44.3819 26.2707Z"
+          fill="#FF4081"
+        />
+        <Path
+          d="M42.4202 47.2465C40.8058 47.2465 39.4311 46.6881 38.2962 45.5714C37.1612 44.4547 36.5938 43.0952 36.5938 41.4929C36.5938 40.7282 36.7424 39.9968 37.0398 39.2989C37.3372 38.6009 37.759 37.9849 38.3053 37.4508L42.4202 33.4087L46.5351 37.4508C47.0814 37.9849 47.5032 38.6009 47.8006 39.2989C48.0979 39.9968 48.2466 40.7282 48.2466 41.4929C48.2466 43.0952 47.6792 44.4547 46.5442 45.5714C45.4093 46.6881 44.0346 47.2465 42.4202 47.2465Z"
+          fill="#FF4081"
+        />
+        <Path
+          d="M21.0826 44.5194C17.8538 44.5194 15.1044 43.4026 12.8345 41.1692C10.5646 38.9357 9.42969 36.2167 9.42969 33.0121C9.42969 31.4827 9.72708 30.02 10.3219 28.6241C10.9166 27.2282 11.7603 25.9961 12.8527 24.9279L21.0826 16.8438L29.3124 24.9279C30.4049 25.9961 31.2485 27.2282 31.8433 28.6241C32.4381 30.02 32.7355 31.4827 32.7355 33.0121C32.7355 36.2167 31.6005 38.9357 29.3306 41.1692C27.0608 43.4026 24.3114 44.5194 21.0826 44.5194Z"
+          fill="#FF4081"
+        />
+      </Svg>
+    );
+  }
+
+  return (
+    <Svg width={56} height={56} viewBox="0 0 62 62">
+      <Rect
+        x="0.342685"
+        y="0.340732"
+        width="60.6818"
+        height="60.6818"
+        rx="30.3409"
+        stroke={selected ? "#CC1675" : "#FFDFEA"}
+        strokeWidth="0.681818"
+        fill="none"
+      />
+      <Path
+        d="M41.593 25.6814C39.5779 25.6814 37.862 24.9844 36.4453 23.5905C35.0286 22.1966 34.3203 20.4996 34.3203 18.4996C34.3203 17.5451 34.5059 16.6322 34.8771 15.761C35.2483 14.8898 35.7749 14.1208 36.4567 13.4541L41.593 8.40869L46.7294 13.4541C47.4112 14.1208 47.9377 14.8898 48.3089 15.761C48.6802 16.6322 48.8658 17.5451 48.8658 18.4996C48.8658 20.4996 48.1574 22.1966 46.7408 23.5905C45.3241 24.9844 43.6082 25.6814 41.593 25.6814Z"
+        fill="#FF4081"
+      />
+      <Path
+        d="M38.8647 48.0678C37.3533 48.0678 36.0664 47.5451 35.0039 46.4996C33.9414 45.4542 33.4102 44.1815 33.4102 42.6815C33.4102 41.9656 33.5494 41.2809 33.8278 40.6275C34.1062 39.9741 34.5011 39.3974 35.0124 38.8974L38.8647 35.1133L42.717 38.8974C43.2283 39.3974 43.6232 39.9741 43.9016 40.6275C44.18 41.2809 44.3192 41.9656 44.3192 42.6815C44.3192 44.1815 43.788 45.4542 42.7255 46.4996C41.663 47.5451 40.3761 48.0678 38.8647 48.0678Z"
+        fill="#FF4081"
+      />
+      <Path
+        d="M49.771 39.8862C48.2596 39.8862 46.9727 39.3635 45.9102 38.318C44.8477 37.2726 44.3164 35.9998 44.3164 34.4998C44.3164 33.7839 44.4556 33.0993 44.734 32.4458C45.0124 31.7924 45.4073 31.2157 45.9187 30.7157L49.771 26.9316L53.6232 30.7157C54.1346 31.2157 54.5295 31.7924 54.8079 32.4458C55.0863 33.0993 55.2255 33.7839 55.2255 34.4998C55.2255 35.9998 54.6942 37.2726 53.6317 38.318C52.5692 39.3635 51.2823 39.8862 49.771 39.8862Z"
+        fill="#FF4081"
+      />
+      <Path
+        d="M19.7724 43.6361C16.7496 43.6361 14.1758 42.5907 12.0508 40.4998C9.92578 38.4089 8.86328 35.8634 8.86328 32.8634C8.86328 31.4316 9.14169 30.0623 9.69851 28.7555C10.2553 27.4486 11.0451 26.2952 12.0678 25.2952L19.7724 17.7271L27.4769 25.2952C28.4996 26.2952 29.2894 27.4486 29.8462 28.7555C30.4031 30.0623 30.6815 31.4316 30.6815 32.8634C30.6815 35.8634 29.619 38.4089 27.494 40.4998C25.369 42.5907 22.7951 43.6361 19.7724 43.6361Z"
+        fill="#FF4081"
+      />
+    </Svg>
+  );
+};
+
 export default function AddLogScreen() {
   const router = useRouter();
   const { date: paramDate } = useLocalSearchParams<{ date: string }>();
@@ -145,38 +260,20 @@ export default function AddLogScreen() {
 
   // Reset to target date when screen mounts
   useEffect(() => {
-    let targetDate = new Date();
-    if (paramDate) {
-      const parts = paramDate.split("-");
-      if (parts.length === 3) {
-        targetDate = new Date(
-          parseInt(parts[0]),
-          parseInt(parts[1]) - 1,
-          parseInt(parts[2]),
-        );
-      }
-    }
+    const now = new Date();
+    setSelectedDate(now);
+    setViewingMonth(now.getMonth());
+    setViewingYear(now.getFullYear());
 
-    setSelectedDate(targetDate);
-    setViewingMonth(targetDate.getMonth());
-    setViewingYear(targetDate.getFullYear());
-
-    const diffTime =
-      targetDate.getTime() -
-      new Date(new Date().setHours(0, 0, 0, 0)).getTime();
-    const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
-    const targetIndex = 30 + diffDays;
-
-    if (targetIndex >= 0 && targetIndex < dates.length) {
-      setTimeout(() => {
-        flatListRef.current?.scrollToIndex({
-          index: targetIndex,
-          animated: false,
-          viewPosition: 0.5,
-        });
-      }, 100);
-    }
-  }, [paramDate, setSelectedDate, setContextSelectedDate, dates.length]);
+    // Scroll to today (index 30, middle of the array)
+    setTimeout(() => {
+      flatListRef.current?.scrollToIndex({
+        index: 30,
+        animated: false,
+        viewPosition: 0.5,
+      });
+    }, 100);
+  }, [setSelectedDate]);
 
   // Toggle calendar
   const toggleCalendar = () => {
@@ -436,7 +533,12 @@ export default function AddLogScreen() {
       Alert.alert(
         "Sync Error",
         "Saved locally, but failed to sync with server. Please check your connection.",
-        [{ text: "OK", onPress: () => router.navigate("/(tabs)/calendar" as any) }],
+        [
+          {
+            text: "OK",
+            onPress: () => router.navigate("/(tabs)/calendar" as any),
+          },
+        ],
       );
     }
   };
@@ -546,7 +648,9 @@ export default function AddLogScreen() {
         {/* Header */}
         <View className="flex-row items-center justify-between px-4 py-3">
           <TouchableOpacity
-            onPress={() => router.canGoBack() ? router.back() : router.replace("/(tabs)")}
+            onPress={() =>
+              router.canGoBack() ? router.back() : router.replace("/(tabs)")
+            }
             className="p-2"
           >
             <Text className="text-white text-2xl">×</Text>
@@ -755,7 +859,9 @@ export default function AddLogScreen() {
                     <Text
                       className={`text-sm mt-1 ${dayData.flowLevel === level ? "text-pink-500 font-medium" : "text-gray-600"}`}
                     >
-                      {flowLevelLabel(level)}
+                      {level === "veryHeavy"
+                        ? "V.Heavy"
+                        : level.charAt(0).toUpperCase() + level.slice(1)}
                     </Text>
                   </TouchableOpacity>
                 ),
@@ -771,9 +877,18 @@ export default function AddLogScreen() {
             {dayData.symptoms.length > 0 ? (
               <View className="flex-row flex-wrap">
                 {dayData.symptoms.map((s) => (
-                  <View key={s} className="flex-row items-center mr-4 mb-2 gap-2">
-                    <Image source={SYMPTOM_IMAGES[s] as any} style={{ width: 18, height: 18, tintColor: "#EC4899" }} resizeMode="contain" />
-                    <Text className="text-pink-500 text-sm font-medium">{symptomLabels[s]}</Text>
+                  <View
+                    key={s}
+                    className="flex-row items-center mr-4 mb-2 gap-2"
+                  >
+                    <Image
+                      source={SYMPTOM_IMAGES[s] as any}
+                      style={{ width: 18, height: 18, tintColor: "#EC4899" }}
+                      resizeMode="contain"
+                    />
+                    <Text className="text-pink-500 text-sm font-medium">
+                      {symptomLabels[s]}
+                    </Text>
                   </View>
                 ))}
               </View>

@@ -96,7 +96,6 @@ export default function TemperatureScreen() {
         >
           {/* Temperature Input Card */}
           <View className="px-4">
-<<<<<<< HEAD
             <View
               style={{
                 backgroundColor: "#FFE6EE",
@@ -106,11 +105,10 @@ export default function TemperatureScreen() {
                 height: 172,
               }}
             >
-=======
-            <View className="bg-pink-100 rounded-3xl p-8">
->>>>>>> f7fee6f (added conversion)
               {/* Unit Toggle */}
               <View
+                className="flex-row items-center rounded-[10px] bg-white"
+                style={{ padding: 2, height: 44, marginBottom: 54 }}
                 className="flex-row items-center rounded-[10px] bg-white"
                 style={{ padding: 2, height: 44, marginBottom: 54 }}
               >
@@ -221,14 +219,10 @@ export default function TemperatureScreen() {
                       fontSize: 32,
                       color: "#090909",
                       textAlign: "center",
-<<<<<<< HEAD
                       width: 85,
                       height: 56,
                       padding: 0,
                       includeFontPadding: false,
-=======
-                      maxWidth: 85,
->>>>>>> f7fee6f (added conversion)
                     }}
                   />
                 </View>
