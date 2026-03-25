@@ -168,20 +168,6 @@ const FlowDroplet = ({ level, selected }: { level: 'light' | 'medium' | 'heavy' 
   );
 };
 
-// Water cup component
-const WaterCup = ({ filled, percentage = 0 }: { filled: boolean; percentage?: number }) => (
-  <Svg width={36} height={44} viewBox="0 0 24 28">
-    <Path
-      d="M6 4 L7 24 L17 24 L18 4 Z"
-      stroke="#4FC3F7"
-      strokeWidth={2}
-      fill="none"
-    />
-    {filled && (
-      <Path d="M7 14 L7 24 L17 24 L17 14 Z" fill="#4FC3F7" />
-    )}
-  </Svg>
-);
 
 export default function AddLogScreen() {
   const router = useRouter();
@@ -237,7 +223,7 @@ export default function AddLogScreen() {
         viewPosition: 0.5,
       });
     }, 100);
-  }, []);
+  }, [setSelectedDate]);
 
   // Toggle calendar
   const toggleCalendar = () => {
@@ -476,23 +462,6 @@ export default function AddLogScreen() {
   const cups = Array(Math.min(cupsCount, 5)).fill(cupCapacity);
 
   // Responsive wrapper for desktop
-  const ContentWrapper = ({ children }: { children: React.ReactNode }) => {
-    if (!isDesktop) {
-      return <>{children}</>;
-    }
-    return (
-      <View
-        style={{
-          maxWidth: MAX_CONTENT_WIDTH,
-          width: '100%',
-          alignSelf: 'center',
-          flex: 1,
-        }}
-      >
-        {children}
-      </View>
-    );
-  };
 
   return (
     <View
@@ -674,9 +643,7 @@ export default function AddLogScreen() {
           <View className="flex-row justify-around">
             {(['light', 'medium', 'heavy', 'veryHeavy'] as const).map(level => (
               <TouchableOpacity key={level} onPress={() => setFlowLevel(dayData.flowLevel === level ? null : level)} className="items-center">
-                <View className={`w-14 h-14 rounded-full items-center justify-center ${dayData.flowLevel === level ? 'border-2 border-pink-400' : ''}`}>
-                  <FlowDroplet level={level} selected={dayData.flowLevel === level} />
-                </View>
+                <FlowDroplet level={level} selected={dayData.flowLevel === level} />
                 <Text className={`text-sm mt-1 ${dayData.flowLevel === level ? 'text-pink-500 font-medium' : 'text-gray-600'}`}>
                   {level === 'veryHeavy' ? 'V.Heavy' : level.charAt(0).toUpperCase() + level.slice(1)}
                 </Text>
@@ -722,7 +689,7 @@ export default function AddLogScreen() {
             <View className="flex-row flex-wrap">
               {dayData.medicine.map(m => (
                 <View key={m} className="items-center mr-4 mb-2">
-                  <Image source={MEDICINE_IMAGES[m]} style={{ width: 40, height: 40 }} resizeMode="contain" />
+                  <Image source={MEDICINE_IMAGES[m] as any} style={{ width: 40, height: 40 }} resizeMode="contain" />
                   <Text className="text-pink-500 text-xs mt-1">{medicineLabels[m]}</Text>
                 </View>
               ))}

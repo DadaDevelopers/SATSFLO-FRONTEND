@@ -177,14 +177,16 @@ export default function SymptomsScreen() {
                           width: 50,
                           height: 50,
                           borderRadius: 1000,
-                          backgroundColor: isSelected ? "#FF82AD" : "#FFCCDD",
+                          backgroundColor: "#FFCCDD",
+                          borderWidth: isSelected ? 1.5 : 0,
+                          borderColor: "#FF4081",
                           alignItems: "center",
                           justifyContent: "center",
                         }}
                       >
                         <Icon
                           size={24}
-                          color={isSelected ? "#FFFFFF" : "#FF6B9D"}
+                          color="#FF6B9D"
                         />
                       </View>
 

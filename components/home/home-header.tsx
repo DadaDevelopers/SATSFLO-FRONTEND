@@ -1,36 +1,25 @@
 import { Feather } from '@expo/vector-icons';
 import React from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
-import Svg, { Path } from 'react-native-svg';
+import Svg, { Path, Rect } from 'react-native-svg';
 
 interface HomeHeaderProps {
   onNotificationPress?: () => void;
   onLogoPress?: () => void;
 }
 
-function DropIcon() {
-  return (
-    <Svg width={24} height={24} viewBox="0 0 24 24" fill="none">
-      <Path
-        d="M12 2.69L17.66 8.35C19.54 10.23 20.55 12.73 20.55 15.35C20.55 17.97 19.54 20.47 17.66 22.35C15.78 24.23 13.28 25.24 10.66 25.24C8.04 25.24 5.54 24.23 3.66 22.35C1.78 20.47 0.77 17.97 0.77 15.35C0.77 12.73 1.78 10.23 3.66 8.35L12 2.69Z"
-        fill="#CC0045"
-        transform="translate(0, -2) scale(0.9)"
-      />
-    </Svg>
-  );
-}
-
 export function HomeHeader({ onNotificationPress, onLogoPress }: HomeHeaderProps) {
   return (
     <View className="flex-row justify-between items-center px-5 py-4 pt-8">
       {/* Logo with dashed border */}
-      <TouchableOpacity
-        onPress={onLogoPress}
-        className="w-10 h-10 items-center justify-center rounded-full border border-dashed"
-        style={{ borderColor: '#CC0045' }}
-        activeOpacity={0.7}
-      >
-        <DropIcon />
+      <TouchableOpacity onPress={onLogoPress} activeOpacity={0.7}>
+        <Svg width={40} height={40} viewBox="0 0 40 40" fill="none">
+          <Rect x={0.5} y={0.5} width={39} height={39} rx={19.5} stroke="#CC0045" strokeDasharray="2 2" />
+          <Path
+            d="M24.3125 12.4764C23.1545 11.1389 21.8511 9.93465 20.4266 8.88573C20.3005 8.79739 20.1502 8.75 19.9963 8.75C19.8423 8.75 19.692 8.79739 19.5659 8.88573C18.144 9.93509 16.8432 11.1394 15.6875 12.4764C13.1103 15.436 11.75 18.556 11.75 21.4998C11.75 23.6878 12.6192 25.7862 14.1664 27.3334C15.7135 28.8806 17.812 29.7498 20 29.7498C22.188 29.7498 24.2865 28.8806 25.8336 27.3334C27.3808 25.7862 28.25 23.6878 28.25 21.4998C28.25 18.556 26.8897 15.436 24.3125 12.4764Z"
+            fill="#CC0045"
+          />
+        </Svg>
       </TouchableOpacity>
 
       {/* App title */}
