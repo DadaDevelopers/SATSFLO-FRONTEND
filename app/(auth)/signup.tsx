@@ -18,6 +18,7 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import Svg, { Path } from "react-native-svg";
 
 // On web, password inputs must live inside a <form> to avoid browser warnings.
 const FormWrapper =
@@ -196,6 +197,38 @@ export default function SignupScreen() {
                       autoCapitalize="none"
                       autoComplete="new-password"
                     />
+
+                    {/* Password Requirements */}
+                    {password.length > 0 && (
+                      <View className="flex-col gap-[6px]">
+                        <Text className="text-xs font-normal leading-[18px] text-white">
+                          Password should contain at least:
+                        </Text>
+                        <View className="flex-col gap-[2px]">
+                          {[
+                            { label: "8 Characters", met: password.length >= 8 },
+                            { label: "1 Uppercase Letter", met: /[A-Z]/.test(password) },
+                            { label: "1 Lowercase Letter", met: /[a-z]/.test(password) },
+                            { label: "1 Special Character", met: /[^A-Za-z0-9]/.test(password) },
+                          ].map(({ label, met }) => (
+                            <View key={label} className="flex-row items-center gap-[4px]">
+                              <Svg width={14} height={14} viewBox="0 0 14 14" fill="none" style={{ opacity: met ? 1 : 0.4 }}>
+                                <Path
+                                  d="M11.375 1.75H2.625C2.39294 1.75 2.17038 1.84219 2.00628 2.00628C1.84219 2.17038 1.75 2.39294 1.75 2.625V11.375C1.75 11.6071 1.84219 11.8296 2.00628 11.9937C2.17038 12.1578 2.39294 12.25 2.625 12.25H11.375C11.6071 12.25 11.8296 12.1578 11.9937 11.9937C12.1578 11.8296 12.25 11.6071 12.25 11.375V2.625C12.25 2.39294 12.1578 2.17038 11.9937 2.00628C11.8296 1.84219 11.6071 1.75 11.375 1.75ZM9.49703 5.99703L6.43453 9.05953C6.3939 9.10021 6.34565 9.13248 6.29254 9.1545C6.23942 9.17651 6.18249 9.18784 6.125 9.18784C6.06751 9.18784 6.01058 9.17651 5.95746 9.1545C5.90435 9.13248 5.8561 9.10021 5.81547 9.05953L4.50297 7.74703C4.42088 7.66494 4.37476 7.5536 4.37476 7.4375C4.37476 7.3214 4.42088 7.21006 4.50297 7.12797C4.58506 7.04588 4.6964 6.99976 4.8125 6.99976C4.9286 6.99976 5.03994 7.04588 5.12203 7.12797L6.125 8.13148L8.87797 5.37797C8.91862 5.33732 8.96687 5.30508 9.01998 5.28308C9.07309 5.26108 9.13001 5.24976 9.1875 5.24976C9.24499 5.24976 9.30191 5.26108 9.35502 5.28308C9.40813 5.30508 9.45638 5.33732 9.49703 5.37797C9.53768 5.41862 9.56992 5.46687 9.59192 5.51998C9.61392 5.57309 9.62524 5.63001 9.62524 5.6875C9.62524 5.74499 9.61392 5.80191 9.59192 5.85502C9.56992 5.90813 9.53768 5.95638 9.49703 5.99703Z"
+                                  fill="white"
+                                />
+                              </Svg>
+                              <Text
+                                className="text-xs font-normal leading-[18px]"
+                                style={{ color: met ? "#FFFFFF" : "rgba(255,255,255,0.6)" }}
+                              >
+                                {label}
+                              </Text>
+                            </View>
+                          ))}
+                        </View>
+                      </View>
+                    )}
 
                     <InputField
                       placeholder="Confirm Password"
