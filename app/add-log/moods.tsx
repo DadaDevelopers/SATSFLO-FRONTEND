@@ -1,29 +1,40 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
-import { useRouter } from 'expo-router';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Svg, { Path } from 'react-native-svg';
-import { useAddLog } from '@/context/add-log-context';
-import { useResponsive } from '@/hooks/use-responsive';
+import { useAddLog } from "@/context/add-log-context";
+import { useResponsive } from "@/hooks/use-responsive";
+import { useRouter } from "expo-router";
+import React from "react";
+import { ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import Svg, { Path } from "react-native-svg";
 
-type Mood = 'normal' | 'happy' | 'calm' | 'hyped' | 'inLove' | 'peaceful' | 'lonely' | 'angry' | 'silly' | 'sad' | 'relaxed';
+type Mood =
+  | "normal"
+  | "happy"
+  | "calm"
+  | "hyped"
+  | "inLove"
+  | "peaceful"
+  | "lonely"
+  | "angry"
+  | "silly"
+  | "sad"
+  | "relaxed";
 
 const MOODS: { id: Mood; emoji: string; label: string }[] = [
-  { id: 'normal',   emoji: '😐', label: 'Normal'   },
-  { id: 'happy',    emoji: '😊', label: 'Happy'    },
-  { id: 'calm',     emoji: '😌', label: 'Calm'     },
-  { id: 'hyped',    emoji: '🤩', label: 'Hyped'    },
-  { id: 'inLove',   emoji: '😍', label: 'In love'  },
-  { id: 'peaceful', emoji: '😇', label: 'Peaceful' },
-  { id: 'lonely',   emoji: '😢', label: 'Lonely'   },
-  { id: 'angry',    emoji: '😠', label: 'Angry'    },
-  { id: 'silly',    emoji: '😜', label: 'Silly'    },
-  { id: 'sad',      emoji: '😔', label: 'Sad'      },
-  { id: 'relaxed',  emoji: '🙂', label: 'Relaxed'  },
+  { id: "normal", emoji: "😐", label: "Normal" },
+  { id: "happy", emoji: "😊", label: "Happy" },
+  { id: "calm", emoji: "😌", label: "Calm" },
+  { id: "hyped", emoji: "🤩", label: "Hyped" },
+  { id: "inLove", emoji: "😍", label: "In love" },
+  { id: "peaceful", emoji: "😇", label: "Peaceful" },
+  { id: "lonely", emoji: "😢", label: "Lonely" },
+  { id: "angry", emoji: "😠", label: "Angry" },
+  { id: "silly", emoji: "😜", label: "Silly" },
+  { id: "sad", emoji: "😔", label: "Sad" },
+  { id: "relaxed", emoji: "🙂", label: "Relaxed" },
 ];
 
 // 4 items per row — matches Figma Frame 170/171/172 layout (gap: 40px, width: 320px)
-const ROWS: typeof MOODS[] = [];
+const ROWS: (typeof MOODS)[] = [];
 for (let i = 0; i < MOODS.length; i += 4) {
   ROWS.push(MOODS.slice(i, i + 4));
 }
@@ -45,12 +56,11 @@ export default function MoodsScreen() {
       }}
     >
       <View className="flex-1" style={containerStyle}>
-
         {/* Header */}
         <View
           style={{
-            flexDirection: 'row',
-            alignItems: 'center',
+            flexDirection: "row",
+            alignItems: "center",
             marginTop: 28,
             marginHorizontal: 20,
             height: 24,
@@ -58,7 +68,12 @@ export default function MoodsScreen() {
         >
           <TouchableOpacity
             onPress={() => router.back()}
-            style={{ width: 24, height: 20, alignItems: 'center', justifyContent: 'center' }}
+            style={{
+              width: 24,
+              height: 20,
+              alignItems: "center",
+              justifyContent: "center",
+            }}
             activeOpacity={0.7}
           >
             <Svg width={18} height={15} viewBox="0 0 18 15" fill="none">
@@ -69,15 +84,15 @@ export default function MoodsScreen() {
             </Svg>
           </TouchableOpacity>
 
-          <View style={{ flex: 1, alignItems: 'center' }}>
+          <View style={{ flex: 1, alignItems: "center" }}>
             <Text
               style={{
-                fontFamily: 'Inter',
-                fontWeight: '500',
+                fontFamily: "Inter",
+                fontWeight: "500",
                 fontSize: 20,
                 lineHeight: 24,
                 letterSpacing: -0.3,
-                color: '#FFFFFF',
+                color: "#FFFFFF",
               }}
             >
               Moods
@@ -98,26 +113,23 @@ export default function MoodsScreen() {
               background: #FFE6EE, border-radius: 16px, padding: 16px, gap: 25px */}
           <View
             style={{
-              marginHorizontal: 20,
+              marginHorizontal: 8,
               marginTop: 20,
-              backgroundColor: '#FFE6EE',
+              backgroundColor: "#FFE6EE",
               borderRadius: 16,
-              padding: 16,
+              paddingHorizontal: 16,
+              paddingVertical: 16,
               gap: 25,
-              alignItems: 'center',
-              justifyContent: 'center',
             }}
           >
             {ROWS.map((row, rowIndex) => (
-              /* Frame 170/171/172: flex-row, gap: 40px, width: 320px, height: 69px */
               <View
                 key={rowIndex}
                 style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  gap: 40,
-                  width: 320,
-                  height: 69,
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "space-around",
+                  height: 80,
                 }}
               >
                 {row.map(({ id, emoji, label }) => {
@@ -128,7 +140,7 @@ export default function MoodsScreen() {
                       key={id}
                       onPress={() => toggleMood(id)}
                       style={{
-                        alignItems: 'center',
+                        alignItems: "center",
                         gap: 4,
                         width: 50,
                         height: 69,
@@ -141,9 +153,11 @@ export default function MoodsScreen() {
                           width: 50,
                           height: 50,
                           borderRadius: 1000,
-                          backgroundColor: isSelected ? '#FF82AD' : '#FFFFFF',
-                          alignItems: 'center',
-                          justifyContent: 'center',
+                          backgroundColor: "#FFFFFF",
+                          borderWidth: isSelected ? 1.5 : 0,
+                          borderColor: "#FF4081",
+                          alignItems: "center",
+                          justifyContent: "center",
                         }}
                       >
                         <Text style={{ fontSize: 24 }}>{emoji}</Text>
@@ -152,12 +166,12 @@ export default function MoodsScreen() {
                       {/* Label: Inter 400, 12px, #1E1E1E */}
                       <Text
                         style={{
-                          fontFamily: 'Inter',
-                          fontWeight: '400',
+                          fontFamily: "Inter",
+                          fontWeight: "400",
                           fontSize: 12,
                           lineHeight: 15,
-                          color: '#1E1E1E',
-                          textAlign: 'center',
+                          color: "#1E1E1E",
+                          textAlign: "center",
                         }}
                         numberOfLines={1}
                         adjustsFontSizeToFit
@@ -173,32 +187,31 @@ export default function MoodsScreen() {
         </ScrollView>
 
         {/* Bottom section */}
-        <View style={{ alignItems: 'center' }}>
-
+        <View style={{ alignItems: "center" }}>
           {/* Save button */}
           <TouchableOpacity
             onPress={() => router.back()}
             style={{
               width: 250,
               height: 56,
-              backgroundColor: '#FF82AD',
+              backgroundColor: "#FF82AD",
               borderWidth: 0.5,
-              borderColor: '#FF669A',
+              borderColor: "#FF669A",
               borderRadius: 1000,
-              alignItems: 'center',
-              justifyContent: 'center',
+              alignItems: "center",
+              justifyContent: "center",
               marginBottom: 20,
             }}
             activeOpacity={0.8}
           >
             <Text
               style={{
-                fontFamily: 'Inter',
-                fontWeight: '500',
+                fontFamily: "Inter",
+                fontWeight: "500",
                 fontSize: 15,
                 lineHeight: 18,
-                color: '#FFFFFF',
-                textAlign: 'center',
+                color: "#FFFFFF",
+                textAlign: "center",
               }}
             >
               Save
@@ -208,11 +221,11 @@ export default function MoodsScreen() {
           {/* Home indicator strip */}
           <View
             style={{
-              width: '100%',
+              width: "100%",
               height: 34 + (isDesktop ? 0 : insets.bottom),
-              backgroundColor: '#FF3378',
-              alignItems: 'center',
-              justifyContent: 'flex-end',
+              backgroundColor: "#FF3378",
+              alignItems: "center",
+              justifyContent: "flex-end",
               paddingBottom: 8,
             }}
           >
@@ -220,13 +233,12 @@ export default function MoodsScreen() {
               style={{
                 width: 134,
                 height: 5,
-                backgroundColor: '#FF99BC',
+                backgroundColor: "#FF99BC",
                 borderRadius: 100,
               }}
             />
           </View>
         </View>
-
       </View>
     </View>
   );

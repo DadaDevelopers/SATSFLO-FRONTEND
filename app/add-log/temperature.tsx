@@ -96,11 +96,19 @@ export default function TemperatureScreen() {
         >
           {/* Temperature Input Card */}
           <View className="px-4">
-            <View className="bg-pink-100 rounded-3xl p-8">
+            <View
+              style={{
+                backgroundColor: "#FFE6EE",
+                borderRadius: 16,
+                paddingHorizontal: 20,
+                paddingVertical: 20,
+                height: 172,
+              }}
+            >
               {/* Unit Toggle */}
               <View
-                className="flex-row items-center rounded-[10px] bg-white mb-6"
-                style={{ padding: 2, height: 44 }}
+                className="flex-row items-center rounded-[10px] bg-white"
+                style={{ padding: 2, height: 44, marginBottom: 54 }}
               >
                 <TouchableOpacity
                   onPress={() => {
@@ -207,10 +215,12 @@ export default function TemperatureScreen() {
                       fontFamily: "Inter",
                       fontWeight: "500",
                       fontSize: 32,
-                      lineHeight: 48,
                       color: "#090909",
                       textAlign: "center",
-                      maxWidth: 85,
+                      width: 85,
+                      height: 56,
+                      padding: 0,
+                      includeFontPadding: false,
                     }}
                   />
                 </View>
