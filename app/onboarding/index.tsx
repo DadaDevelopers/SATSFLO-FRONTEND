@@ -1,3 +1,4 @@
+import { HomeIndicatorArea } from '@/components/signup/home-indicator-area';
 import TopWave from '@/components/TopWave';
 import { router } from 'expo-router';
 import { Image, Pressable, Text, View, useWindowDimensions } from 'react-native';
@@ -80,6 +81,7 @@ export default function OnboardingScreen() {
           </Pressable>
         </View>
       </View>
+      <HomeIndicatorArea />
     </View>
   );
 }

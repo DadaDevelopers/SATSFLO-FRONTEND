@@ -1,13 +1,11 @@
-import { api } from "@/lib/api";
 import { Feather } from "@expo/vector-icons";
 import * as Clipboard from "expo-clipboard";
-import Svg, { Path } from "react-native-svg";
 import { router } from "expo-router";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useState } from "react";
 import { Alert, Pressable, Text, TextInput, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+type CurrencyType = "USD" | "EUR" | "KES" | "NGN";
 type CurrencyType = "USD" | "EUR" | "KES" | "NGN";
 
 // Fallback rates (non-USD currencies converted via approximate USD equivalent)
@@ -20,6 +18,10 @@ const usdEquivalent: Record<CurrencyType, number> = {
 
 export default function SendGiftAmountScreen() {
   const insets = useSafeAreaInsets();
+  const [destination, setDestination] = useState("");
+  const [amount, setAmount] = useState("");
+  const [note, setNote] = useState("");
+  const [currency, setCurrency] = useState<CurrencyType>("USD");
   const [destination, setDestination] = useState("");
   const [amount, setAmount] = useState("");
   const [note, setNote] = useState("");
@@ -58,10 +60,16 @@ export default function SendGiftAmountScreen() {
   }, []);
 
   const handleBack = () => {
-    router.back();
+    if (router.canGoBack()) {
+      router.push("/(tabs)/send-gift-token");
+    }
   };
 
   const handleScanQR = () => {
+    Alert.alert(
+      "QR Scanning",
+      "Please type or paste the destination address manually.",
+    );
     Alert.alert(
       "QR Scanning",
       "Please type or paste the destination address manually.",
@@ -74,10 +82,14 @@ export default function SendGiftAmountScreen() {
       if (text) {
         setDestination(text);
         Alert.alert("Pasted", `Destination set to: ${text}`);
+        Alert.alert("Pasted", `Destination set to: ${text}`);
       } else {
+        Alert.alert("Clipboard Empty", "No text found in clipboard");
         Alert.alert("Clipboard Empty", "No text found in clipboard");
       }
     } catch (error) {
+      console.error("Paste error:", error);
+      Alert.alert("Error", "Failed to paste from clipboard");
       console.error("Paste error:", error);
       Alert.alert("Error", "Failed to paste from clipboard");
     }
@@ -136,8 +148,12 @@ export default function SendGiftAmountScreen() {
   };
 
   const calculateSatsEquivalent = (): string => {
-    const sats = calculateSatsAmount();
-    return sats > 0 ? sats.toLocaleString() : "0";
+    const amountValue = parseFloat(amount);
+    if (isNaN(amountValue) || amountValue <= 0) {
+      return "0";
+    }
+    const satsEquivalent = amountValue * conversionRates[currency];
+    return Math.round(satsEquivalent).toLocaleString();
   };
 
   const handleProceed = async () => {
@@ -148,57 +164,8 @@ export default function SendGiftAmountScreen() {
       );
       return;
     }
-
-    const sats = calculateSatsAmount();
-    if (sats <= 0) {
-      Alert.alert("Invalid Amount", "Please enter a valid amount.");
-      return;
-    }
-
-    setCreating(true);
-    try {
-      const token = await AsyncStorage.getItem("accessToken");
-      if (!token) {
-        Alert.alert("Session expired", "Please log in again.");
-        setCreating(false);
-        return;
-      }
-
-      const { response, data } = await api.post(
-        "/payments/tip",
-        {
-          lightning_address: destination.trim(),
-          amount_sats: sats,
-          note: note.trim() || undefined,
-        },
-        token
-      );
-
-      if (!response.ok) {
-        Alert.alert("Error", data?.message ?? "Failed to create invoice. Please try again.");
-        setCreating(false);
-        return;
-      }
-
-      const d = data?.data ?? data;
-      router.push({
-        pathname: "/gift-token/create-invoice",
-        params: {
-          destination: destination.trim(),
-          amount: amount,
-          currency,
-          satsEquivalent: String(d?.amount_sats ?? sats),
-          note: note.trim(),
-          bolt11: d?.bolt11_invoice ?? "",
-          payment_hash: d?.payment_hash ?? "",
-          expires_at: d?.expires_at ?? "",
-        },
-      });
-    } catch {
-      Alert.alert("Error", "Unable to create invoice. Check your connection.");
-    } finally {
-      setCreating(false);
-    }
+    console.log("Proceeding with:", { destination, amount, currency, note });
+    router.push("/gift-token/create-invoice");
   };
 
   return (
@@ -231,11 +198,16 @@ export default function SendGiftAmountScreen() {
             className="text-sm font-inter text-white"
             style={{ fontWeight: "500" }}
           >
+          <Text
+            className="text-sm font-inter text-white"
+            style={{ fontWeight: "500" }}
+          >
             Destination
           </Text>
           <View className="flex-row justify-between items-center px-4" style={{ height: 52, borderWidth: 0.5, borderColor: destError ? '#FF6B6B' : validated ? '#4DC721' : '#FF99BC', borderRadius: 8.5 }}>
             <TextInput
               className="flex-1 text-sm font-inter text-white"
+              style={{ fontWeight: "500" }}
               style={{ fontWeight: "500" }}
               placeholder="Sarahabraham@blink.sv"
               placeholderTextColor="#FAFAFA"
@@ -271,6 +243,10 @@ export default function SendGiftAmountScreen() {
             className="text-sm font-inter text-white"
             style={{ fontWeight: "500" }}
           >
+          <Text
+            className="text-sm font-inter text-white"
+            style={{ fontWeight: "500" }}
+          >
             Amount
           </Text>
           <View className="flex-row items-center px-4 gap-4" style={{ height: 52, borderWidth: 0.5, borderColor: '#FF99BC', borderRadius: 8.5 }}>
@@ -286,6 +262,7 @@ export default function SendGiftAmountScreen() {
             <TextInput
               className="flex-1 text-sm font-inter text-white"
               style={{ fontWeight: "500" }}
+              style={{ fontWeight: "500" }}
               placeholder="10.00"
               placeholderTextColor="#FAFAFA"
               value={amount}
@@ -299,6 +276,7 @@ export default function SendGiftAmountScreen() {
             <View className="absolute top-[75px] left-0 right-0 bg-[#FF669A] rounded-lg border-2 border-[#FF99BC] overflow-hidden shadow-lg z-20">
               <Pressable
                 onPress={() => selectCurrency("USD")}
+                onPress={() => selectCurrency("USD")}
                 className="px-4 py-3 border-b border-[#FF99BC] active:bg-[#FF4081]"
               >
                 <View className="flex-row justify-between items-center">
@@ -309,13 +287,21 @@ export default function SendGiftAmountScreen() {
                     <Text className="text-white/80 font-inter text-xs mt-0.5">
                       US Dollar
                     </Text>
+                    <Text className="text-white font-inter font-semibold text-base">
+                      USD
+                    </Text>
+                    <Text className="text-white/80 font-inter text-xs mt-0.5">
+                      US Dollar
+                    </Text>
                   </View>
+                  {currency === "USD" && (
                   {currency === "USD" && (
                     <Feather name="check-circle" size={18} color="#4DC721" />
                   )}
                 </View>
               </Pressable>
               <Pressable
+                onPress={() => selectCurrency("EUR")}
                 onPress={() => selectCurrency("EUR")}
                 className="px-4 py-3 border-b border-[#FF99BC] active:bg-[#FF4081]"
               >
@@ -327,13 +313,21 @@ export default function SendGiftAmountScreen() {
                     <Text className="text-white/80 font-inter text-xs mt-0.5">
                       Euro
                     </Text>
+                    <Text className="text-white font-inter font-semibold text-base">
+                      EUR
+                    </Text>
+                    <Text className="text-white/80 font-inter text-xs mt-0.5">
+                      Euro
+                    </Text>
                   </View>
+                  {currency === "EUR" && (
                   {currency === "EUR" && (
                     <Feather name="check-circle" size={18} color="#4DC721" />
                   )}
                 </View>
               </Pressable>
               <Pressable
+                onPress={() => selectCurrency("KES")}
                 onPress={() => selectCurrency("KES")}
                 className="px-4 py-3 border-b border-[#FF99BC] active:bg-[#FF4081]"
               >
@@ -345,13 +339,21 @@ export default function SendGiftAmountScreen() {
                     <Text className="text-white/80 font-inter text-xs mt-0.5">
                       Kenyan Shilling
                     </Text>
+                    <Text className="text-white font-inter font-semibold text-base">
+                      KES
+                    </Text>
+                    <Text className="text-white/80 font-inter text-xs mt-0.5">
+                      Kenyan Shilling
+                    </Text>
                   </View>
+                  {currency === "KES" && (
                   {currency === "KES" && (
                     <Feather name="check-circle" size={18} color="#4DC721" />
                   )}
                 </View>
               </Pressable>
               <Pressable
+                onPress={() => selectCurrency("NGN")}
                 onPress={() => selectCurrency("NGN")}
                 className="px-4 py-3 active:bg-[#FF4081]"
               >
@@ -363,7 +365,14 @@ export default function SendGiftAmountScreen() {
                     <Text className="text-white/80 font-inter text-xs mt-0.5">
                       Nigerian Naira
                     </Text>
+                    <Text className="text-white font-inter font-semibold text-base">
+                      NGN
+                    </Text>
+                    <Text className="text-white/80 font-inter text-xs mt-0.5">
+                      Nigerian Naira
+                    </Text>
                   </View>
+                  {currency === "NGN" && (
                   {currency === "NGN" && (
                     <Feather name="check-circle" size={18} color="#4DC721" />
                   )}
@@ -388,11 +397,16 @@ export default function SendGiftAmountScreen() {
             className="text-sm font-inter text-white"
             style={{ fontWeight: "500" }}
           >
+          <Text
+            className="text-sm font-inter text-white"
+            style={{ fontWeight: "500" }}
+          >
             Note
           </Text>
           <View className="flex-row items-center px-4" style={{ height: 52, borderWidth: 0.5, borderColor: '#FF99BC', borderRadius: 8.5 }}>
             <TextInput
               className="flex-1 text-sm font-inter text-[#FAFAFA]"
+              style={{ fontWeight: "500" }}
               style={{ fontWeight: "500" }}
               placeholder="For flowers"
               placeholderTextColor="#FAFAFA"
@@ -409,6 +423,10 @@ export default function SendGiftAmountScreen() {
         className="items-center pb-0"
         style={{ paddingBottom: insets.bottom }}
       >
+      <View
+        className="items-center pb-0"
+        style={{ paddingBottom: insets.bottom }}
+      >
         <Pressable
           onPress={handleProceed}
           disabled={creating || validating}
@@ -416,7 +434,7 @@ export default function SendGiftAmountScreen() {
           style={{ opacity: creating || validating ? 0.7 : 1 }}
         >
           <Text className="text-white font-inter font-medium text-[15px]">
-            {creating ? "Creating..." : "Create Invoice"}
+            Create Invoice
           </Text>
         </Pressable>
         <View className="w-full h-[34px] bg-[#FF3378] items-center justify-center">
