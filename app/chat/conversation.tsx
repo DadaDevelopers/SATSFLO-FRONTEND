@@ -1,9 +1,11 @@
 import { ChatHeader } from '@/components/chat/chat-header';
 import { MessageBubble } from '@/components/chat/message-bubble';
 import { MessageInput } from '@/components/chat/message-input';
+import { api } from '@/lib/api';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as ImagePicker from 'expo-image-picker';
 import { router, useLocalSearchParams } from 'expo-router';
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Alert, FlatList, KeyboardAvoidingView, Platform, StatusBar, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -16,21 +18,36 @@ interface Message {
   audioUri?: string;
 }
 
-// Dummy messages matching the Figma placeholders
-const initialMessages: Message[] = [
-  { id: '1', message: 'Hey how are you?', isSent: false },
-  { id: '2', message: "I'm good 😄", isSent: true },
-  { id: '3', message: 'What are you doing?', isSent: false },
-  { id: '4', message: 'Just chilling', isSent: true },
-  { id: '5', message: 'Same here 😂', isSent: false },
-];
-
 export default function ConversationScreen() {
   const insets = useSafeAreaInsets();
-  const { name } = useLocalSearchParams<{ id: string; name: string }>();
-  const [messages, setMessages] = useState<Message[]>(initialMessages);
+  const { id: conversationId, name } = useLocalSearchParams<{ id: string; name: string }>();
+  const [messages, setMessages] = useState<Message[]>([]);
   const [profileAvatar, setProfileAvatar] = useState<string | null>(null);
   const flatListRef = useRef<FlatList>(null);
+
+  useEffect(() => {
+    if (!conversationId) return;
+    const loadMessages = async () => {
+      const token = await AsyncStorage.getItem('accessToken');
+      if (!token) return;
+      try {
+        const { response, data } = await api.get(`/chats/${conversationId}`, token);
+        if (response.ok) {
+          const list = data?.data?.messages ?? data?.messages ?? data?.data ?? data ?? [];
+          const mapped: Message[] = (Array.isArray(list) ? list : []).map((m: any) => ({
+            id: String(m.id),
+            message: m.content,
+            isSent: m.is_sent ?? m.sender_id !== undefined,
+            timestamp: m.created_at
+              ? new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+              : undefined,
+          }));
+          setMessages(mapped);
+        }
+      } catch {}
+    };
+    loadMessages();
+  }, [conversationId]);
 
   const scrollToEnd = () => {
     setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 150);
@@ -42,12 +59,21 @@ export default function ConversationScreen() {
   const handleBack = () => router.back();
 
   // Send text
-  const handleSendText = (text: string) => {
+  const handleSendText = async (text: string) => {
+    const tempId = String(Date.now());
     setMessages((prev) => [
       ...prev,
-      { id: String(Date.now()), message: text, isSent: true, timestamp: makeTimestamp() },
+      { id: tempId, message: text, isSent: true, timestamp: makeTimestamp() },
     ]);
     scrollToEnd();
+    if (conversationId) {
+      try {
+        const token = await AsyncStorage.getItem('accessToken');
+        if (token) {
+          await api.post(`/chats/${conversationId}`, { content: text }, token);
+        }
+      } catch {}
+    }
   };
 
   // Send image

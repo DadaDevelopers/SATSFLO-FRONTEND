@@ -47,8 +47,8 @@ export function OtpInput({ length = 4, value, onChange }: OtpInputProps) {
         <View
           key={index}
           style={{
-            width: 55,
-            height: 64,
+            width: 45,
+            height: 56,
             borderRadius: 24,
             backgroundColor: focusedIndex === index ? '#FFCAD9' : '#F4DBE3',
             justifyContent: 'center',

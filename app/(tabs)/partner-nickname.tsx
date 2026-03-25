@@ -1,7 +1,9 @@
+import { api } from "@/lib/api";
 import { Feather } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
 import React, { useState } from "react";
-import { Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Alert, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Svg, { Path } from "react-native-svg";
 
@@ -83,7 +85,26 @@ export default function PartnerNicknameScreen() {
             {/* Next button */}
             <View className="items-center pb-7">
                 <TouchableOpacity
-                    onPress={() => router.push("/start-partnership" as any)}
+                    onPress={async () => {
+                      try {
+                        const token = await AsyncStorage.getItem("accessToken");
+                        if (token) {
+                          const { response, data } = await api.put(
+                            "/partner/nickname",
+                            { my_nickname: nickname1, partner_nickname: nickname2 },
+                            token
+                          );
+                          if (!response.ok) {
+                            Alert.alert("Error", data?.message || "Could not save nicknames.");
+                            return;
+                          }
+                        }
+                      } catch {
+                        Alert.alert("Error", "Could not save. Please try again.");
+                        return;
+                      }
+                      router.push("/start-partnership" as any);
+                    }}
                     activeOpacity={0.8}
                     className="w-[250px] h-14 bg-[#FF82AD] rounded-full items-center justify-center"
                 >

@@ -1,7 +1,10 @@
+import { api } from "@/lib/api";
 import { Feather } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
+  Alert,
   StatusBar,
   Text,
   TouchableOpacity,
@@ -14,6 +17,46 @@ const WALLETS = ["Blink", "Bitnob", "Breeze", "Phoenix", "Aqua"];
 export default function ConnectWalletScreen() {
   const insets = useSafeAreaInsets();
   const [selected, setSelected] = useState("Blink");
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    const loadWallet = async () => {
+      const token = await AsyncStorage.getItem("accessToken");
+      if (!token) return;
+      try {
+        const { response, data } = await api.get("/wallet/lightning", token);
+        if (response.ok) {
+          const d = data?.data ?? data;
+          if (d?.lightning_address) setSelected(d.lightning_address);
+        }
+      } catch {}
+    };
+    loadWallet();
+  }, []);
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      const token = await AsyncStorage.getItem("accessToken");
+      if (token) {
+        const { response, data } = await api.put(
+          "/wallet/lightning",
+          { lightning_address: selected },
+          token
+        );
+        if (!response.ok) {
+          Alert.alert("Error", data?.message || "Failed to save.");
+          return;
+        }
+      }
+    } catch {
+      Alert.alert("Error", "Could not save. Please try again.");
+      return;
+    } finally {
+      setSaving(false);
+    }
+    router.push("/(tabs)/settings" as any);
+  };
 
   return (
     <View style={{ flex: 1, backgroundColor: "#FF4081" }}>
@@ -105,7 +148,7 @@ export default function ConnectWalletScreen() {
       {/* Bottom: Save button + home indicator */}
       <View style={{ alignItems: "center", gap: 20 }}>
         <TouchableOpacity
-          onPress={() => router.push("/(tabs)/settings" as any)}
+          onPress={handleSave}
           activeOpacity={0.8}
           style={{
             width: 250,
@@ -127,7 +170,7 @@ export default function ConnectWalletScreen() {
               color: "#FFFFFF",
             }}
           >
-            Save
+            {saving ? "Saving..." : "Save"}
           </Text>
         </TouchableOpacity>
 

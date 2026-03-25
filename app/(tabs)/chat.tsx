@@ -1,9 +1,11 @@
-import { BottomNavigation } from '@/components/home/bottom-navigation';
 import { ConversationItem } from '@/components/chat/conversation-item';
+import { BottomNavigation } from '@/components/home/bottom-navigation';
+import { api } from '@/lib/api';
 import { Feather } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router } from 'expo-router';
-import React, { useState } from 'react';
-import { FlatList, Pressable, StatusBar, Text, TextInput, View } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { ActivityIndicator, FlatList, Pressable, StatusBar, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Path } from 'react-native-svg';
 
@@ -21,23 +23,65 @@ const getHeaderPath = (tab: TabType): string => {
   }
 };
 
-// Sample conversation data (8 items per Figma)
-const conversations = [
-  { id: '1', name: 'Zuri Hassan', lastMessage: 'Crazy cravings with heavy crumps!!', timestamp: '5:20 PM', isOnline: true },
-  { id: '2', name: 'Zuri Hassan', lastMessage: 'Crazy cravings with heavy crumps!!', timestamp: '5:20 PM', isOnline: true },
-  { id: '3', name: 'Zuri Hassan', lastMessage: 'Crazy cravings with heavy crumps!!', timestamp: '5:20 PM', isOnline: true },
-  { id: '4', name: 'Zuri Hassan', lastMessage: 'Crazy cravings with heavy crumps!!', timestamp: '5:20 PM', isOnline: true },
-  { id: '5', name: 'Zuri Hassan', lastMessage: 'Crazy cravings with heavy crumps!!', timestamp: '5:20 PM', isOnline: true },
-  { id: '6', name: 'Zuri Hassan', lastMessage: 'Crazy cravings with heavy crumps!!', timestamp: '5:20 PM', isOnline: true },
-  { id: '7', name: 'Zuri Hassan', lastMessage: 'Crazy cravings with heavy crumps!!', timestamp: '5:20 PM', isOnline: true },
-  { id: '8', name: 'Zuri Hassan', lastMessage: 'Crazy cravings with heavy crumps!!', timestamp: '5:20 PM', isOnline: true },
-];
+interface Conversation {
+  id: string;
+  name?: string;
+  last_message?: string;
+  lastMessage?: string;
+  timestamp?: string;
+  updated_at?: string;
+  is_online?: boolean;
+  recipient?: { name?: string };
+}
+
+interface Group {
+  id: string;
+  name: string;
+  last_message?: string;
+  members_count?: number;
+}
 
 export default function ChatListScreen() {
   const insets = useSafeAreaInsets();
   const [activeTab, setActiveTab] = useState<TabName>('chat');
   const [activeTopTab, setActiveTopTab] = useState<TabType>('chats');
   const [searchQuery, setSearchQuery] = useState('');
+  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [groups, setGroups] = useState<Group[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const loadChats = async () => {
+      const token = await AsyncStorage.getItem('accessToken');
+      if (!token) return;
+      setLoading(true);
+      try {
+        const { response, data } = await api.get('/chats', token);
+        if (response.ok) {
+          const list = data?.data ?? data ?? [];
+          setConversations(Array.isArray(list) ? list : []);
+        }
+      } catch {}
+      setLoading(false);
+    };
+    loadChats();
+  }, []);
+
+  useEffect(() => {
+    if (activeTopTab !== 'groups') return;
+    const loadGroups = async () => {
+      const token = await AsyncStorage.getItem('accessToken');
+      if (!token) return;
+      try {
+        const { response, data } = await api.get('/groups', token);
+        if (response.ok) {
+          const list = data?.data ?? data ?? [];
+          setGroups(Array.isArray(list) ? list : []);
+        }
+      } catch {}
+    };
+    loadGroups();
+  }, [activeTopTab]);
 
   const handleTopTabPress = (tab: TabType) => {
     if (tab === 'threads') {
@@ -161,23 +205,68 @@ export default function ChatListScreen() {
         </View>
       </View>
 
-      {/* Conversation List */}
-      <FlatList
-        data={conversations}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <ConversationItem
-            name={item.name}
-            lastMessage={item.lastMessage}
-            timestamp={item.timestamp}
-            isOnline={item.isOnline}
-            avatar={null}
-            onPress={() => handleConversationPress(item.id, item.name)}
-          />
-        )}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 10, paddingTop: 4 }}
-      />
+      {/* Conversation / Group List */}
+      {loading ? (
+        <ActivityIndicator color="#FFFFFF" style={{ marginTop: 20 }} />
+      ) : activeTopTab === 'groups' ? (
+        <FlatList
+          data={groups}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => (
+            <ConversationItem
+              name={item.name}
+              lastMessage={item.last_message ?? ''}
+              timestamp={''}
+              isOnline={false}
+              avatar={null}
+              onPress={() => {}}
+            />
+          )}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: 10, paddingTop: 4 }}
+          ListEmptyComponent={
+            <Text style={{ color: '#fff', textAlign: 'center', marginTop: 20 }}>No groups yet.</Text>
+          }
+        />
+      ) : (
+        <FlatList
+          data={conversations.filter(
+            (c) =>
+              !searchQuery ||
+              (c.recipient?.name ?? c.name ?? '')
+                .toLowerCase()
+                .includes(searchQuery.toLowerCase())
+          )}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => (
+            <ConversationItem
+              name={item.recipient?.name ?? item.name ?? 'User'}
+              lastMessage={item.last_message ?? item.lastMessage ?? ''}
+              timestamp={
+                item.updated_at
+                  ? new Date(item.updated_at).toLocaleTimeString([], {
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    })
+                  : item.timestamp ?? ''
+              }
+              isOnline={item.is_online ?? false}
+              avatar={null}
+              onPress={() =>
+                handleConversationPress(
+                  item.id,
+                  item.recipient?.name ?? item.name ?? 'User'
+                )
+              }
+            />
+          )}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: 10, paddingTop: 4 }}
+          ListEmptyComponent={
+            <Text style={{ color: '#fff', textAlign: 'center', marginTop: 20 }}>No conversations yet.</Text>
+          }
+        />
+      )}
 
       {/* Bottom Navigation */}
       <BottomNavigation activeTab={activeTab} onTabPress={handleTabPress} />

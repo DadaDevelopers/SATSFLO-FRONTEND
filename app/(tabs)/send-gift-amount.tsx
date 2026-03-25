@@ -1,4 +1,6 @@
+import { api } from '@/lib/api';
 import { Feather } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Clipboard from 'expo-clipboard';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
@@ -65,13 +67,38 @@ export default function SendGiftAmountScreen() {
     return Math.round(satsEquivalent).toLocaleString();
   };
 
-  const handleProceed = () => {
+  const [validating, setValidating] = useState(false);
+
+  const handleProceed = async () => {
     if (!destination || !amount) {
       Alert.alert('Required Fields', 'Please fill in Destination and Amount to continue');
       return;
     }
-    console.log('Proceeding with:', { destination, amount, currency, note });
-    router.push('/(tabs)/select-wallet');
+    setValidating(true);
+    try {
+      const token = await AsyncStorage.getItem('accessToken');
+      if (token) {
+        const { response, data } = await api.post(
+          '/payments/validate',
+          { lightning_address: destination },
+          token
+        );
+        if (!response.ok) {
+          Alert.alert('Invalid Address', data?.message || 'Please check the lightning address and try again.');
+          return;
+        }
+      }
+    } catch {
+      Alert.alert('Error', 'Could not validate address. Please try again.');
+      return;
+    } finally {
+      setValidating(false);
+    }
+    const amountSats = calculateSatsEquivalent().replace(/,/g, '');
+    router.push({
+      pathname: '/(tabs)/select-wallet' as any,
+      params: { lightning_address: destination, amount_sats: amountSats, note },
+    });
   };
 
   return (
@@ -246,10 +273,11 @@ export default function SendGiftAmountScreen() {
       <View className="items-center pb-0" style={{ paddingBottom: insets.bottom }}>
         <Pressable
           onPress={handleProceed}
+          disabled={validating}
           className="w-[250px] py-4 bg-[#FF82AD] rounded-full items-center justify-center active:opacity-80 border-[0.5px] border-[#FF669A] mb-5"
         >
           <Text className="text-white font-inter font-medium text-[15px]">
-            Proceed
+            {validating ? 'Validating...' : 'Proceed'}
           </Text>
         </Pressable>
         <View className="w-full h-[34px] bg-[#FF3378] items-center justify-center">

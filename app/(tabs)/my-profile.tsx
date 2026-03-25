@@ -1,7 +1,9 @@
+import { api } from "@/lib/api";
 import { Feather } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as ImagePicker from "expo-image-picker";
 import { router } from "expo-router";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Alert,
   FlatList,
@@ -49,16 +51,51 @@ function CalendarIcon() {
 export default function MyProfileScreen() {
   const insets = useSafeAreaInsets();
 
-  const [fullName, setFullName] = useState("Sarah Abraham");
-  const [email, setEmail] = useState("sarahabraham@gmail.com");
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
   const [selectedCountry, setSelectedCountry] = useState(countries[0]);
   const [phone, setPhone] = useState("");
-  const [dateOfBirth, setDateOfBirth] = useState("21-12-2012");
+  const [dateOfBirth, setDateOfBirth] = useState("");
+
+  useEffect(() => {
+    const loadProfile = async () => {
+      const userJson = await AsyncStorage.getItem("user");
+      if (userJson) {
+        const stored = JSON.parse(userJson);
+        setFullName(stored.name ?? "");
+        setEmail(stored.email ?? "");
+        setPhone(stored.phone ?? "");
+        if (stored.date_of_birth) {
+          const parts = stored.date_of_birth.split("T")[0].split("-");
+          if (parts.length === 3)
+            setDateOfBirth(`${parts[2]}-${parts[1]}-${parts[0]}`);
+        }
+      }
+      const token = await AsyncStorage.getItem("accessToken");
+      if (!token) return;
+      try {
+        const { response, data } = await api.get("/users/profile", token);
+        if (response.ok) {
+          const profile = data?.data ?? data;
+          setFullName(profile.name ?? "");
+          setEmail(profile.email ?? "");
+          setPhone(profile.phone ?? "");
+          if (profile.date_of_birth) {
+            const parts = profile.date_of_birth.split("T")[0].split("-");
+            if (parts.length === 3)
+              setDateOfBirth(`${parts[2]}-${parts[1]}-${parts[0]}`);
+          }
+          await AsyncStorage.setItem("user", JSON.stringify(profile));
+        }
+      } catch {}
+    };
+    loadProfile();
+  }, []);
   const [modalVisible, setModalVisible] = useState(false);
   const [avatarModalVisible, setAvatarModalVisible] = useState(false);
   const [profileImage, setProfileImage] = useState<string | null>(null);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!fullName.trim()) {
       Alert.alert("Validation Error", "Full name is required.");
       return;
@@ -67,17 +104,41 @@ export default function MyProfileScreen() {
       Alert.alert("Validation Error", "Email is required.");
       return;
     }
-    if (!phone.trim()) {
-      Alert.alert("Validation Error", "Phone number is required.");
+    const token = await AsyncStorage.getItem("accessToken");
+    if (!token) {
+      Alert.alert("Error", "Session expired. Please log in again.");
       return;
     }
-    if (!dateOfBirth.trim()) {
-      Alert.alert("Validation Error", "Date of birth is required.");
-      return;
+    // Convert DD-MM-YYYY display format to YYYY-MM-DD for API
+    let dateForApi = dateOfBirth;
+    if (dateOfBirth.includes("-")) {
+      const parts = dateOfBirth.split("-");
+      if (parts.length === 3 && parts[2].length === 4) {
+        dateForApi = `${parts[2]}-${parts[1]}-${parts[0]}`;
+      }
     }
-    Alert.alert("Success", "Profile saved successfully.", [
-      { text: "OK", onPress: () => router.push("/(tabs)/settings" as any) },
-    ]);
+    try {
+      const { response, data } = await api.put(
+        "/users/profile",
+        {
+          name: fullName,
+          phone: `${selectedCountry.code}${phone}`,
+          date_of_birth: dateForApi,
+        },
+        token
+      );
+      if (response.ok) {
+        const updated = data?.data ?? data;
+        await AsyncStorage.setItem("user", JSON.stringify(updated));
+        Alert.alert("Success", "Profile saved successfully.", [
+          { text: "OK", onPress: () => router.push("/(tabs)/settings" as any) },
+        ]);
+      } else {
+        Alert.alert("Error", data?.message || "Failed to save profile.");
+      }
+    } catch {
+      Alert.alert("Error", "Error saving profile. Please try again.");
+    }
   };
 
   const handleSelectCountry = (country: (typeof countries)[0]) => {
