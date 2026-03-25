@@ -1,11 +1,11 @@
-import { Feather } from '@expo/vector-icons';
-import * as Clipboard from 'expo-clipboard';
-import { router } from 'expo-router';
-import React, { useState } from 'react';
-import { Alert, Pressable, Text, TextInput, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Feather } from "@expo/vector-icons";
+import * as Clipboard from "expo-clipboard";
+import { router } from "expo-router";
+import React, { useState } from "react";
+import { Alert, Pressable, Text, TextInput, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-type CurrencyType = 'USD' | 'EUR' | 'KES' | 'NGN';
+type CurrencyType = "USD" | "EUR" | "KES" | "NGN";
 
 const conversionRates: Record<CurrencyType, number> = {
   USD: 1056,
@@ -16,20 +16,23 @@ const conversionRates: Record<CurrencyType, number> = {
 
 export default function SendGiftAmountScreen() {
   const insets = useSafeAreaInsets();
-  const [destination, setDestination] = useState('');
-  const [amount, setAmount] = useState('');
-  const [note, setNote] = useState('');
-  const [currency, setCurrency] = useState<CurrencyType>('USD');
+  const [destination, setDestination] = useState("");
+  const [amount, setAmount] = useState("");
+  const [note, setNote] = useState("");
+  const [currency, setCurrency] = useState<CurrencyType>("USD");
   const [showCurrencyDropdown, setShowCurrencyDropdown] = useState(false);
 
   const handleBack = () => {
     if (router.canGoBack()) {
-      router.push('/(tabs)/send-gift-token');
+      router.push("/(tabs)/send-gift-token");
     }
   };
 
   const handleScanQR = () => {
-    Alert.alert('QR Scanning', 'Please type or paste the destination address manually.');
+    Alert.alert(
+      "QR Scanning",
+      "Please type or paste the destination address manually.",
+    );
   };
 
   const handlePaste = async () => {
@@ -37,13 +40,13 @@ export default function SendGiftAmountScreen() {
       const text = await Clipboard.getStringAsync();
       if (text) {
         setDestination(text);
-        Alert.alert('Pasted', `Destination set to: ${text}`);
+        Alert.alert("Pasted", `Destination set to: ${text}`);
       } else {
-        Alert.alert('Clipboard Empty', 'No text found in clipboard');
+        Alert.alert("Clipboard Empty", "No text found in clipboard");
       }
     } catch (error) {
-      console.error('Paste error:', error);
-      Alert.alert('Error', 'Failed to paste from clipboard');
+      console.error("Paste error:", error);
+      Alert.alert("Error", "Failed to paste from clipboard");
     }
   };
 
@@ -59,7 +62,7 @@ export default function SendGiftAmountScreen() {
   const calculateSatsEquivalent = (): string => {
     const amountValue = parseFloat(amount);
     if (isNaN(amountValue) || amountValue <= 0) {
-      return '0';
+      return "0";
     }
     const satsEquivalent = amountValue * conversionRates[currency];
     return Math.round(satsEquivalent).toLocaleString();
@@ -67,11 +70,14 @@ export default function SendGiftAmountScreen() {
 
   const handleProceed = () => {
     if (!destination || !amount) {
-      Alert.alert('Required Fields', 'Please fill in Destination and Amount to continue');
+      Alert.alert(
+        "Required Fields",
+        "Please fill in Destination and Amount to continue",
+      );
       return;
     }
-    console.log('Proceeding with:', { destination, amount, currency, note });
-    router.push('/(tabs)/select-wallet');
+    console.log("Proceeding with:", { destination, amount, currency, note });
+    router.push("/gift-token/create-invoice");
   };
 
   return (
@@ -100,13 +106,16 @@ export default function SendGiftAmountScreen() {
       <View className="px-5 mt-4 gap-4">
         {/* Destination */}
         <View className="gap-2.5">
-          <Text className="text-sm font-inter text-white" style={{ fontWeight: '500' }}>
+          <Text
+            className="text-sm font-inter text-white"
+            style={{ fontWeight: "500" }}
+          >
             Destination
           </Text>
           <View className="flex-row justify-between items-center px-4 py-4 border border-[#FF99BC] rounded-lg">
             <TextInput
               className="flex-1 text-sm font-inter text-white"
-              style={{ fontWeight: '500' }}
+              style={{ fontWeight: "500" }}
               placeholder="Sarahabraham@blink.sv"
               placeholderTextColor="#FAFAFA"
               value={destination}
@@ -127,7 +136,10 @@ export default function SendGiftAmountScreen() {
 
         {/* Amount */}
         <View className="gap-2.5 relative z-10">
-          <Text className="text-sm font-inter text-white" style={{ fontWeight: '500' }}>
+          <Text
+            className="text-sm font-inter text-white"
+            style={{ fontWeight: "500" }}
+          >
             Amount
           </Text>
           <View className="flex-row items-center px-4 py-4 border border-[#FF99BC] rounded-lg gap-4">
@@ -142,7 +154,7 @@ export default function SendGiftAmountScreen() {
             </Pressable>
             <TextInput
               className="flex-1 text-sm font-inter text-white"
-              style={{ fontWeight: '500' }}
+              style={{ fontWeight: "500" }}
               placeholder="10.00"
               placeholderTextColor="#FAFAFA"
               value={amount}
@@ -155,57 +167,73 @@ export default function SendGiftAmountScreen() {
           {showCurrencyDropdown && (
             <View className="absolute top-[75px] left-0 right-0 bg-[#FF669A] rounded-lg border-2 border-[#FF99BC] overflow-hidden shadow-lg z-20">
               <Pressable
-                onPress={() => selectCurrency('USD')}
+                onPress={() => selectCurrency("USD")}
                 className="px-4 py-3 border-b border-[#FF99BC] active:bg-[#FF4081]"
               >
                 <View className="flex-row justify-between items-center">
                   <View>
-                    <Text className="text-white font-inter font-semibold text-base">USD</Text>
-                    <Text className="text-white/80 font-inter text-xs mt-0.5">US Dollar</Text>
+                    <Text className="text-white font-inter font-semibold text-base">
+                      USD
+                    </Text>
+                    <Text className="text-white/80 font-inter text-xs mt-0.5">
+                      US Dollar
+                    </Text>
                   </View>
-                  {currency === 'USD' && (
+                  {currency === "USD" && (
                     <Feather name="check-circle" size={18} color="#4DC721" />
                   )}
                 </View>
               </Pressable>
               <Pressable
-                onPress={() => selectCurrency('EUR')}
+                onPress={() => selectCurrency("EUR")}
                 className="px-4 py-3 border-b border-[#FF99BC] active:bg-[#FF4081]"
               >
                 <View className="flex-row justify-between items-center">
                   <View>
-                    <Text className="text-white font-inter font-semibold text-base">EUR</Text>
-                    <Text className="text-white/80 font-inter text-xs mt-0.5">Euro</Text>
+                    <Text className="text-white font-inter font-semibold text-base">
+                      EUR
+                    </Text>
+                    <Text className="text-white/80 font-inter text-xs mt-0.5">
+                      Euro
+                    </Text>
                   </View>
-                  {currency === 'EUR' && (
+                  {currency === "EUR" && (
                     <Feather name="check-circle" size={18} color="#4DC721" />
                   )}
                 </View>
               </Pressable>
               <Pressable
-                onPress={() => selectCurrency('KES')}
+                onPress={() => selectCurrency("KES")}
                 className="px-4 py-3 border-b border-[#FF99BC] active:bg-[#FF4081]"
               >
                 <View className="flex-row justify-between items-center">
                   <View>
-                    <Text className="text-white font-inter font-semibold text-base">KES</Text>
-                    <Text className="text-white/80 font-inter text-xs mt-0.5">Kenyan Shilling</Text>
+                    <Text className="text-white font-inter font-semibold text-base">
+                      KES
+                    </Text>
+                    <Text className="text-white/80 font-inter text-xs mt-0.5">
+                      Kenyan Shilling
+                    </Text>
                   </View>
-                  {currency === 'KES' && (
+                  {currency === "KES" && (
                     <Feather name="check-circle" size={18} color="#4DC721" />
                   )}
                 </View>
               </Pressable>
               <Pressable
-                onPress={() => selectCurrency('NGN')}
+                onPress={() => selectCurrency("NGN")}
                 className="px-4 py-3 active:bg-[#FF4081]"
               >
                 <View className="flex-row justify-between items-center">
                   <View>
-                    <Text className="text-white font-inter font-semibold text-base">NGN</Text>
-                    <Text className="text-white/80 font-inter text-xs mt-0.5">Nigerian Naira</Text>
+                    <Text className="text-white font-inter font-semibold text-base">
+                      NGN
+                    </Text>
+                    <Text className="text-white/80 font-inter text-xs mt-0.5">
+                      Nigerian Naira
+                    </Text>
                   </View>
-                  {currency === 'NGN' && (
+                  {currency === "NGN" && (
                     <Feather name="check-circle" size={18} color="#4DC721" />
                   )}
                 </View>
@@ -225,13 +253,16 @@ export default function SendGiftAmountScreen() {
 
         {/* Note */}
         <View className="gap-2.5">
-          <Text className="text-sm font-inter text-white" style={{ fontWeight: '500' }}>
+          <Text
+            className="text-sm font-inter text-white"
+            style={{ fontWeight: "500" }}
+          >
             Note
           </Text>
           <View className="flex-row items-center px-4 py-4 border border-[#FF99BC] rounded-lg">
             <TextInput
               className="flex-1 text-sm font-inter text-[#FAFAFA]"
-              style={{ fontWeight: '500' }}
+              style={{ fontWeight: "500" }}
               placeholder="For flowers"
               placeholderTextColor="#FAFAFA"
               value={note}
@@ -243,13 +274,16 @@ export default function SendGiftAmountScreen() {
 
       {/* Bottom Section */}
       <View className="flex-1" />
-      <View className="items-center pb-0" style={{ paddingBottom: insets.bottom }}>
+      <View
+        className="items-center pb-0"
+        style={{ paddingBottom: insets.bottom }}
+      >
         <Pressable
           onPress={handleProceed}
           className="w-[250px] py-4 bg-[#FF82AD] rounded-full items-center justify-center active:opacity-80 border-[0.5px] border-[#FF669A] mb-5"
         >
           <Text className="text-white font-inter font-medium text-[15px]">
-            Proceed
+            Create Invoice
           </Text>
         </Pressable>
         <View className="w-full h-[34px] bg-[#FF3378] items-center justify-center">
