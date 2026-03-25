@@ -85,7 +85,12 @@ const PRIVACY_SECTIONS = [
 ];
 
 // ─── Component ────────────────────────────────────────────────────────────────
-export function TermsModal({ visible, onAgree, onDismiss, initialTab = "terms" }: Props) {
+export function TermsModal({
+  visible,
+  onAgree,
+  onDismiss,
+  initialTab = "terms",
+}: Props) {
   const insets = useSafeAreaInsets();
   const [activeTab, setActiveTab] = useState<Tab>(initialTab);
   const translateY = useRef(new Animated.Value(600)).current;
@@ -105,7 +110,7 @@ export function TermsModal({ visible, onAgree, onDismiss, initialTab = "terms" }
         useNativeDriver: true,
       }).start();
     }
-  }, [visible]);
+  }, [visible, translateY]);
 
   React.useEffect(() => {
     if (visible) setActiveTab(initialTab);
@@ -160,7 +165,12 @@ export function TermsModal({ visible, onAgree, onDismiss, initialTab = "terms" }
             onPress={() => setActiveTab("terms")}
             activeOpacity={0.8}
           >
-            <Text style={[styles.tabLabel, activeTab === "terms" && styles.tabLabelActive]}>
+            <Text
+              style={[
+                styles.tabLabel,
+                activeTab === "terms" && styles.tabLabelActive,
+              ]}
+            >
               Terms & Conditions
             </Text>
           </TouchableOpacity>
@@ -169,7 +179,12 @@ export function TermsModal({ visible, onAgree, onDismiss, initialTab = "terms" }
             onPress={() => setActiveTab("privacy")}
             activeOpacity={0.8}
           >
-            <Text style={[styles.tabLabel, activeTab === "privacy" && styles.tabLabelActive]}>
+            <Text
+              style={[
+                styles.tabLabel,
+                activeTab === "privacy" && styles.tabLabelActive,
+              ]}
+            >
               Privacy Policy
             </Text>
           </TouchableOpacity>
@@ -191,10 +206,18 @@ export function TermsModal({ visible, onAgree, onDismiss, initialTab = "terms" }
 
         {/* Actions */}
         <View style={styles.actions}>
-          <TouchableOpacity style={styles.agreeBtn} onPress={onAgree} activeOpacity={0.85}>
+          <TouchableOpacity
+            style={styles.agreeBtn}
+            onPress={onAgree}
+            activeOpacity={0.85}
+          >
             <Text style={styles.agreeBtnText}>I Agree to Both</Text>
           </TouchableOpacity>
-          <TouchableOpacity onPress={onDismiss} activeOpacity={0.7} style={styles.dismissBtn}>
+          <TouchableOpacity
+            onPress={onDismiss}
+            activeOpacity={0.7}
+            style={styles.dismissBtn}
+          >
             <Text style={styles.dismissText}>Dismiss</Text>
           </TouchableOpacity>
         </View>
