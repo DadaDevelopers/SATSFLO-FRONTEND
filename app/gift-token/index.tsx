@@ -1,5 +1,5 @@
 import { useRouter } from "expo-router";
-import React from "react";
+import { default as React, default as React } from "react";
 import {
   Text,
   TouchableOpacity,
@@ -31,7 +31,7 @@ export default function GiftTokenScreen() {
   const isDesktop = screenWidth > MAX_CONTENT_WIDTH;
 
   const handleProceed = () => {
-    router.push("/gift-token/send-amount");
+    router.push("/gift-token/send-category");
   };
 
   return (
@@ -68,13 +68,16 @@ export default function GiftTokenScreen() {
         {/* Content */}
         <View className="flex-1 px-4">
           <Text className="text-white text-base mb-6">
-            Send a gift token to someone special.
+            Send a gift token to someone special. Send a gift token to someone
+            special.
           </Text>
 
           {/* Send Gift Token Option */}
           <TouchableOpacity
             onPress={handleProceed}
+            onPress={handleProceed}
             className="rounded-xl mb-4 px-4 py-5 flex-row items-center justify-between"
+            style={{ backgroundColor: "#FF6B9D" }}
             style={{ backgroundColor: "#FF6B9D" }}
           >
             <Text className="text-white text-base font-medium">
@@ -86,11 +89,13 @@ export default function GiftTokenScreen() {
         {/* Proceed Button */}
         <View
           className="px-4"
+          className="px-4"
           style={{ paddingBottom: insets.bottom + 32 }}
         >
           <TouchableOpacity
             onPress={handleProceed}
             className="py-4 rounded-full items-center"
+            style={{ backgroundColor: "#FFB6C1" }}
             style={{ backgroundColor: "#FFB6C1" }}
           >
             <Text className="text-white text-base font-semibold">Proceed</Text>

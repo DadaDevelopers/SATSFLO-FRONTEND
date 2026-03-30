@@ -3,6 +3,11 @@ import { router } from "expo-router";
 import React from "react";
 import { Pressable, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Feather } from "@expo/vector-icons";
+import { router } from "expo-router";
+import React from "react";
+import { Pressable, Text, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function GiftTokenWalletScreen() {
   const insets = useSafeAreaInsets();
@@ -12,7 +17,7 @@ export default function GiftTokenWalletScreen() {
   };
 
   const handleProceed = () => {
-    router.push("/(tabs)/send-gift-amount");
+    router.push("/(tabs)/send-gift-token");
   };
 
   return (
@@ -37,6 +42,7 @@ export default function GiftTokenWalletScreen() {
       <View className="px-5 mt-6">
         <Text className="text-sm font-inter text-[#FAFAFA] tracking-tight">
           Send a gift token to someone special.
+          Send a gift token to someone special.
         </Text>
       </View>
 
@@ -45,7 +51,14 @@ export default function GiftTokenWalletScreen() {
         {/* Send Gift Token */}
         <Pressable
           onPress={handleProceed}
+          onPress={handleProceed}
           className="flex-row justify-between items-center px-4 py-5 border rounded-lg active:opacity-80"
+          style={{ borderColor: "#FF99BC", borderWidth: 1 }}
+        >
+          <Text
+            className="text-base font-inter text-[#FAFAFA]"
+            style={{ fontWeight: "500" }}
+          >
           style={{ borderColor: "#FF99BC", borderWidth: 1 }}
         >
           <Text
