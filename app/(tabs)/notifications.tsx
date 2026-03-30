@@ -1,8 +1,8 @@
 import { api } from "@/lib/api";
-import { Feather } from "@expo/vector-icons";
+import { Feather, Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
-import React, { useCallback, useEffect, useState } from "react";
+import { default as React, default as React, useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Image,
@@ -22,35 +22,6 @@ interface Notification {
   avatar_url?: string | null;
   is_read?: boolean;
   created_at?: string;
-}
-
-function isToday(dateStr?: string): boolean {
-  if (!dateStr) return false;
-  const d = new Date(dateStr);
-  const now = new Date();
-  return (
-    d.getDate() === now.getDate() &&
-    d.getMonth() === now.getMonth() &&
-    d.getFullYear() === now.getFullYear()
-  );
-}
-
-function formatTime(dateStr?: string): string {
-  if (!dateStr) return "";
-  try {
-    const date = new Date(dateStr);
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMins / 60);
-    const diffDays = Math.floor(diffHours / 24);
-    if (diffMins < 1) return "Just now";
-    if (diffMins < 60) return `${diffMins}m ago`;
-    if (diffHours < 24) return `${diffHours}h ago`;
-    return `${diffDays}d ago`;
-  } catch {
-    return "";
-  }
 }
 
 export default function NotificationsScreen() {
@@ -73,8 +44,6 @@ export default function NotificationsScreen() {
         const list = data?.data ?? data ?? [];
         setNotifications(Array.isArray(list) ? list : []);
         setError(null);
-        // Mark all as read
-        api.post("/notifications/read-all", {}, token).catch(() => {});
       } else {
         setError(data?.message ?? "Failed to load notifications.");
       }
@@ -95,10 +64,32 @@ export default function NotificationsScreen() {
     fetchNotifications();
   };
 
-  const todayCount = notifications.filter((n) => isToday(n.created_at)).length;
+  const handleBack = () => {
+    router.back();
+  };
+
+  const formatTime = (dateStr?: string): string => {
+    if (!dateStr) return "";
+    try {
+      const date = new Date(dateStr);
+      const now = new Date();
+      const diffMs = now.getTime() - date.getTime();
+      const diffMins = Math.floor(diffMs / 60000);
+      const diffHours = Math.floor(diffMins / 60);
+      const diffDays = Math.floor(diffHours / 24);
+      if (diffMins < 1) return "Just now";
+      if (diffMins < 60) return `${diffMins}m ago`;
+      if (diffHours < 24) return `${diffHours}h ago`;
+      return `${diffDays}d ago`;
+    } catch {
+      return "";
+    }
+  };
 
   return (
     <View className="flex-1 bg-[#FF4081]" style={{ paddingTop: insets.top }}>
+      <StatusBar barStyle="light-content" backgroundColor="#FF4081" />
+
       <StatusBar barStyle="light-content" backgroundColor="#FF4081" />
 
       {/* Header */}
@@ -113,7 +104,7 @@ export default function NotificationsScreen() {
       </View>
 
       {/* Subtitle */}
-      <View className="px-5 mb-4">
+      <View className="px-5 mt-2">
         {loading ? (
           <Text className="text-base font-inter font-medium text-[#FAFAFA]">
             Loading notifications…
@@ -124,23 +115,22 @@ export default function NotificationsScreen() {
           </Text>
         ) : (
           <Text className="text-base font-inter font-medium text-[#FAFAFA]">
-            {todayCount > 0
-              ? `You have ${todayCount} Notification${todayCount === 1 ? "" : "s"} today.`
-              : notifications.length === 0
+            {notifications.length === 0
               ? "You have no notifications."
-              : "No new notifications today."}
+              : `You have ${notifications.length} notification${notifications.length === 1 ? "" : "s"}.`}
           </Text>
         )}
       </View>
 
-      {/* Content */}
+      {/* Loading spinner */}
       {loading && !refreshing ? (
         <View className="flex-1 items-center justify-center pb-20">
           <ActivityIndicator size="large" color="#FFFFFF" />
         </View>
       ) : error && !refreshing ? (
+        /* Error / Retry state */
         <View className="flex-1 items-center justify-center pb-20 px-6">
-          <Feather name="alert-circle" size={64} color="#FFFFFF" />
+          <Ionicons name="alert-circle-outline" size={64} color="#FFFFFF" />
           <Text className="text-white text-base font-medium mt-4 text-center">
             {error}
           </Text>
@@ -152,15 +142,24 @@ export default function NotificationsScreen() {
           </Pressable>
         </View>
       ) : notifications.length === 0 ? (
+        /* Empty state */
         <View className="flex-1 items-center justify-center pb-20">
-          <Feather name="bell-off" size={64} color="#FFFFFF" />
+          <Ionicons
+            name="notifications-off-outline"
+            size={64}
+            color="#FFFFFF"
+          />
           <Text className="text-white text-base font-medium mt-4">
             No notifications yet
           </Text>
+          <Text className="text-[#FFB4CD] text-sm mt-1 text-center px-10">
+            When you get notifications, they'll show up here.
+          </Text>
         </View>
       ) : (
+        /* Notifications List */
         <ScrollView
-          className="flex-1 px-5"
+          className="flex-1 px-5 mt-5"
           showsVerticalScrollIndicator={false}
           refreshControl={
             <RefreshControl
@@ -171,40 +170,34 @@ export default function NotificationsScreen() {
             />
           }
         >
-          <View className="flex flex-col gap-3 pb-8">
+          <View className="flex flex-col gap-4 pb-8">
             {notifications.map((notification) => (
               <View
                 key={notification.id}
-                className="flex-row items-center rounded-2xl bg-white px-4 py-4 gap-3"
+                className="flex-row items-center p-2.5 gap-2.5 rounded-lg"
+                style={{
+                  backgroundColor: notification.is_read ? "#FFE6EE" : "#FFD0E4",
+                }}
               >
                 {/* Avatar */}
                 {notification.avatar_url ? (
                   <Image
                     source={{ uri: notification.avatar_url }}
-                    style={{ width: 52, height: 52, borderRadius: 26 }}
+                    className="w-[50px] h-[50px] rounded-full"
                     resizeMode="cover"
                   />
                 ) : (
                   <View
-                    style={{
-                      width: 52,
-                      height: 52,
-                      borderRadius: 26,
-                      backgroundColor: "#FF4081",
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
+                    className="w-[50px] h-[50px] rounded-full items-center justify-center"
+                    style={{ backgroundColor: "#FF4081" }}
                   >
                     <Feather name="bell" size={22} color="#FFFFFF" />
                   </View>
                 )}
 
-                {/* Message */}
+                {/* Message + time */}
                 <View className="flex-1">
-                  <Text
-                    className="text-sm font-inter text-[#090909]"
-                    numberOfLines={2}
-                  >
+                  <Text className="text-sm font-inter text-[#090909]">
                     {notification.message}
                   </Text>
                   {notification.created_at ? (
@@ -213,6 +206,14 @@ export default function NotificationsScreen() {
                     </Text>
                   ) : null}
                 </View>
+
+                {/* Unread dot */}
+                {!notification.is_read && (
+                  <View
+                    className="w-2 h-2 rounded-full"
+                    style={{ backgroundColor: "#FF4081" }}
+                  />
+                )}
               </View>
             ))}
           </View>

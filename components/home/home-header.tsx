@@ -1,5 +1,7 @@
+import { api } from '@/lib/api';
 import { Feather } from '@expo/vector-icons';
-import React from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import React, { useEffect, useState } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 import Svg, { Path, Rect } from 'react-native-svg';
 
@@ -8,7 +10,28 @@ interface HomeHeaderProps {
   onLogoPress?: () => void;
 }
 
-export function HomeHeader({ onNotificationPress, onLogoPress, unreadCount = 0 }: HomeHeaderProps) {
+export function HomeHeader({ onNotificationPress, onLogoPress }: HomeHeaderProps) {
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  useEffect(() => {
+    const fetchUnread = async () => {
+      const token = await AsyncStorage.getItem('accessToken');
+      if (!token) return;
+      try {
+        const { response, data } = await api.get('/notifications', token);
+        if (response.ok) {
+          const list: Array<{ is_read?: boolean }> = data?.data ?? data ?? [];
+          const count = Array.isArray(list)
+            ? list.filter((n) => !n.is_read).length
+            : 0;
+          setUnreadCount(count);
+        }
+      } catch {
+        // ignore — badge is non-critical
+      }
+    };
+    fetchUnread();
+  }, []);
 
   return (
     <View className="flex-row justify-between items-center px-5 py-4 pt-8">
@@ -37,12 +60,33 @@ export function HomeHeader({ onNotificationPress, onLogoPress, unreadCount = 0 }
       </Text>
 
       {/* Notification bell with unread badge */}
+      {/* Notification bell with unread badge */}
       <TouchableOpacity
         onPress={onNotificationPress}
         className="w-10 h-10 items-center justify-center rounded-full border border-white"
         activeOpacity={0.7}
       >
         <Feather name="bell" size={24} color="#FAFAFA" />
+        {unreadCount > 0 && (
+          <View
+            style={{
+              position: 'absolute',
+              top: 0,
+              right: 0,
+              backgroundColor: '#CC0045',
+              borderRadius: 8,
+              minWidth: 16,
+              height: 16,
+              alignItems: 'center',
+              justifyContent: 'center',
+              paddingHorizontal: 3,
+            }}
+          >
+            <Text style={{ color: '#FFF', fontSize: 9, fontWeight: '700' }}>
+              {unreadCount > 99 ? '99+' : unreadCount}
+            </Text>
+          </View>
+        )}
         {unreadCount > 0 && (
           <View
             style={{
