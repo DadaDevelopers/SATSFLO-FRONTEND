@@ -1,8 +1,7 @@
 import * as Clipboard from "expo-clipboard";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
-  Platform,
   StatusBar,
   Text,
   TouchableOpacity,
@@ -18,7 +17,7 @@ const BackIcon = () => (
   <Svg width={24} height={24} viewBox="0 0 24 24">
     <Path
       d="M19 12H5M12 19l-7-7 7-7"
-      stroke="#FFFFFF"
+      stroke="#FAFAFA"
       strokeWidth={2}
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -28,7 +27,7 @@ const BackIcon = () => (
 );
 
 const CopyIcon = () => (
-  <Svg width={18} height={18} viewBox="0 0 24 24">
+  <Svg width={20} height={20} viewBox="0 0 24 24">
     <Path
       d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2"
       stroke="#FF4081"
@@ -41,7 +40,7 @@ const CopyIcon = () => (
 );
 
 const CheckIcon = () => (
-  <Svg width={18} height={18} viewBox="0 0 24 24">
+  <Svg width={20} height={20} viewBox="0 0 24 24">
     <Path
       d="M5 13l4 4L19 7"
       stroke="#4DC721"
@@ -53,33 +52,31 @@ const CheckIcon = () => (
   </Svg>
 );
 
-// Minimal QR placeholder — replaced by a real QR library when available
 const QRPlaceholder = ({ value }: { value: string }) => {
-  const size = 180;
+  const size = 200;
   const cell = size / 21;
-  // Simple fixed pattern as a visual stand-in
   const pattern = [
-    [1,1,1,1,1,1,1,0,0,1,0,1,0,0,1,1,1,1,1,1,1],
-    [1,0,0,0,0,0,1,0,1,0,1,0,1,0,1,0,0,0,0,0,1],
-    [1,0,1,1,1,0,1,0,0,1,0,1,0,0,1,0,1,1,1,0,1],
-    [1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,1,1,0,1],
-    [1,0,1,1,1,0,1,0,0,1,0,1,0,0,1,0,1,1,1,0,1],
-    [1,0,0,0,0,0,1,0,1,0,1,0,1,0,1,0,0,0,0,0,1],
-    [1,1,1,1,1,1,1,0,1,0,1,0,1,0,1,1,1,1,1,1,1],
-    [0,0,0,0,0,0,0,0,1,0,0,1,0,0,0,0,0,0,0,0,0],
-    [1,0,1,1,0,1,1,1,0,1,1,0,1,1,1,0,1,1,0,1,0],
-    [0,1,0,0,1,0,0,0,1,0,1,0,0,1,0,1,0,0,1,0,1],
-    [1,0,1,0,1,0,1,0,0,1,0,1,0,0,1,0,1,0,1,0,1],
-    [0,1,0,1,0,1,0,1,0,0,1,0,1,0,0,1,0,1,0,1,0],
-    [1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1],
-    [0,0,0,0,0,0,0,0,1,0,0,1,0,1,0,0,0,0,0,0,0],
-    [1,1,1,1,1,1,1,0,0,1,0,1,0,0,1,0,1,1,0,1,0],
-    [1,0,0,0,0,0,1,0,1,0,1,0,1,0,0,1,0,0,1,0,1],
-    [1,0,1,1,1,0,1,0,0,1,0,1,0,0,1,0,1,1,1,0,1],
-    [1,0,1,1,1,0,1,0,1,0,0,0,1,0,0,1,0,1,0,1,0],
-    [1,0,1,1,1,0,1,0,0,1,1,0,0,1,1,0,1,0,1,0,1],
-    [1,0,0,0,0,0,1,0,1,0,0,1,0,0,0,1,0,0,0,1,0],
-    [1,1,1,1,1,1,1,0,0,1,0,1,1,0,1,0,1,1,0,1,1],
+    [1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 0, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1],
+    [1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1],
+    [1, 0, 1, 1, 1, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 1, 1, 1, 0, 1],
+    [1, 0, 1, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 0, 1],
+    [1, 0, 1, 1, 1, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 1, 1, 1, 0, 1],
+    [1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1],
+    [1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1],
+    [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [1, 0, 1, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 0],
+    [0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 1],
+    [1, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 1],
+    [0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0],
+    [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1],
+    [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0],
+    [1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0],
+    [1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1],
+    [1, 0, 1, 1, 1, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 1, 1, 1, 0, 1],
+    [1, 0, 1, 1, 1, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0],
+    [1, 0, 1, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 1, 0, 1, 0, 1],
+    [1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0],
+    [1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 1],
   ];
   return (
     <Svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
@@ -94,130 +91,20 @@ const QRPlaceholder = ({ value }: { value: string }) => {
               height={cell}
               fill="#1E1E1E"
             />
-          ) : null
-        )
+          ) : null,
+        ),
       )}
     </Svg>
   );
 };
 
-// Status bar visual — matches Figma dynamic island design
-const FigmaStatusBar = () => {
-  useWindowDimensions();
-  if (Platform.OS !== "web") return null;
-  return (
-    <View
-      style={{
-        width: "100%",
-        height: 44,
-        flexDirection: "row",
-        alignItems: "flex-end",
-        backgroundColor: "rgba(77,72,69,0.02)",
-      }}
-    >
-      {/* Left — time */}
-      <View
-        style={{
-          flex: 1,
-          height: 59,
-          backgroundColor: "#FFFFFF",
-          justifyContent: "center",
-          alignItems: "center",
-          paddingBottom: 3,
-          paddingLeft: 10,
-        }}
-      >
-        <Text
-          style={{
-            fontWeight: "600",
-            fontSize: 16,
-            letterSpacing: -0.32,
-            color: "#090909",
-          }}
-        >
-          9:41
-        </Text>
-      </View>
-
-      {/* Center — Dynamic Island */}
-      <View
-        style={{
-          flex: 1,
-          height: 59,
-          backgroundColor: "#FFFFFF",
-          justifyContent: "center",
-          alignItems: "center",
-        }}
-      >
-        <View
-          style={{
-            width: 125,
-            height: 37,
-            backgroundColor: "#FF99BC",
-            borderRadius: 100,
-          }}
-        />
-      </View>
-
-      {/* Right — signal / wifi / battery */}
-      <View
-        style={{
-          flex: 1,
-          height: 59,
-          backgroundColor: "#FFFFFF",
-          flexDirection: "row",
-          justifyContent: "center",
-          alignItems: "center",
-          paddingRight: 11,
-          gap: 8,
-        }}
-      >
-        {/* Signal bars */}
-        <Svg width={18} height={12} viewBox="0 0 18 12">
-          <Rect x={0} y={8} width={3} height={4} rx={1} fill="#090909" />
-          <Rect x={5} y={5} width={3} height={7} rx={1} fill="#090909" />
-          <Rect x={10} y={2} width={3} height={10} rx={1} fill="#090909" />
-          <Rect x={15} y={0} width={3} height={12} rx={1} fill="#090909" />
-        </Svg>
-        {/* Wifi */}
-        <Svg width={17} height={12} viewBox="0 0 17 12">
-          <Path d="M8.5 9.5a1 1 0 110 2 1 1 0 010-2z" fill="#090909" />
-          <Path d="M5.2 7.2a4.7 4.7 0 016.6 0" stroke="#090909" strokeWidth={1.5} fill="none" strokeLinecap="round" />
-          <Path d="M2 4.2a8.5 8.5 0 0113 0" stroke="#090909" strokeWidth={1.5} fill="none" strokeLinecap="round" />
-        </Svg>
-        {/* Battery */}
-        <View style={{ flexDirection: "row", alignItems: "center" }}>
-          <View
-            style={{
-              width: 25,
-              height: 13,
-              borderWidth: 1,
-              borderColor: "rgba(9,9,9,0.35)",
-              borderRadius: 4,
-              padding: 2,
-            }}
-          >
-            <View
-              style={{
-                flex: 1,
-                backgroundColor: "#090909",
-                borderRadius: 2,
-              }}
-            />
-          </View>
-          <View
-            style={{
-              width: 1.4,
-              height: 4,
-              backgroundColor: "rgba(9,9,9,0.4)",
-              marginLeft: 1,
-            }}
-          />
-        </View>
-      </View>
-    </View>
-  );
-};
+function formatTime(seconds: number) {
+  const m = Math.floor(seconds / 60)
+    .toString()
+    .padStart(2, "0");
+  const s = (seconds % 60).toString().padStart(2, "0");
+  return `${m}:${s}`;
+}
 
 export default function CreateInvoiceScreen() {
   const router = useRouter();
@@ -234,12 +121,27 @@ export default function CreateInvoiceScreen() {
     category?: string;
   }>();
 
-  const { destination = "", amount = "", currency = "USD", satsEquivalent = "0", note = "", category = "" } = params;
+  const {
+    destination = "",
+    amount = "10.00",
+    currency = "USD",
+    satsEquivalent = "923546",
+    note = "",
+    category = "",
+  } = params;
 
-  // Simulated invoice string
+  // Simulated invoice / wallet address string
+  const walletAddress = `inbc10760nyx...3sqq6s7mw`;
   const invoiceString = `lnbc${satsEquivalent.replace(/,/g, "")}n1pjkx2ppsk5zqz0yfhszv9q`;
 
   const [copied, setCopied] = useState(false);
+  const [timeLeft, setTimeLeft] = useState(300); // 5 minutes countdown
+
+  useEffect(() => {
+    if (timeLeft <= 0) return;
+    const timer = setInterval(() => setTimeLeft((t) => t - 1), 1000);
+    return () => clearInterval(timer);
+  }, [timeLeft]);
 
   const handleCopy = async () => {
     await Clipboard.setStringAsync(invoiceString);
@@ -249,150 +151,277 @@ export default function CreateInvoiceScreen() {
 
   const handleConfirm = () => {
     router.push({
-      pathname: "/gift-token/select-wallet",
-      params: { action: "send", category, destination, amount, currency, satsEquivalent, note },
+      pathname: "/gift-token/success",
+      params: {
+        action: "send",
+        category,
+        destination,
+        amount,
+        currency,
+        satsEquivalent,
+        note,
+      },
     });
   };
 
+  // Format sats as BTC-like display
+  const btcAmount = `0.${satsEquivalent.replace(/,/g, "").padStart(9, "0")}BTC`;
+
   return (
-    <View
-      className="flex-1"
-      style={{ backgroundColor: "#FF4081" }}
-    >
-      <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
+    <View className="flex-1" style={{ backgroundColor: "#FF4081" }}>
+      <StatusBar barStyle="light-content" backgroundColor="#FF4081" />
 
-      {/* Figma status bar (web only) */}
-      <FigmaStatusBar />
-
-      {/* Safe area top padding for native */}
-      {Platform.OS !== "web" && (
-        <View style={{ height: insets.top }} />
-      )}
+      {/* Safe area top */}
+      <View style={{ height: insets.top }} />
 
       {/* Desktop wrapper */}
       <View
         className="flex-1"
         style={
           isDesktop
-            ? { maxWidth: MAX_CONTENT_WIDTH, width: "100%", alignSelf: "center" }
+            ? {
+                maxWidth: MAX_CONTENT_WIDTH,
+                width: "100%",
+                alignSelf: "center",
+              }
             : undefined
         }
       >
         {/* Header */}
-        <View className="flex-row items-center px-4 py-4">
-          <TouchableOpacity onPress={() => router.back()} className="p-2 -ml-2">
+        <View
+          className="flex-row items-center"
+          style={{ paddingHorizontal: 20, paddingTop: 32, paddingBottom: 8 }}
+        >
+          <TouchableOpacity onPress={() => router.back()} className="p-1">
             <BackIcon />
           </TouchableOpacity>
-          <Text className="flex-1 text-center text-white text-xl font-semibold mr-8">
+          <Text
+            style={{
+              flex: 1,
+              textAlign: "center",
+              color: "#FFFFFF",
+              fontSize: 20,
+              fontWeight: "500",
+              letterSpacing: -0.3,
+              marginRight: 32,
+            }}
+          >
             Create Invoice
           </Text>
         </View>
 
-        {/* Content */}
-        <View className="flex-1 px-4">
-
-          {/* Invoice summary card */}
+        {/* Main card — vertically centered */}
+        <View className="flex-1 items-center justify-center px-5">
           <View
-            className="rounded-2xl p-4 mb-4"
-            style={{ backgroundColor: "#FF6B9D" }}
+            style={{
+              width: "100%",
+              maxWidth: 353,
+              backgroundColor: "#FFE5EE",
+              borderWidth: 0.5,
+              borderColor: "#FF99BC",
+              borderRadius: 16,
+              padding: 20,
+              gap: 20,
+            }}
           >
-            <Text className="text-white text-xs font-medium opacity-80 mb-3 uppercase tracking-wide">
-              Invoice Summary
-            </Text>
-
-            <View className="gap-2">
-              {destination ? (
-                <View className="flex-row justify-between">
-                  <Text className="text-white text-sm opacity-80">To</Text>
-                  <Text className="text-white text-sm font-medium" numberOfLines={1} style={{ maxWidth: "65%" }}>
-                    {destination}
-                  </Text>
-                </View>
-              ) : null}
-
-              <View className="flex-row justify-between">
-                <Text className="text-white text-sm opacity-80">Amount</Text>
-                <Text className="text-white text-sm font-medium">
-                  {currency} {amount}
-                </Text>
+            {/* Top section: QR + instruction */}
+            <View className="items-center" style={{ gap: 10 }}>
+              {/* QR code box */}
+              <View
+                style={{
+                  width: 224,
+                  height: 224,
+                  backgroundColor: "#FFFFFF",
+                  borderRadius: 24,
+                  padding: 12,
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <QRPlaceholder value={invoiceString} />
               </View>
 
-              <View className="flex-row justify-between">
-                <Text className="text-white text-sm opacity-80">SATS</Text>
-                <Text className="text-white text-sm font-semibold">
-                  {satsEquivalent} sats
-                </Text>
-              </View>
+              {/* Instruction text */}
+              <Text
+                style={{
+                  fontSize: 12,
+                  lineHeight: 15,
+                  textAlign: "center",
+                  letterSpacing: -0.01 * 12,
+                  color: "#090909",
+                  maxWidth: 229,
+                }}
+              >
+                Scan QR code to make payment or copy wallet address below.
+              </Text>
+            </View>
 
-              {note ? (
-                <View className="flex-row justify-between">
-                  <Text className="text-white text-sm opacity-80">Note</Text>
-                  <Text className="text-white text-sm font-medium" numberOfLines={1} style={{ maxWidth: "65%" }}>
-                    {note}
+            {/* Bottom section: wallet address + amount */}
+            <View style={{ gap: 12 }}>
+              {/* Row 1: wallet address + expiry */}
+              <View
+                className="flex-row items-center justify-between"
+                style={{ gap: 44 }}
+              >
+                {/* Wallet address */}
+                <View style={{ gap: 6 }}>
+                  <Text
+                    style={{ fontSize: 10, lineHeight: 16, color: "#4F4F4F" }}
+                  >
+                    Wallet address
+                  </Text>
+                  <View className="flex-row items-center" style={{ gap: 8 }}>
+                    <Text
+                      style={{
+                        fontSize: 12,
+                        fontWeight: "500",
+                        lineHeight: 18,
+                        color: "#090909",
+                      }}
+                    >
+                      {walletAddress}
+                    </Text>
+                    <TouchableOpacity onPress={handleCopy}>
+                      {copied ? <CheckIcon /> : <CopyIcon />}
+                    </TouchableOpacity>
+                  </View>
+                </View>
+
+                {/* Invoice expiry */}
+                <View className="items-end" style={{ gap: 6 }}>
+                  <Text
+                    style={{
+                      fontSize: 10,
+                      lineHeight: 16,
+                      color: "#4F4F4F",
+                      textAlign: "center",
+                    }}
+                  >
+                    Invoice expires in:
+                  </Text>
+                  <Text
+                    style={{
+                      fontSize: 12,
+                      fontWeight: "600",
+                      lineHeight: 18,
+                      color: "#090909",
+                      textAlign: "center",
+                    }}
+                  >
+                    {formatTime(timeLeft)}
                   </Text>
                 </View>
-              ) : null}
+              </View>
 
-              {category ? (
-                <View className="flex-row justify-between">
-                  <Text className="text-white text-sm opacity-80">Category</Text>
-                  <Text className="text-white text-sm font-medium capitalize">{category}</Text>
+              {/* Divider */}
+              <View
+                style={{ height: 1, backgroundColor: "#FFD6E4", width: "100%" }}
+              />
+
+              {/* Row 2: amount + USD equivalent */}
+              <View
+                className="flex-row items-center justify-between"
+                style={{ gap: 44 }}
+              >
+                {/* Amount to send */}
+                <View style={{ gap: 6 }}>
+                  <Text
+                    style={{ fontSize: 10, lineHeight: 16, color: "#4F4F4F" }}
+                  >
+                    Amount to send
+                  </Text>
+                  <Text
+                    style={{
+                      fontSize: 12,
+                      fontWeight: "500",
+                      lineHeight: 18,
+                      color: "#090909",
+                    }}
+                  >
+                    {btcAmount}
+                  </Text>
                 </View>
-              ) : null}
+
+                {/* USD equivalent */}
+                <View className="items-end" style={{ gap: 6 }}>
+                  <Text
+                    style={{
+                      fontSize: 10,
+                      lineHeight: 16,
+                      color: "#4F4F4F",
+                      textAlign: "center",
+                    }}
+                  >
+                    USD equivalent
+                  </Text>
+                  <Text
+                    style={{
+                      fontSize: 12,
+                      fontWeight: "600",
+                      lineHeight: 18,
+                      color: "#090909",
+                      textAlign: "center",
+                    }}
+                  >
+                    ${amount}
+                  </Text>
+                </View>
+              </View>
             </View>
           </View>
+        </View>
 
-          {/* QR Code */}
-          <View className="items-center mb-4">
-            <View
-              className="rounded-2xl p-4 items-center justify-center"
-              style={{ backgroundColor: "#FFFFFF" }}
+        {/* Bottom: button + home indicator */}
+        <View style={{ gap: 20 }}>
+          {/* Button row */}
+          <View className="items-center">
+            <TouchableOpacity
+              onPress={handleConfirm}
+              style={{
+                width: 250,
+                height: 50,
+                backgroundColor: "#FF82AD",
+                borderWidth: 0.5,
+                borderColor: "#FF669A",
+                borderRadius: 1000,
+                alignItems: "center",
+                justifyContent: "center",
+              }}
             >
-              <QRPlaceholder value={invoiceString} />
-            </View>
-            <Text className="text-white text-xs opacity-70 mt-2">
-              Scan to pay
-            </Text>
-          </View>
-
-          {/* Invoice string */}
-          <View
-            className="rounded-xl px-4 py-3 flex-row items-center gap-3"
-            style={{ backgroundColor: "#FF6B9D" }}
-          >
-            <Text
-              className="flex-1 text-white text-xs"
-              numberOfLines={1}
-              ellipsizeMode="middle"
-            >
-              {invoiceString}
-            </Text>
-            <TouchableOpacity onPress={handleCopy} className="p-1">
-              {copied ? <CheckIcon /> : <CopyIcon />}
+              <Text
+                style={{
+                  color: "#FFFFFF",
+                  fontSize: 15,
+                  fontWeight: "500",
+                  lineHeight: 18,
+                  textAlign: "center",
+                }}
+              >
+                I have sent the tip
+              </Text>
             </TouchableOpacity>
           </View>
 
-          {copied && (
-            <Text className="text-white text-xs text-center mt-2 opacity-80">
-              Copied to clipboard
-            </Text>
-          )}
-        </View>
-
-        {/* Confirm Button */}
-        <View
-          className="px-4"
-          style={{ paddingBottom: insets.bottom + 32 }}
-        >
-          <TouchableOpacity
-            onPress={handleConfirm}
-            className="py-4 rounded-full items-center"
-            style={{ backgroundColor: "#FFB6C1" }}
+          {/* Home indicator */}
+          <View
+            style={{
+              width: "100%",
+              height: 34,
+              backgroundColor: "#FF3378",
+              alignItems: "center",
+              justifyContent: "flex-end",
+              paddingBottom: 8,
+            }}
           >
-            <Text className="text-white text-base font-semibold">
-              Confirm &amp; Continue
-            </Text>
-          </TouchableOpacity>
+            <View
+              style={{
+                width: 134,
+                height: 5,
+                backgroundColor: "#FF99BC",
+                borderRadius: 100,
+              }}
+            />
+          </View>
         </View>
       </View>
     </View>
