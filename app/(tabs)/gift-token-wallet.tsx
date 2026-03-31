@@ -20,21 +20,19 @@ export default function GiftTokenWalletScreen() {
   return (
     <View className="flex-1 bg-[#FF4081]">
       {/* Header */}
-      <View className="flex-row items-center px-5 py-6 gap-[85px]">
+      <View className="flex-row items-center px-5 py-6">
         {/* Back Button */}
         <Pressable onPress={handleBack} className="p-1">
           <Feather name="arrow-left" size={24} color="#FAFAFA" />
         </Pressable>
 
-        {/* Title */}
-        <Text className="text-xl font-inter font-medium text-white tracking-tight">
+        {/* Title — centered between back button and spacer */}
+        <Text className="flex-1 text-center text-xl font-inter font-medium text-white tracking-tight">
           Gift token
         </Text>
 
-        {/* Spacer */}
-        <View className="w-6 h-6 opacity-0">
-          <Feather name="calendar" size={24} color="#666666" />
-        </View>
+        {/* Invisible spacer to balance the back button */}
+        <View className="w-8 h-6" />
       </View>
 
       {/* Instruction Text */}

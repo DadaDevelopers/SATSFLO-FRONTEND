@@ -259,12 +259,9 @@ export default function CreateInvoiceScreen() {
             {/* Bottom section: wallet address + amount */}
             <View style={{ gap: 12 }}>
               {/* Row 1: wallet address + expiry */}
-              <View
-                className="flex-row items-center justify-between"
-                style={{ gap: 44 }}
-              >
+              <View className="flex-row items-center justify-between">
                 {/* Wallet address */}
-                <View style={{ gap: 6 }}>
+                <View style={{ gap: 6, flex: 1, marginRight: 12 }}>
                   <Text
                     style={{ fontSize: 10, lineHeight: 16, color: "#4F4F4F" }}
                   >
@@ -277,7 +274,10 @@ export default function CreateInvoiceScreen() {
                         fontWeight: "500",
                         lineHeight: 18,
                         color: "#090909",
+                        flexShrink: 1,
                       }}
+                      numberOfLines={1}
+                      ellipsizeMode="middle"
                     >
                       {walletAddress}
                     </Text>
@@ -294,7 +294,7 @@ export default function CreateInvoiceScreen() {
                       fontSize: 10,
                       lineHeight: 16,
                       color: "#4F4F4F",
-                      textAlign: "center",
+                      textAlign: "right",
                     }}
                   >
                     Invoice expires in:
@@ -305,7 +305,7 @@ export default function CreateInvoiceScreen() {
                       fontWeight: "600",
                       lineHeight: 18,
                       color: "#090909",
-                      textAlign: "center",
+                      textAlign: "right",
                     }}
                   >
                     {formatTime(timeLeft)}
@@ -319,12 +319,9 @@ export default function CreateInvoiceScreen() {
               />
 
               {/* Row 2: amount + USD equivalent */}
-              <View
-                className="flex-row items-center justify-between"
-                style={{ gap: 44 }}
-              >
+              <View className="flex-row items-center justify-between">
                 {/* Amount to send */}
-                <View style={{ gap: 6 }}>
+                <View style={{ gap: 6, flex: 1, marginRight: 12 }}>
                   <Text
                     style={{ fontSize: 10, lineHeight: 16, color: "#4F4F4F" }}
                   >
@@ -337,6 +334,8 @@ export default function CreateInvoiceScreen() {
                       lineHeight: 18,
                       color: "#090909",
                     }}
+                    numberOfLines={1}
+                    adjustsFontSizeToFit
                   >
                     {btcAmount}
                   </Text>
@@ -349,7 +348,7 @@ export default function CreateInvoiceScreen() {
                       fontSize: 10,
                       lineHeight: 16,
                       color: "#4F4F4F",
-                      textAlign: "center",
+                      textAlign: "right",
                     }}
                   >
                     USD equivalent
@@ -360,7 +359,7 @@ export default function CreateInvoiceScreen() {
                       fontWeight: "600",
                       lineHeight: 18,
                       color: "#090909",
-                      textAlign: "center",
+                      textAlign: "right",
                     }}
                   >
                     ${amount}
