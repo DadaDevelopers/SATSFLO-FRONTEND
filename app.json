@@ -5,14 +5,8 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/Logo-square.png",
-    "icon": "./assets/images/Logo-square.png",
     "scheme": "satsflofrontend",
     "userInterfaceStyle": "automatic",
-    "splash": {
-      "image": "./assets/images/Logo-square.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#FF4081"
-    },
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.anonymous.SATSFLOFRONTEND",
@@ -25,7 +19,6 @@
         "foregroundImage": "./assets/images/Logo-square.png",
         "backgroundColor": "#E6F4FE"
       },
-      "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
       "permissions": [
         "android.permission.CAMERA"
@@ -35,14 +28,12 @@
     "web": {
       "output": "static",
       "favicon": "./assets/images/Logo-square.png"
-      "favicon": "./assets/images/Logo-square.png"
     },
     "plugins": [
       "expo-router",
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/Logo-square.png",
           "image": "./assets/images/Logo-square.png",
           "imageWidth": 200,
           "resizeMode": "contain",

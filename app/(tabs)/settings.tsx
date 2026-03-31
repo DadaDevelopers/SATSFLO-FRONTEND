@@ -1,9 +1,7 @@
 import { BottomNavigation } from "@/components/home/bottom-navigation";
 import { useTheme } from "@/context/theme-context";
 import { api, clearAuthStorage } from "@/lib/api";
-import { api, clearAuthStorage } from "@/lib/api";
 import { Feather } from "@expo/vector-icons";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { BlurView } from "expo-blur";
 import { router } from "expo-router";
@@ -16,15 +14,12 @@ import {
   StatusBar,
   Text,
   TextInput,
-  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Svg, {
-  ClipPath,
   Defs,
-  G,
   LinearGradient,
   Path,
   Rect,
@@ -61,14 +56,7 @@ function LutealIcon() {
   return (
     <Svg width={16} height={17} viewBox="0 0 16 17" fill="none">
       <Defs>
-        <LinearGradient
-          id="luteal_grad"
-          x1="8"
-          y1="0.5"
-          x2="8"
-          y2="16.5"
-          gradientUnits="userSpaceOnUse"
-        >
+        <LinearGradient id="luteal_grad" x1="8" y1="0.5" x2="8" y2="16.5" gradientUnits="userSpaceOnUse">
           <Stop offset="0" stopColor="#FF4081" />
           <Stop offset="1" stopColor="#635497" />
         </LinearGradient>
@@ -107,7 +95,7 @@ function RateAppIcon() {
   return (
     <Svg width={16} height={16} viewBox="0 0 16 16" fill="none">
       <Path
-        d="M14.9483 6.07866C14.8858 5.88649 14.7678 5.71712 14.6092 5.59188C14.4506 5.46665 14.2585 5.39116 14.0571 5.37491L10.3696 5.07741L8.9458 1.63429C8.86881 1.44667 8.73776 1.28619 8.56932 1.17325C8.40088 1.06031 8.20267 1 7.99987 1C7.79707 1 7.59885 1.06031 7.43041 1.17325C7.26197 1.28619 7.13093 1.44667 7.05393 1.63429L5.63143 5.07679L1.94205 5.37491C1.74029 5.39198 1.54805 5.4682 1.38941 5.59404C1.23078 5.71988 1.11281 5.88973 1.05028 6.08232C0.987751 6.27491 0.983448 6.48167 1.03791 6.67669C1.09237 6.87172 1.20317 7.04633 1.35643 7.17866L4.16893 9.60554L3.31205 13.2343C3.26478 13.4313 3.27695 13.6379 3.34704 13.828C3.41713 14.0181 3.54199 14.1832 3.70584 14.3024C3.8697 14.4216 4.0652 14.4895 4.26765 14.4976C4.4701 14.5058 4.67042 14.4537 4.8433 14.348L7.99955 12.4055L11.1577 14.348C11.3305 14.4531 11.5306 14.5047 11.7327 14.4962C11.9348 14.4878 12.1299 14.4198 12.2934 14.3007C12.4569 14.1816 12.5816 14.0168 12.6516 13.8271C12.7217 13.6373 12.734 13.431 12.6871 13.2343L11.8271 9.60491L14.6396 7.17804C14.7941 7.04593 14.9059 6.87093 14.9608 6.67522C15.0158 6.47951 15.0114 6.27189 14.9483 6.07866ZM13.9896 6.42054L10.9458 9.04554C10.8764 9.10537 10.8248 9.18312 10.7965 9.27031C10.7683 9.35749 10.7646 9.45076 10.7858 9.53991L11.7158 13.4649C11.7182 13.4703 11.7184 13.4764 11.7165 13.482C11.7145 13.4876 11.7105 13.4922 11.7052 13.4949C11.6939 13.5037 11.6908 13.5018 11.6814 13.4949L8.26143 11.3918C8.18257 11.3437 8.09192 11.3184 7.99955 11.3187V1.99991C8.01455 1.99991 8.01643 2.00491 8.02143 2.01616L9.56205 5.74116C9.59722 5.82631 9.65523 5.90008 9.72967 5.95434C9.80412 6.00861 9.89211 6.04125 9.98393 6.04866L13.9783 6.37116C13.9883 6.37116 13.9939 6.37116 13.9996 6.38929C14.0052 6.40741 13.9996 6.41429 13.9896 6.42054Z"
+        d="M14.9483 6.07866C14.8858 5.88649 14.7678 5.71712 14.6092 5.59188C14.4506 5.46665 14.2585 5.39116 14.0571 5.37491L10.3696 5.07741L8.9458 1.63429C8.86881 1.44667 8.73776 1.28619 8.56932 1.17325C8.40088 1.06031 8.20267 1 7.99987 1C7.79707 1 7.59885 1.06031 7.43041 1.17325C7.26197 1.28619 7.13093 1.44667 7.05393 1.63429L5.63143 5.07679L1.94205 5.37491C1.74029 5.39198 1.54805 5.4682 1.38941 5.59404C1.23078 5.71988 1.11281 5.88973 1.05028 6.08232C0.987751 6.27491 0.983448 6.48167 1.03791 6.67669C1.09237 6.87172 1.20317 7.04633 1.35643 7.17866L4.16893 9.60554L3.31205 13.2343C3.26478 13.4313 3.27695 13.6379 3.34704 13.828C3.41713 14.0181 3.54199 14.1832 3.70584 14.3024C3.8697 14.4216 4.0652 14.4895 4.26765 14.4976C4.4701 14.5058 4.67042 14.4537 4.8433 14.348L7.99955 12.4055L11.1577 14.348C11.3305 14.4531 11.5306 14.5047 11.7327 14.4962C11.9348 14.4878 12.1299 14.4198 12.2934 14.3007C12.4569 14.1816 12.5816 14.0168 12.6516 13.8271C12.7217 13.6373 12.734 13.431 12.6871 13.2343L11.8271 9.60491L14.6396 7.17804C14.7941 7.04593 14.9059 6.87093 14.9608 6.67522C15.0158 6.47951 15.0114 6.27189 14.9483 6.07866Z"
         fill="#FF8400"
       />
     </Svg>
@@ -118,7 +106,7 @@ function PrivacyIcon() {
   return (
     <Svg width={16} height={16} viewBox="0 0 16 16" fill="none">
       <Path
-        d="M8 7C7.57975 7.00014 7.17358 7.15151 6.85574 7.42644C6.53789 7.70137 6.3296 8.08149 6.26892 8.49734C6.20825 8.91319 6.29925 9.33698 6.52529 9.69127C6.75133 10.0456 7.09731 10.3067 7.5 10.4269V11.5C7.5 11.6326 7.55268 11.7598 7.64645 11.8536C7.74021 11.9473 7.86739 12 8 12C8.13261 12 8.25979 11.9473 8.35355 11.8536C8.44732 11.7598 8.5 11.6326 8.5 11.5V10.4269C8.90269 10.3067 9.24867 10.0456 9.47471 9.69127C9.70075 9.33698 9.79175 8.91319 9.73108 8.49734C9.6704 8.08149 9.46211 7.70137 9.14426 7.42644C8.82642 7.15151 8.42025 7.00014 8 7ZM8 9.5C7.85166 9.5 7.70666 9.45601 7.58332 9.3736C7.45999 9.29119 7.36386 9.17406 7.30709 9.03701C7.25032 8.89997 7.23547 8.74917 7.26441 8.60368C7.29335 8.4582 7.36478 8.32456 7.46967 8.21967C7.57456 8.11478 7.7082 8.04335 7.85368 8.01441C7.99917 7.98547 8.14997 8.00033 8.28701 8.05709C8.42406 8.11386 8.54119 8.20999 8.6236 8.33332C8.70601 8.45666 8.75 8.60166 8.75 8.75C8.75 8.94891 8.67098 9.13968 8.53033 9.28033C8.38968 9.42098 8.19891 9.5 8 9.5ZM13 5H11V3.5C11 2.70435 10.6839 1.94129 10.1213 1.37868C9.55871 0.81607 8.79565 0.5 8 0.5C7.20435 0.5 6.44129 0.81607 5.87868 1.37868C5.31607 1.94129 5 2.70435 5 3.5V5H3C2.73478 5 2.48043 5.10536 2.29289 5.29289C2.10536 5.48043 2 5.73478 2 6V13C2 13.2652 2.10536 13.5196 2.29289 13.7071C2.48043 13.8946 2.73478 14 3 14H13C13.2652 14 13.5196 13.8946 13.7071 13.7071C13.8946 13.5196 14 13.2652 14 13V6C14 5.73478 13.8946 5.48043 13.7071 5.29289C13.5196 5.10536 13.2652 5 13 5ZM6 3.5C6 2.96957 6.21071 2.46086 6.58579 2.08579C6.96086 1.71071 7.46957 1.5 8 1.5C8.53043 1.5 9.03914 1.71071 9.41421 2.08579C9.78929 2.46086 10 2.96957 10 3.5V5H6V3.5ZM13 13H3V6H13V13Z"
+        d="M8 7C7.57975 7.00014 7.17358 7.15151 6.85574 7.42644C6.53789 7.70137 6.3296 8.08149 6.26892 8.49734C6.20825 8.91319 6.29925 9.33698 6.52529 9.69127C6.75133 10.0456 7.09731 10.3067 7.5 10.4269V11.5C7.5 11.6326 7.55268 11.7598 7.64645 11.8536C7.74021 11.9473 7.86739 12 8 12C8.13261 12 8.25979 11.9473 8.35355 11.8536C8.44732 11.7598 8.5 11.6326 8.5 11.5V10.4269C8.90269 10.3067 9.24867 10.0456 9.47471 9.69127C9.70075 9.33698 9.79175 8.91319 9.73108 8.49734C9.6704 8.08149 9.46211 7.70137 9.14426 7.42644C8.82642 7.15151 8.42025 7.00014 8 7ZM13 5H11V3.5C11 2.70435 10.6839 1.94129 10.1213 1.37868C9.55871 0.81607 8.79565 0.5 8 0.5C7.20435 0.5 6.44129 0.81607 5.87868 1.37868C5.31607 1.94129 5 2.70435 5 3.5V5H3C2.73478 5 2.48043 5.10536 2.29289 5.29289C2.10536 5.48043 2 5.73478 2 6V13C2 13.2652 2.10536 13.5196 2.29289 13.7071C2.48043 13.8946 2.73478 14 3 14H13C13.2652 14 13.5196 13.8946 13.7071 13.7071C13.8946 13.5196 14 13.2652 14 13V6C14 5.73478 13.8946 5.48043 13.7071 5.29289C13.5196 5.10536 13.2652 5 13 5ZM6 3.5C6 2.96957 6.21071 2.46086 6.58579 2.08579C6.96086 1.71071 7.46957 1.5 8 1.5C8.53043 1.5 9.03914 1.71071 9.41421 2.08579C9.78929 2.46086 10 2.96957 10 3.5V5H6V3.5ZM13 13H3V6H13V13Z"
         fill="black"
       />
     </Svg>
@@ -151,14 +139,7 @@ function LanguageIcon() {
   return (
     <Svg width={16} height={16} viewBox="0 0 16 16" fill="none">
       <Defs>
-        <LinearGradient
-          id="lang_grad"
-          x1="8.49987"
-          y1="1.5"
-          x2="8.49987"
-          y2="14"
-          gradientUnits="userSpaceOnUse"
-        >
+        <LinearGradient id="lang_grad" x1="8.49987" y1="1.5" x2="8.49987" y2="14" gradientUnits="userSpaceOnUse">
           <Stop offset="0" stopColor="#FF4081" />
           <Stop offset="1" stopColor="#672699" />
         </LinearGradient>
@@ -175,7 +156,7 @@ function MoodsIcon() {
   return (
     <Svg width={16} height={16} viewBox="0 0 16 16" fill="none">
       <Path
-        d="M8 1.5C6.71442 1.5 5.45772 1.88122 4.3888 2.59545C3.31988 3.30968 2.48676 4.32484 1.99479 5.51256C1.50282 6.70028 1.37409 8.00721 1.6249 9.26809C1.8757 10.529 2.49477 11.6872 3.40381 12.5962C4.31285 13.5052 5.47104 14.1243 6.73192 14.3751C7.99279 14.6259 9.29973 14.4972 10.4874 14.0052C11.6752 13.5132 12.6903 12.6801 13.4046 11.6112C14.1188 10.5423 14.5 9.28558 14.5 8C14.4982 6.27665 13.8128 4.62441 12.5942 3.40582C11.3756 2.18722 9.72335 1.50182 8 1.5ZM10.25 6C10.3983 6 10.5433 6.04399 10.6667 6.1264C10.79 6.20881 10.8861 6.32594 10.9429 6.46299C10.9997 6.60003 11.0145 6.75083 10.9856 6.89632C10.9567 7.0418 10.8852 7.17544 10.7803 7.28033C10.6754 7.38522 10.5418 7.45665 10.3963 7.48559C10.2508 7.51453 10.1 7.49968 9.96299 7.44291C9.82595 7.38614 9.70881 7.29001 9.6264 7.16668C9.54399 7.04334 9.5 6.89834 9.5 6.75C9.5 6.55109 9.57902 6.36032 9.71967 6.21967C9.86033 6.07902 10.0511 6 10.25 6ZM5.75 6C5.89834 6 6.04334 6.04399 6.16668 6.1264C6.29002 6.20881 6.38615 6.32594 6.44291 6.46299C6.49968 6.60003 6.51453 6.75083 6.48559 6.89632C6.45665 7.0418 6.38522 7.17544 6.28033 7.28033C6.17544 7.38522 6.04181 7.45665 5.89632 7.48559C5.75083 7.51453 5.60003 7.49968 5.46299 7.44291C5.32595 7.38614 5.20881 7.29001 5.1264 7.16668C5.04399 7.04334 5 6.89834 5 6.75C5 6.55109 5.07902 6.36032 5.21967 6.21967C5.36032 6.07902 5.55109 6 5.75 6ZM11 11C10.375 11 10.0594 10.5788 9.85 10.3C9.6625 10.05 9.605 10 9.5 10C9.395 10 9.33938 10.0475 9.15 10.3C8.94063 10.5788 8.625 11 8 11C7.375 11 7.0625 10.5788 6.85 10.3C6.6625 10.05 6.605 10 6.5 10C6.395 10 6.33938 10.0475 6.15 10.3C5.94063 10.5788 5.625 11 5 11C4.86739 11 4.74022 10.9473 4.64645 10.8536C4.55268 10.7598 4.5 10.6326 4.5 10.5C4.5 10.3674 4.55268 10.2402 4.64645 10.1464C4.74022 10.0527 4.86739 10 5 10C5.105 10 5.16063 9.9525 5.35 9.7C5.5625 9.42125 5.875 9 6.5 9C7.125 9 7.4375 9.42125 7.65 9.7C7.8375 9.95 7.895 10 8 10C8.105 10 8.16063 9.9525 8.35 9.7C8.5625 9.42125 8.875 9 9.5 9C10.125 9 10.4406 9.42125 10.65 9.7C10.8375 9.95 10.895 10 11 10C11.1326 10 11.2598 10.0527 11.3536 10.1464C11.4473 10.2402 11.5 10.3674 11.5 10.5C11.5 10.6326 11.4473 10.7598 11.3536 10.8536C11.2598 10.9473 11.1326 11 11 11Z"
+        d="M8 1.5C6.71442 1.5 5.45772 1.88122 4.3888 2.59545C3.31988 3.30968 2.48676 4.32484 1.99479 5.51256C1.50282 6.70028 1.37409 8.00721 1.6249 9.26809C1.8757 10.529 2.49477 11.6872 3.40381 12.5962C4.31285 13.5052 5.47104 14.1243 6.73192 14.3751C7.99279 14.6259 9.29973 14.4972 10.4874 14.0052C11.6752 13.5132 12.6903 12.6801 13.4046 11.6112C14.1188 10.5423 14.5 9.28558 14.5 8C14.4982 6.27665 13.8128 4.62441 12.5942 3.40582C11.3756 2.18722 9.72335 1.50182 8 1.5ZM11 11C10.375 11 10.0594 10.5788 9.85 10.3C9.6625 10.05 9.605 10 9.5 10C9.395 10 9.33938 10.0475 9.15 10.3C8.94063 10.5788 8.625 11 8 11C7.375 11 7.0625 10.5788 6.85 10.3C6.6625 10.05 6.605 10 6.5 10C6.395 10 6.33938 10.0475 6.15 10.3C5.94063 10.5788 5.625 11 5 11C4.86739 11 4.74022 10.9473 4.64645 10.8536C4.55268 10.7598 4.5 10.6326 4.5 10.5C4.5 10.3674 4.55268 10.2402 4.64645 10.1464C4.74022 10.0527 4.86739 10 5 10C5.105 10 5.16063 9.9525 5.35 9.7C5.5625 9.42125 5.875 9 6.5 9C7.125 9 7.4375 9.42125 7.65 9.7C7.8375 9.95 7.895 10 8 10C8.105 10 8.16063 9.9525 8.35 9.7C8.5625 9.42125 8.875 9 9.5 9C10.125 9 10.4406 9.42125 10.65 9.7C10.8375 9.95 10.895 10 11 10C11.1326 10 11.2598 10.0527 11.3536 10.1464C11.4473 10.2402 11.5 10.3674 11.5 10.5C11.5 10.6326 11.4473 10.7598 11.3536 10.8536C11.2598 10.9473 11.1326 11 11 11Z"
         fill="#EA7521"
       />
     </Svg>
@@ -186,7 +167,7 @@ function SymptomsIcon() {
   return (
     <Svg width={16} height={16} viewBox="0 0 16 16" fill="none">
       <Path
-        d="M8 1.5C6.71442 1.5 5.45772 1.88122 4.41282 2.5858C3.36792 3.29038 2.5542 4.29533 2.07843 5.47282C1.60266 6.65031 1.47386 7.94222 1.71867 9.19058C1.96347 10.439 2.57121 11.5872 3.46447 12.4805C4.35773 13.3737 5.50596 13.9815 6.75432 14.2263C8.00267 14.4711 9.29459 14.3423 10.4721 13.8665C11.6496 13.3908 12.6545 12.577 13.3591 11.5321C14.0637 10.4873 14.4449 9.26009 14.4449 8.00226C14.4421 6.31277 13.7694 4.69376 12.5724 3.49671C11.3753 2.29967 9.75629 1.62695 8.06681 1.62418L8 1.5ZM5.5 7.25C5.5 7.05109 5.57902 6.86032 5.71967 6.71967C5.86032 6.57902 6.05109 6.5 6.25 6.5C6.44891 6.5 6.63968 6.57902 6.78033 6.71967C6.92098 6.86032 7 7.05109 7 7.25C7 7.44891 6.92098 7.63968 6.78033 7.78033C6.63968 7.92098 6.44891 8 6.25 8C6.05109 8 5.86032 7.92098 5.71967 7.78033C5.57902 7.63968 5.5 7.44891 5.5 7.25ZM10.7511 10.5865C10.1571 11.2415 9.32161 11.6284 8.43511 11.6563C7.54862 11.6842 6.69077 11.3508 6.05761 10.7351L6.05386 10.7314C5.98899 10.6638 5.95378 10.5736 5.95562 10.4803C5.95746 10.387 5.99621 10.2982 6.06363 10.2332C6.13104 10.1682 6.22162 10.132 6.31504 10.1329C6.40846 10.1337 6.49836 10.1715 6.56461 10.2377L6.56836 10.2414C7.04611 10.7004 7.68711 10.9557 8.35136 10.9532C9.01561 10.9507 9.65464 10.6907 10.1289 10.2283L10.1289 10.2283C10.1952 10.1623 10.285 10.1247 10.3782 10.124C10.4714 10.1234 10.5618 10.1596 10.629 10.2247C10.6963 10.2898 10.7349 10.3785 10.7367 10.4716C10.7385 10.5648 10.7034 10.6549 10.6386 10.7225L10.7511 10.5865ZM10.5 7.25C10.5 7.05109 10.421 6.86032 10.2803 6.71967C10.1397 6.57902 9.94891 6.5 9.75 6.5C9.55109 6.5 9.36032 6.57902 9.21967 6.71967C9.07902 6.86032 9 7.05109 9 7.25C9 7.44891 9.07902 7.63968 9.21967 7.78033C9.36032 7.92098 9.55109 8 9.75 8C9.94891 8 10.1397 7.92098 10.2803 7.78033C10.421 7.63968 10.5 7.44891 10.5 7.25Z"
+        d="M8 1.5C6.71442 1.5 5.45772 1.88122 4.41282 2.5858C3.36792 3.29038 2.5542 4.29533 2.07843 5.47282C1.60266 6.65031 1.47386 7.94222 1.71867 9.19058C1.96347 10.439 2.57121 11.5872 3.46447 12.4805C4.35773 13.3737 5.50596 13.9815 6.75432 14.2263C8.00267 14.4711 9.29459 14.3423 10.4721 13.8665C11.6496 13.3908 12.6545 12.577 13.3591 11.5321C14.0637 10.4873 14.4449 9.26009 14.4449 8.00226C14.4421 6.31277 13.7694 4.69376 12.5724 3.49671C11.3753 2.29967 9.75629 1.62695 8.06681 1.62418L8 1.5Z"
         fill="#FFB71D"
       />
     </Svg>
@@ -196,15 +177,7 @@ function SymptomsIcon() {
 function DropIcon() {
   return (
     <Svg width={40} height={40} viewBox="0 0 40 40" fill="none">
-      <Rect
-        x={0.5}
-        y={0.5}
-        width={39}
-        height={39}
-        rx={19.5}
-        stroke="#CC0045"
-        strokeDasharray="2 2"
-      />
+      <Rect x={0.5} y={0.5} width={39} height={39} rx={19.5} stroke="#CC0045" strokeDasharray="2 2" />
       <Path
         d="M24.3125 12.4764C23.1545 11.1389 21.8511 9.93465 20.4266 8.88573C20.3005 8.79739 20.1502 8.75 19.9963 8.75C19.8423 8.75 19.692 8.79739 19.5659 8.88573C18.144 9.93509 16.8432 11.1394 15.6875 12.4764C13.1103 15.436 11.75 18.556 11.75 21.4998C11.75 23.6878 12.6192 25.7862 14.1664 27.3334C15.7135 28.8806 17.812 29.7498 20 29.7498C22.188 29.7498 24.2865 28.8806 25.8336 27.3334C27.3808 25.7862 28.25 23.6878 28.25 21.4998C28.25 18.556 26.8897 15.436 24.3125 12.4764Z"
         fill="#CC0045"
@@ -214,13 +187,6 @@ function DropIcon() {
 }
 
 type TabName = "home" | "calendar" | "add" | "chat" | "settings";
-
-interface PartnerData {
-  partner: { username: string; avatar?: string } | null;
-  my_nickname: string;
-  partner_nickname: string;
-  partner_mode_enabled: boolean;
-}
 
 interface SettingRowProps {
   iconName?: keyof typeof Feather.glyphMap;
@@ -232,30 +198,17 @@ interface SettingRowProps {
   isLast?: boolean;
 }
 
-function SettingRow({
-  iconName,
-  iconColor,
-  icon,
-  label,
-  rightText,
-  onPress,
-  isLast,
-}: SettingRowProps) {
+function SettingRow({ iconName, iconColor, icon, label, rightText, onPress, isLast }: SettingRowProps) {
   return (
     <>
-      <Pressable
-        onPress={onPress}
-        className="flex-row items-center justify-between px-3 py-4"
-      >
+      <Pressable onPress={onPress} className="flex-row items-center justify-between px-3 py-4">
         <View className="flex-row items-center gap-1">
           {icon ?? <Feather name={iconName!} size={16} color={iconColor} />}
           <Text className="text-sm text-[#1E1E1E] leading-[21px]">{label}</Text>
         </View>
         <View className="flex-row items-center gap-[10px]">
           {rightText && (
-            <Text className="text-sm text-[#FF4081] leading-[21px]">
-              {rightText}
-            </Text>
+            <Text className="text-sm text-[#FF4081] leading-[21px]">{rightText}</Text>
           )}
           <Feather name="chevron-right" size={16} color="#666666" />
         </View>
@@ -288,11 +241,7 @@ function StarIcon({ filled, size = 36 }: { filled: boolean; size?: number }) {
 type ThemeOption = "system" | "light" | "dark";
 
 const THEME_OPTIONS: { id: ThemeOption; label: string; subtitle: string }[] = [
-  {
-    id: "system",
-    label: "System default",
-    subtitle: "Sync app appearance with your device settings",
-  },
+  { id: "system", label: "System default", subtitle: "Sync app appearance with your device settings" },
   { id: "light", label: "Light mode", subtitle: "Use light mode" },
   { id: "dark", label: "Dark mode", subtitle: "Use dark mode" },
 ];
@@ -306,11 +255,8 @@ export default function SettingsScreen() {
   const [logoutModalVisible, setLogoutModalVisible] = useState(false);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [deletePassword, setDeletePassword] = useState("");
-  const [deletePassword, setDeletePassword] = useState("");
   const { selectedTheme, setSelectedTheme } = useTheme();
-  const [user, setUser] = useState<{ name: string; email: string } | null>(
-    null
-  );
+  const [user, setUser] = useState<{ name: string; email: string } | null>(null);
 
   useEffect(() => {
     const loadUser = async () => {
@@ -336,16 +282,9 @@ export default function SettingsScreen() {
   const handleLogout = async () => {
     setLogoutModalVisible(false);
     try {
-      const [[, accessToken], [, refreshToken]] = await AsyncStorage.multiGet([
-        "accessToken",
-        "refreshToken",
-      ]);
+      const [[, accessToken], [, refreshToken]] = await AsyncStorage.multiGet(["accessToken", "refreshToken"]);
       if (accessToken) {
-        await api.post(
-          "/auth/logout",
-          { refreshToken: refreshToken ?? "" },
-          accessToken
-        );
+        await api.post("/auth/logout", { refreshToken: refreshToken ?? "" }, accessToken);
       }
     } catch {}
     await clearAuthStorage();
@@ -368,20 +307,11 @@ export default function SettingsScreen() {
 
   const handleTabPress = (tab: TabName) => {
     switch (tab) {
-      case "home":
-        router.push("/(tabs)");
-        break;
-      case "calendar":
-        router.push("/calendar");
-        break;
-      case "add":
-        router.push("/add-log");
-        break;
-      case "chat":
-        router.push("/(tabs)/thread");
-        break;
-      default:
-        break;
+      case "home": router.push("/(tabs)"); break;
+      case "calendar": router.push("/calendar"); break;
+      case "add": router.push("/add-log"); break;
+      case "chat": router.push("/(tabs)/thread"); break;
+      default: break;
     }
   };
 
@@ -389,145 +319,63 @@ export default function SettingsScreen() {
     <View className="flex-1 bg-[#FF4081]">
       <StatusBar barStyle="light-content" backgroundColor="#FF4081" />
 
-      {/* Frame 125 — page header */}
-      <View
-        className="flex-row justify-between items-center gap-[67px] h-10 px-5"
-        style={{ marginTop: insets.top + 16 }}
-      >
-        <TouchableOpacity
-          onPress={() => router.back()}
-          className="items-center justify-center"
-          activeOpacity={0.7}
-        >
+      <View className="flex-row justify-between items-center gap-[67px] h-10 px-5" style={{ marginTop: insets.top + 16 }}>
+        <TouchableOpacity onPress={() => router.back()} className="items-center justify-center" activeOpacity={0.7}>
           <DropIcon />
         </TouchableOpacity>
-
-        {/* Page title */}
-        <Text className="text-white text-2xl font-medium font-inter tracking-tight">
-          Settings
-        </Text>
-
-        {/* Notification bell */}
-        <TouchableOpacity
-          className="w-10 h-10 items-center justify-center rounded-full border border-white"
-          activeOpacity={0.7}
-        >
+        <Text className="text-white text-2xl font-medium font-inter tracking-tight">Settings</Text>
+        <TouchableOpacity className="w-10 h-10 items-center justify-center rounded-full border border-white" activeOpacity={0.7}>
           <Feather name="bell" size={24} color="#FAFAFA" />
         </TouchableOpacity>
       </View>
 
-      <ScrollView
-        className="flex-1"
-        contentContainerClassName="pt-5 px-5 pb-5"
-        showsVerticalScrollIndicator={false}
-      >
+      <ScrollView className="flex-1" contentContainerClassName="pt-5 px-5 pb-5" showsVerticalScrollIndicator={false}>
+
         {/* Profile Card */}
         <SectionCard>
-          <Pressable
-            className="flex-row items-center justify-between p-6"
-            onPress={() => router.push("/(tabs)/my-profile" as any)}
-          >
+          <Pressable className="flex-row items-center justify-between p-6" onPress={() => router.push("/(tabs)/my-profile" as any)}>
             <View className="flex-row items-center gap-3">
-              <Image
-                source={require("@/assets/images/zuri.png")}
-                className="w-10 h-10 rounded-full"
-              />
+              <Image source={require("@/assets/images/zuri.png")} className="w-10 h-10 rounded-full" />
               <View className="gap-1">
-                <Text className="text-sm font-medium text-[#1E1E1E]">
-                  {user?.name ?? ""}
-                </Text>
-                <Text className="text-xs text-[#616161]">
-                  {user?.email ?? ""}
-                </Text>
+                <Text className="text-sm font-medium text-[#1E1E1E]">{user?.name ?? ""}</Text>
+                <Text className="text-xs text-[#616161]">{user?.email ?? ""}</Text>
               </View>
             </View>
             <Feather name="chevron-right" size={16} color="#666666" />
           </Pressable>
-
-            <View className="h-px bg-[#FFD6E8] mx-3" />
-
-            <Pressable
-              className="flex-row items-center justify-between px-3 py-6"
-              onPress={() => router.push("/(tabs)/invite-partner" as any)}
-            >
-              <View className="flex-row items-center gap-1">
-                <InviteIcon />
-                <Text className="text-sm text-[#1E1E1E] leading-[21px]">
-                  Invite my partner/friend
-                </Text>
-              </View>
-              <Feather name="chevron-right" size={16} color="#666666" />
-            </Pressable>
-          </SectionCard>
-        )}
+          <View className="h-px bg-[#FFD6E8] mx-3" />
+          <Pressable className="flex-row items-center justify-between px-3 py-6" onPress={() => router.push("/(tabs)/invite-partner" as any)}>
+            <View className="flex-row items-center gap-1">
+              <InviteIcon />
+              <Text className="text-sm text-[#1E1E1E] leading-[21px]">Invite my partner/friend</Text>
+            </View>
+            <Feather name="chevron-right" size={16} color="#666666" />
+          </Pressable>
+        </SectionCard>
 
         {/* Period Settings Card */}
         <SectionCard>
-          <SettingRow
-            icon={<PeriodIcon />}
-            label="Period length"
-            rightText={`${cycleProfile?.period_length ?? 5} days`}
-            onPress={() => router.push("/(tabs)/period-length-settings" as any)}
-          />
-          <SettingRow
-            icon={<CycleIcon />}
-            label="Cycle length"
-            rightText={`${cycleProfile?.cycle_length ?? 28} days`}
-            onPress={() => router.push("/(tabs)/cycle-length-settings" as any)}
-          />
-          <SettingRow
-            icon={<LutealIcon />}
-            label="Luteal phase length"
-            rightText={`${cycleProfile?.luteal_phase_length ?? 14} days`}
-            onPress={() => router.push("/(tabs)/luteal-phase-settings" as any)}
-            isLast
-          />
+          <SettingRow icon={<PeriodIcon />} label="Period length" onPress={() => router.push("/(tabs)/period-length-settings" as any)} />
+          <SettingRow icon={<CycleIcon />} label="Cycle length" onPress={() => router.push("/(tabs)/cycle-length-settings" as any)} />
+          <SettingRow icon={<LutealIcon />} label="Luteal phase length" onPress={() => router.push("/(tabs)/luteal-phase-settings" as any)} isLast />
         </SectionCard>
 
         {/* Reminders Card */}
         <SectionCard>
-          <SettingRow
-            icon={<ReminderIcon />}
-            label="Reminders"
-            onPress={() => router.push("/(tabs)/reminders" as any)}
-            isLast
-          />
+          <SettingRow icon={<ReminderIcon />} label="Reminders" onPress={() => router.push("/(tabs)/reminders" as any)} isLast />
         </SectionCard>
 
         {/* Personalization Card */}
         <SectionCard>
-          <SettingRow
-            icon={<SymptomsIcon />}
-            label="Symptoms"
-            onPress={() => router.push("/add-log/symptoms")}
-          />
-          <SettingRow
-            icon={<MoodsIcon />}
-            label="Moods"
-            onPress={() => router.push("/add-log/moods")}
-          />
-          <SettingRow
-            iconName="eye"
-            iconColor="#077845"
-            label="Theme"
-            onPress={() => setThemeModalVisible(true)}
-          />
-          <SettingRow
-            icon={<LanguageIcon />}
-            label="Language preferences"
-            onPress={() => router.push("/(tabs)/language-settings" as any)}
-            isLast
-          />
+          <SettingRow icon={<SymptomsIcon />} label="Symptoms" onPress={() => router.push("/add-log/symptoms")} />
+          <SettingRow icon={<MoodsIcon />} label="Moods" onPress={() => router.push("/add-log/moods")} />
+          <SettingRow iconName="eye" iconColor="#077845" label="Theme" onPress={() => setThemeModalVisible(true)} />
+          <SettingRow icon={<LanguageIcon />} label="Language preferences" onPress={() => router.push("/(tabs)/language-settings" as any)} isLast />
         </SectionCard>
 
         {/* Wallet Card */}
         <SectionCard>
-          <SettingRow
-            icon={<WalletIcon />}
-            label="Connect wallet"
-            onPress={() => router.push("/(tabs)/connect-wallet" as any)}
-            isLast
-          />
+          <SettingRow icon={<WalletIcon />} label="Connect wallet" onPress={() => router.push("/(tabs)/connect-wallet" as any)} isLast />
         </SectionCard>
 
         {/* Support & Legal Card */}
@@ -535,181 +383,70 @@ export default function SettingsScreen() {
           <SettingRow iconName="help-circle" iconColor="#C62828" label="FAQ" />
           <SettingRow icon={<ContactSupportIcon />} label="Contact support" />
           <SettingRow icon={<PrivacyIcon />} label="Privacy policy" />
-          <SettingRow
-            icon={<RateAppIcon />}
-            label="Rate app"
-            onPress={() => setRateAppModalVisible(true)}
-          />
-          <SettingRow
-            iconName="log-out"
-            iconColor="#C62828"
-            label="Log out"
-            onPress={() => setLogoutModalVisible(true)}
-            isLast
-          />
+          <SettingRow icon={<RateAppIcon />} label="Rate app" onPress={() => setRateAppModalVisible(true)} />
+          <SettingRow iconName="log-out" iconColor="#C62828" label="Log out" onPress={() => setLogoutModalVisible(true)} isLast />
         </SectionCard>
 
         {/* Delete Account */}
         <SectionCard>
-          <Pressable
-            className="flex-row items-center px-3 py-[14px] gap-1"
-            onPress={() => setDeleteModalVisible(true)}
-          >
+          <Pressable className="flex-row items-center px-3 py-[14px] gap-1" onPress={() => setDeleteModalVisible(true)}>
             <Feather name="trash-2" size={16} color="#FF0004" />
-            <Text className="text-sm text-[#1E1E1E] leading-[21px]">
-              Delete account
-            </Text>
+            <Text className="text-sm text-[#1E1E1E] leading-[21px]">Delete account</Text>
           </Pressable>
         </SectionCard>
 
-        {/* Version */}
-        <Text className="text-center text-xs text-white leading-[18px] mb-2">
-          version 1.0.5
-        </Text>
+        <Text className="text-center text-xs text-white leading-[18px] mb-2">version 1.0.5</Text>
       </ScrollView>
 
       <BottomNavigation activeTab={activeTab} onTabPress={handleTabPress} />
 
-      {/* Theme selection bottom sheet */}
-      <Modal
-        visible={themeModalVisible}
-        transparent
-        animationType="slide"
-        onRequestClose={() => setThemeModalVisible(false)}
-      >
-        {/* Dim overlay */}
-        <Pressable
-          className="flex-1 bg-black/50"
-          onPress={() => setThemeModalVisible(false)}
-        />
-
-        {/* Bottom sheet panel */}
-        <View
-          className="bg-[#FFE6EE] rounded-t-3xl"
-          style={{ paddingBottom: insets.bottom || 20 }}
-        >
-          {/* Drag handle */}
+      {/* Theme Modal */}
+      <Modal visible={themeModalVisible} transparent animationType="slide" onRequestClose={() => setThemeModalVisible(false)}>
+        <Pressable className="flex-1 bg-black/50" onPress={() => setThemeModalVisible(false)} />
+        <View className="bg-[#FFE6EE] rounded-t-3xl" style={{ paddingBottom: insets.bottom || 20 }}>
           <View className="w-10 h-[5px] bg-[#FF669A] rounded-full self-center mt-3 mb-4" />
-
-          {/* Title */}
-          <Text className="font-inter font-medium text-xl text-black text-center tracking-[-0.3px] mb-4">
-            Select Theme
-          </Text>
-
-          {/* Divider below title */}
+          <Text className="font-inter font-medium text-xl text-black text-center tracking-[-0.3px] mb-4">Select Theme</Text>
           <View className="h-px bg-[#FFB3CD]" />
-
-          {/* Options */}
           {THEME_OPTIONS.map((option) => (
-            <TouchableOpacity
-              key={option.id}
-              onPress={() => setSelectedTheme(option.id)}
-              className="flex-row items-center justify-between px-5 py-4 min-h-[70px]"
-              activeOpacity={0.7}
-            >
+            <TouchableOpacity key={option.id} onPress={() => setSelectedTheme(option.id)} className="flex-row items-center justify-between px-5 py-4 min-h-[70px]" activeOpacity={0.7}>
               <View className="flex-1 gap-1">
-                <Text className="font-inter text-base text-[#1E1E1E]">
-                  {option.label}
-                </Text>
-                <Text className="font-inter text-xs text-[#333333] opacity-80">
-                  {option.subtitle}
-                </Text>
+                <Text className="font-inter text-base text-[#1E1E1E]">{option.label}</Text>
+                <Text className="font-inter text-xs text-[#333333] opacity-80">{option.subtitle}</Text>
               </View>
-
-              {selectedTheme === option.id && (
-                <Feather name="check" size={18} color="#FF4081" />
-              )}
+              {selectedTheme === option.id && <Feather name="check" size={18} color="#FF4081" />}
             </TouchableOpacity>
           ))}
         </View>
       </Modal>
 
-      {/* Rate App modal */}
-      <Modal
-        visible={rateAppModalVisible}
-        transparent
-        animationType="slide"
-        onRequestClose={() => setRateAppModalVisible(false)}
-      >
+      {/* Rate App Modal */}
+      <Modal visible={rateAppModalVisible} transparent animationType="slide" onRequestClose={() => setRateAppModalVisible(false)}>
         <View className="flex-1">
-          {/* Blur overlay */}
           <BlurView intensity={10} tint="dark" className="flex-1">
-            <Pressable
-              className="flex-1"
-              onPress={() => setRateAppModalVisible(false)}
-            />
+            <Pressable className="flex-1" onPress={() => setRateAppModalVisible(false)} />
           </BlurView>
-
-          {/* Floating emoji circle + bottom sheet */}
           <View className="items-center">
-            {/* Emoji circle — overlaps the top of the sheet by 50px */}
-            <View
-              className="w-[100px] h-[100px] rounded-full bg-[#FFE6EE] items-center justify-center z-10"
-              style={{
-                marginBottom: -50,
-                shadowColor: "#000",
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: 0.1,
-                shadowRadius: 4,
-                elevation: 4,
-              }}
-            >
+            <View className="w-[100px] h-[100px] rounded-full bg-[#FFE6EE] items-center justify-center z-10" style={{ marginBottom: -50, elevation: 4 }}>
               <Text style={{ fontSize: 52 }}>😄</Text>
             </View>
-
-            {/* Sheet */}
-            <View
-              className="w-full bg-[#FFE6EE] rounded-t-3xl items-center"
-              style={{ paddingBottom: (insets.bottom || 0) + 32 }}
-            >
-              {/* Space for the 50px emoji overlap + breathing room */}
+            <View className="w-full bg-[#FFE6EE] rounded-t-3xl items-center" style={{ paddingBottom: (insets.bottom || 0) + 32 }}>
               <View className="h-20" />
-
-              {/* Title */}
-              <Text className="font-inter font-medium text-xl text-black tracking-[-0.3px] mb-4">
-                Rate App
-              </Text>
-
+              <Text className="font-inter font-medium text-xl text-black tracking-[-0.3px] mb-4">Rate App</Text>
               <View className="h-px bg-[#DBE2E8] w-full" />
-
-              {/* Description */}
-              <Text className="font-inter text-base text-[#222222] text-center mt-7 mb-7 px-5">
-                Empower us by rating the app
-              </Text>
-
-              {/* Stars */}
+              <Text className="font-inter text-base text-[#222222] text-center mt-7 mb-7 px-5">Empower us by rating the app</Text>
               <View className="flex-row gap-2 mb-9">
                 {[1, 2, 3, 4, 5].map((star) => (
-                  <TouchableOpacity
-                    key={star}
-                    onPress={() => setRating(star)}
-                    activeOpacity={0.7}
-                  >
+                  <TouchableOpacity key={star} onPress={() => setRating(star)} activeOpacity={0.7}>
                     <StarIcon filled={star <= rating} size={40} />
                   </TouchableOpacity>
                 ))}
               </View>
-
-              {/* Buttons */}
               <View className="flex-row gap-3 px-5 w-full mb-2">
-                <TouchableOpacity
-                  onPress={() => setRateAppModalVisible(false)}
-                  activeOpacity={0.8}
-                  className="flex-1 h-14 bg-[#FFF5F9] rounded-full items-center justify-center"
-                >
-                  <Text className="font-inter font-medium text-[15px] text-[#FF4081]">
-                    Later
-                  </Text>
+                <TouchableOpacity onPress={() => setRateAppModalVisible(false)} activeOpacity={0.8} className="flex-1 h-14 bg-[#FFF5F9] rounded-full items-center justify-center">
+                  <Text className="font-inter font-medium text-[15px] text-[#FF4081]">Later</Text>
                 </TouchableOpacity>
-
-                <TouchableOpacity
-                  onPress={() => setRateAppModalVisible(false)}
-                  activeOpacity={0.8}
-                  className="flex-1 h-14 bg-[#FF4081] rounded-full items-center justify-center"
-                >
-                  <Text className="font-inter font-medium text-[15px] text-white">
-                    Rate Now
-                  </Text>
+                <TouchableOpacity onPress={() => setRateAppModalVisible(false)} activeOpacity={0.8} className="flex-1 h-14 bg-[#FF4081] rounded-full items-center justify-center">
+                  <Text className="font-inter font-medium text-[15px] text-white">Rate Now</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -717,110 +454,42 @@ export default function SettingsScreen() {
         </View>
       </Modal>
 
-      {/* Logout confirmation modal */}
-      <Modal
-        visible={logoutModalVisible}
-        transparent
-        animationType="slide"
-        onRequestClose={() => setLogoutModalVisible(false)}
-      >
+      {/* Logout Modal */}
+      <Modal visible={logoutModalVisible} transparent animationType="slide" onRequestClose={() => setLogoutModalVisible(false)}>
         <View className="flex-1">
-          {/* Blur overlay */}
           <BlurView intensity={20} tint="dark" className="flex-1">
-            <Pressable
-              className="flex-1"
-              onPress={() => setLogoutModalVisible(false)}
-            />
+            <Pressable className="flex-1" onPress={() => setLogoutModalVisible(false)} />
           </BlurView>
-
-          {/* Bottom sheet */}
-          <View
-            className="bg-[#FFE6EE] rounded-t-3xl"
-            style={{ paddingBottom: (insets.bottom || 0) + 20 }}
-          >
-            {/* Drag handle */}
+          <View className="bg-[#FFE6EE] rounded-t-3xl" style={{ paddingBottom: (insets.bottom || 0) + 20 }}>
             <View className="w-10 h-[5px] bg-[#FF669A] rounded-full self-center mt-4 mb-6" />
-
-            {/* Title */}
-            <Text className="font-inter font-medium text-xl leading-6 tracking-[-0.3px] text-black text-center mb-6">
-              Log Out
-            </Text>
-
-            {/* Divider */}
+            <Text className="font-inter font-medium text-xl leading-6 tracking-[-0.3px] text-black text-center mb-6">Log Out</Text>
             <View className="h-px bg-[#FFB3CD]" />
-
-            {/* Confirmation text */}
-            <Text className="font-inter text-base leading-[19px] text-[#222222] text-center mt-5 mb-[50px]">
-              Are you sure you want to log out?
-            </Text>
-
-            {/* Buttons */}
+            <Text className="font-inter text-base leading-[19px] text-[#222222] text-center mt-5 mb-[50px]">Are you sure you want to log out?</Text>
             <View className="flex-row gap-3 px-5">
-              <TouchableOpacity
-                onPress={() => setLogoutModalVisible(false)}
-                activeOpacity={0.8}
-                className="flex-1 h-[50px] bg-[#FFF5F9] rounded-full items-center justify-center"
-              >
-                <Text className="font-inter font-medium text-[15px] text-[#FF4081]">
-                  Cancel
-                </Text>
+              <TouchableOpacity onPress={() => setLogoutModalVisible(false)} activeOpacity={0.8} className="flex-1 h-[50px] bg-[#FFF5F9] rounded-full items-center justify-center">
+                <Text className="font-inter font-medium text-[15px] text-[#FF4081]">Cancel</Text>
               </TouchableOpacity>
-
-              <TouchableOpacity
-                onPress={handleLogout}
-                onPress={handleLogout}
-                activeOpacity={0.8}
-                className="flex-1 h-[50px] bg-[#FF4081] rounded-full items-center justify-center"
-              >
-                <Text className="font-inter font-medium text-[15px] text-white">
-                  Yes, Logout
-                </Text>
+              <TouchableOpacity onPress={handleLogout} activeOpacity={0.8} className="flex-1 h-[50px] bg-[#FF4081] rounded-full items-center justify-center">
+                <Text className="font-inter font-medium text-[15px] text-white">Yes, Logout</Text>
               </TouchableOpacity>
             </View>
           </View>
         </View>
       </Modal>
 
-      {/* Delete Account confirmation modal */}
-      <Modal
-        visible={deleteModalVisible}
-        transparent
-        animationType="slide"
-        onRequestClose={() => { setDeleteModalVisible(false); setDeletePassword(""); }}
-      >
+      {/* Delete Account Modal */}
+      <Modal visible={deleteModalVisible} transparent animationType="slide" onRequestClose={() => { setDeleteModalVisible(false); setDeletePassword(""); }}>
         <View className="flex-1">
-          {/* Blur overlay */}
           <BlurView intensity={20} tint="dark" className="flex-1">
-            <Pressable
-              className="flex-1"
-              onPress={() => setDeleteModalVisible(false)}
-            />
+            <Pressable className="flex-1" onPress={() => setDeleteModalVisible(false)} />
           </BlurView>
-
-          {/* Bottom sheet */}
-          <View
-            className="bg-[#FFE6EE] rounded-t-3xl"
-            style={{ paddingBottom: (insets.bottom || 0) + 20 }}
-          >
-            {/* Drag handle */}
+          <View className="bg-[#FFE6EE] rounded-t-3xl" style={{ paddingBottom: (insets.bottom || 0) + 20 }}>
             <View className="w-10 h-[5px] bg-[#FF669A] rounded-full self-center mt-4 mb-6" />
-
-            {/* Title */}
-            <Text className="font-inter font-medium text-xl leading-6 tracking-[-0.3px] text-black text-center mb-6">
-              Delete Account
-            </Text>
-
-            {/* Divider */}
+            <Text className="font-inter font-medium text-xl leading-6 tracking-[-0.3px] text-black text-center mb-6">Delete Account</Text>
             <View className="h-px bg-[#FFB3CD]" />
-
-            {/* Warning text */}
             <Text className="font-inter text-base leading-6 text-[#222222] text-center mt-5 mb-5 px-12">
-            <Text className="font-inter text-base leading-6 text-[#222222] text-center mt-5 mb-5 px-12">
-              Are you sure you want to delete this account? All data will be
-              accessible for only 30 days after confirmation.
+              Are you sure you want to delete this account? All data will be accessible for only 30 days after confirmation.
             </Text>
-
-            {/* Password confirmation */}
             <View className="px-5 mb-8">
               <TextInput
                 value={deletePassword}
@@ -831,40 +500,12 @@ export default function SettingsScreen() {
                 className="bg-[#FFE0EB] rounded-xl px-4 h-12 text-sm text-[#1E1E1E]"
               />
             </View>
-
-            {/* Password confirmation */}
-            <View className="px-5 mb-8">
-              <TextInput
-                value={deletePassword}
-                onChangeText={setDeletePassword}
-                placeholder="Enter your password to confirm"
-                placeholderTextColor="#999"
-                secureTextEntry
-                className="bg-[#FFE0EB] rounded-xl px-4 h-12 text-sm text-[#1E1E1E]"
-              />
-            </View>
-
-            {/* Buttons */}
             <View className="flex-row gap-3 px-5">
-              <TouchableOpacity
-                onPress={() => { setDeleteModalVisible(false); setDeletePassword(""); }}
-                activeOpacity={0.8}
-                className="flex-1 h-[50px] bg-[#FFF5F9] rounded-full items-center justify-center"
-              >
-                <Text className="font-inter font-medium text-[15px] text-[#FF4081]">
-                  Cancel
-                </Text>
+              <TouchableOpacity onPress={() => { setDeleteModalVisible(false); setDeletePassword(""); }} activeOpacity={0.8} className="flex-1 h-[50px] bg-[#FFF5F9] rounded-full items-center justify-center">
+                <Text className="font-inter font-medium text-[15px] text-[#FF4081]">Cancel</Text>
               </TouchableOpacity>
-
-              <TouchableOpacity
-                onPress={handleDeleteAccount}
-                onPress={handleDeleteAccount}
-                activeOpacity={0.8}
-                className="flex-1 h-[50px] bg-[#C62828] rounded-full items-center justify-center"
-              >
-                <Text className="font-inter font-medium text-[15px] text-white">
-                  Yes, Delete
-                </Text>
+              <TouchableOpacity onPress={handleDeleteAccount} activeOpacity={0.8} className="flex-1 h-[50px] bg-[#C62828] rounded-full items-center justify-center">
+                <Text className="font-inter font-medium text-[15px] text-white">Yes, Delete</Text>
               </TouchableOpacity>
             </View>
           </View>
