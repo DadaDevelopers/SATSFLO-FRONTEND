@@ -13,7 +13,6 @@ import Svg, {
 
 /* ---------------- types ---------------- */
 
-type CyclePhase = 'menstrual' | 'follicular' | 'ovulation' | 'luteal';
 
 interface CycleWheelProps {
   currentDay: number;
@@ -78,13 +77,6 @@ export function CycleWheel({
   const ovulationEnd = ovulationStart + OVULATION_LENGTH;
   const follicularEnd = ovulationStart - 1;
 
-  const getPhaseForDay = (day: number): CyclePhase => {
-    if (day <= menstrualEnd) return 'menstrual';
-    if (day <= follicularEnd) return 'follicular';
-    if (day <= ovulationEnd) return 'ovulation';
-    return 'luteal';
-  };
-
   const createPhaseArc = (startDay: number, endDay: number) => {
     const startAngle = ((startDay - 1) / cycleLength) * 360 - 90;
     const endAngle = (endDay / cycleLength) * 360 - 90;
@@ -120,8 +112,8 @@ export function CycleWheel({
           </LinearGradient>
 
           <LinearGradient id="lutealGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <Stop offset="0%" stopColor="#F0F0F1" />
-            <Stop offset="100%" stopColor="#70A9FE" />
+            <Stop offset="0%" stopColor="#F7D5FF" />
+            <Stop offset="100%" stopColor="#C07FD4" />
           </LinearGradient>
         </Defs>
 
