@@ -68,7 +68,9 @@ export default function SendGiftAmountScreen() {
     return Math.round(satsEquivalent).toLocaleString();
   };
 
-  const handleProceed = () => {
+  const [validating] = useState(false);
+
+  const handleProceed = async () => {
     if (!destination || !amount) {
       Alert.alert(
         "Required Fields",
@@ -280,6 +282,7 @@ export default function SendGiftAmountScreen() {
       >
         <Pressable
           onPress={handleProceed}
+          disabled={validating}
           className="w-[250px] py-4 bg-[#FF82AD] rounded-full items-center justify-center active:opacity-80 border-[0.5px] border-[#FF669A] mb-5"
         >
           <Text className="text-white font-inter font-medium text-[15px]">

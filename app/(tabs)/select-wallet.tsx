@@ -1,7 +1,9 @@
+import { api } from '@/lib/api';
 import { Feather } from '@expo/vector-icons';
-import { router } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { router, useLocalSearchParams } from 'expo-router';
 import React, { useState } from 'react';
-import { Image, Pressable, Text, View } from 'react-native';
+import { Alert, Image, Pressable, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 type WalletType = 'blink' | 'walletOfSatoshi' | null;
@@ -28,6 +30,12 @@ const wallets: Wallet[] = [
 export default function SelectWalletScreen() {
   const insets = useSafeAreaInsets();
   const [selectedWallet, setSelectedWallet] = useState<WalletType>(null);
+  const [sending, setSending] = useState(false);
+  const { lightning_address, amount_sats, note } = useLocalSearchParams<{
+    lightning_address: string;
+    amount_sats: string;
+    note: string;
+  }>();
 
   const handleBack = () => {
     if (router.canGoBack()) {
@@ -35,12 +43,35 @@ export default function SelectWalletScreen() {
     }
   };
 
-  const handleProceed = () => {
+  const handleProceed = async () => {
     if (!selectedWallet) {
-      console.log('Please select a wallet');
+      Alert.alert('Select Wallet', 'Please select a wallet to continue.');
       return;
     }
-    console.log('Selected wallet:', selectedWallet);
+    setSending(true);
+    try {
+      const token = await AsyncStorage.getItem('accessToken');
+      if (token && lightning_address && amount_sats) {
+        const { response, data } = await api.post(
+          '/payments/tip',
+          {
+            lightning_address,
+            amount_sats: parseInt(amount_sats, 10),
+            note: note || '',
+          },
+          token
+        );
+        if (!response.ok) {
+          Alert.alert('Payment Failed', data?.message || 'Could not send payment. Please try again.');
+          return;
+        }
+      }
+    } catch {
+      Alert.alert('Error', 'Payment failed. Please try again.');
+      return;
+    } finally {
+      setSending(false);
+    }
     router.push('/(tabs)/success-sent');
   };
 
@@ -96,10 +127,11 @@ export default function SelectWalletScreen() {
       <View className="items-center pb-0" style={{ paddingBottom: insets.bottom }}>
         <Pressable
           onPress={handleProceed}
+          disabled={sending}
           className="w-[250px] py-4 bg-[#FF82AD] rounded-full items-center justify-center active:opacity-80 border-[0.5px] border-[#FF669A] mb-5"
         >
           <Text className="text-white font-inter font-medium text-[15px]">
-            Proceed
+            {sending ? 'Sending...' : 'Proceed'}
           </Text>
         </Pressable>
         <View className="w-full h-[34px] bg-[#FF3378] items-center justify-center">

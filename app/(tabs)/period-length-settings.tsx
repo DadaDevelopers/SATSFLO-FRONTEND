@@ -1,8 +1,10 @@
 import { DayPicker } from "@/components/signup/day-picker";
 import { HomeIndicatorArea } from "@/components/signup/home-indicator-area";
+import { api } from "@/lib/api";
 import { Feather } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Alert, StatusBar, Text, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -11,11 +13,45 @@ const PERIOD_LENGTH_OPTIONS = Array.from({ length: 7 }, (_, i) => i + 3); // 3â€
 export default function PeriodLengthSettingsScreen() {
   const insets = useSafeAreaInsets();
   const [selectedLength, setSelectedLength] = useState(5);
+  const [saving, setSaving] = useState(false);
 
-  const handleSave = () => {
-    Alert.alert("Saved", `Period length set to ${selectedLength} days.`, [
-      { text: "OK", onPress: () => router.push("/(tabs)/settings" as any) },
-    ]);
+  useEffect(() => {
+    const loadProfile = async () => {
+      const token = await AsyncStorage.getItem("accessToken");
+      if (!token) return;
+      try {
+        const { response, data } = await api.get("/cycle-profile", token);
+        if (response.ok) {
+          const profile = data?.data ?? data;
+          if (profile?.period_length) setSelectedLength(profile.period_length);
+        }
+      } catch {}
+    };
+    loadProfile();
+  }, []);
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      const token = await AsyncStorage.getItem("accessToken");
+      if (token) {
+        const { response, data } = await api.put(
+          "/cycle-profile",
+          { period_length: selectedLength },
+          token
+        );
+        if (!response.ok) {
+          Alert.alert("Error", data?.message || "Failed to save.");
+          return;
+        }
+      }
+    } catch {
+      Alert.alert("Error", "Could not save. Please try again.");
+      return;
+    } finally {
+      setSaving(false);
+    }
+    router.push("/(tabs)/settings" as any);
   };
 
   return (
@@ -67,7 +103,7 @@ export default function PeriodLengthSettingsScreen() {
           }}
         >
           <Text style={{ color: "#fff", fontWeight: "500", fontSize: 15 }}>
-            Save
+            {saving ? "Saving..." : "Save"}
           </Text>
         </TouchableOpacity>
       </View>
