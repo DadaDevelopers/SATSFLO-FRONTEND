@@ -52,7 +52,11 @@ export default function OtpVerificationScreen() {
       });
       console.log("Verify OTP response:", data);
       if (response.ok) {
-        const token = data?.data?.reset_token ?? data?.reset_token ?? data?.data?.token ?? data?.token;
+        const token =
+          data?.data?.reset_token ??
+          data?.reset_token ??
+          data?.data?.token ??
+          data?.token;
         setStatusMessage({ text: "OTP verified!", type: "success" });
         setTimeout(() => {
           router.push({
@@ -139,7 +143,7 @@ export default function OtpVerificationScreen() {
                 <Text
                   className={cn(
                     "text-sm font-normal text-[#FAFAFA]",
-                    canResend && "font-semibold underline"
+                    canResend && "font-semibold underline",
                   )}
                 >
                   {canResend ? "Resend code" : `Resend code in ${countdown}s`}

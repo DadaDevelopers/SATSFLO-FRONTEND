@@ -40,18 +40,16 @@ export default function SendGiftTokenScreen() {
   };
 
   return (
-    <View className="flex-1 bg-[#FF4081]">
+    <View className="flex-1 bg-[#FF4081]" style={{ paddingTop: insets.top }}>
       {/* Header */}
-      <View className="flex-row items-center px-5 py-6 gap-[85px]">
+      <View className="flex-row items-center px-5 py-6">
         <Pressable onPress={handleBack} className="p-1">
           <Feather name="arrow-left" size={24} color="#FAFAFA" />
         </Pressable>
-        <Text className="text-xl font-inter font-medium text-white tracking-tight">
+        <Text className="flex-1 text-center text-xl font-inter font-medium text-white tracking-tight">
           Send Gift token
         </Text>
-        <View className="w-6 h-6 opacity-0">
-          <Feather name="calendar" size={24} color="#666666" />
-        </View>
+        <View className="w-8 h-6" />
       </View>
 
       {/* Instruction Text */}

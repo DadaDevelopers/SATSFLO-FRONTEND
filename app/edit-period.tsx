@@ -4,10 +4,6 @@ import React, { useState } from 'react';
 import { Pressable, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-interface DateInfo {
-  day: number;
-  isSelected: boolean;
-}
 
 export default function EditPeriodScreen() {
   const insets = useSafeAreaInsets();

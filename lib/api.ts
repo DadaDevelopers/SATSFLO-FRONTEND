@@ -3,11 +3,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 const BASE_URL = "https://satsflo-backend.onrender.com/api/v1";
 
 export const api = {
-  post: async (
-    path: string,
-    body: Record<string, unknown>,
-    token?: string
-  ) => {
+  post: async (path: string, body: Record<string, unknown>, token?: string) => {
     const headers: Record<string, string> = {
       "Content-Type": "application/json",
     };
@@ -21,11 +17,7 @@ export const api = {
     return { response, data };
   },
 
-  put: async (
-    path: string,
-    body: Record<string, unknown>,
-    token?: string
-  ) => {
+  put: async (path: string, body: Record<string, unknown>, token?: string) => {
     const headers: Record<string, string> = {
       "Content-Type": "application/json",
     };
@@ -50,7 +42,7 @@ export const api = {
   delete: async (
     path: string,
     body?: Record<string, unknown>,
-    token?: string
+    token?: string,
   ) => {
     const headers: Record<string, string> = {
       "Content-Type": "application/json",

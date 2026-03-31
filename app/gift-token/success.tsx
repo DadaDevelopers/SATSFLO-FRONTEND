@@ -1,13 +1,13 @@
-import React from 'react';
+import { useLocalSearchParams, useRouter } from "expo-router";
+import React from "react";
 import {
-  View,
   Text,
   TouchableOpacity,
   useWindowDimensions,
-} from 'react-native';
-import { useRouter, useLocalSearchParams } from 'expo-router';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Svg, { Path, Circle } from 'react-native-svg';
+  View,
+} from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import Svg, { Circle, Path } from "react-native-svg";
 
 const MAX_CONTENT_WIDTH = 480;
 
@@ -29,7 +29,7 @@ const SuccessCheckIcon = () => (
 export default function SuccessScreen() {
   const router = useRouter();
   const params = useLocalSearchParams<{
-    action?: 'send' | 'receive';
+    action?: "send" | "receive";
     wallet?: string;
     category?: string;
     satsEquivalent?: string;
@@ -39,40 +39,45 @@ export default function SuccessScreen() {
   const isDesktop = screenWidth > MAX_CONTENT_WIDTH;
 
   // Determine action type (default to receive for backward compatibility)
-  const action = params.action || 'receive';
+  const action = params.action || "receive";
 
   // Get wallet name for display
-  const walletName = params.wallet === 'blink' ? 'Blink' : 'Wallet of Satoshi';
+  const walletName = params.wallet === "blink" ? "Blink" : "Wallet of Satoshi";
 
   // Use satsEquivalent from params or default for receive flow
-  const satsAmount = params.satsEquivalent || '10,009';
+  const satsAmount = params.satsEquivalent || "10,009";
 
   const handleGoHome = () => {
     // Navigate to home and reset the gift token stack
-    router.replace('/(tabs)');
+    router.replace("/(tabs)");
   };
 
   // Success message based on action
-  const successMessage = action === 'send'
-    ? 'Your SATS was sent successfully!!!'
-    : `Your ${walletName} wallet was credited with ${satsAmount} SATS`;
+  const successMessage =
+    action === "send"
+      ? "Your SATS was sent successfully!!!"
+      : `Your ${walletName} wallet was credited with ${satsAmount} SATS`;
 
   return (
     <View
       className="flex-1"
       style={{
-        backgroundColor: '#FF4081',
+        backgroundColor: "#FF4081",
         paddingTop: insets.top,
       }}
     >
       {/* Desktop wrapper */}
       <View
         className="flex-1"
-        style={isDesktop ? {
-          maxWidth: MAX_CONTENT_WIDTH,
-          width: '100%',
-          alignSelf: 'center',
-        } : undefined}
+        style={
+          isDesktop
+            ? {
+                maxWidth: MAX_CONTENT_WIDTH,
+                width: "100%",
+                alignSelf: "center",
+              }
+            : undefined
+        }
       >
         {/* Content - Centered */}
         <View className="flex-1 items-center justify-center px-4">
@@ -88,13 +93,34 @@ export default function SuccessScreen() {
         </View>
 
         {/* Go to Homepage Button */}
-        <View className="px-4 pb-8" style={{ paddingBottom: insets.bottom + 32 }}>
+        <View
+          className="items-center"
+          style={{ paddingBottom: insets.bottom + 32 }}
+        >
           <TouchableOpacity
             onPress={handleGoHome}
-            className="py-4 rounded-full items-center"
-            style={{ backgroundColor: '#FFB6C1' }}
+            style={{
+              width: 250,
+              height: 50,
+              backgroundColor: "#FF82AD",
+              borderWidth: 0.5,
+              borderColor: "#FF669A",
+              borderRadius: 1000,
+              alignItems: "center",
+              justifyContent: "center",
+            }}
           >
-            <Text className="text-white text-base font-semibold">Go to Homepage</Text>
+            <Text
+              style={{
+                color: "#FFFFFF",
+                fontSize: 15,
+                fontWeight: "500",
+                lineHeight: 18,
+                textAlign: "center",
+              }}
+            >
+              Go to Homepage
+            </Text>
           </TouchableOpacity>
         </View>
       </View>
