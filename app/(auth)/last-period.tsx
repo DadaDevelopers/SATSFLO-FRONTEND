@@ -7,7 +7,7 @@ import { api } from "@/lib/api";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useState } from "react";
-import { ScrollView, useWindowDimensions, View } from "react-native";
+import { Alert, ScrollView, useWindowDimensions, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const MAX_CONTENT_WIDTH = 480;
@@ -34,28 +34,42 @@ export default function LastPeriodScreen() {
     const dateStr = selectedDate.toISOString().split("T")[0];
     try {
       const token = await AsyncStorage.getItem("accessToken");
-      if (token) {
-        if (editing) {
-          await api.put(
-            "/cycle-profile",
-            { last_period_start: dateStr },
-            token
-          );
-        } else {
-          await api.post(
-            "/cycle-profile",
-            {
-              last_period_start: dateStr,
-              cycle_length: Number(cycleLength) || 28,
-              period_length: Number(periodLength) || 5,
-              luteal_phase_length: 14,
-              ignore_irregular_cycle: false,
-            },
-            token
-          );
-        }
+      if (!token) {
+        Alert.alert("Error", "Not authenticated. Please log in again.");
+        setLoading(false);
+        return;
       }
-    } catch {}
+      let response, data;
+      if (editing) {
+        ({ response, data } = await api.put(
+          "/cycle-profile",
+          { last_period_start: dateStr },
+          token
+        ));
+      } else {
+        ({ response, data } = await api.post(
+          "/cycle-profile",
+          {
+            last_period_start: dateStr,
+            cycle_length: Number(cycleLength) || 28,
+            period_length: Number(periodLength) || 5,
+            luteal_phase_length: 14,
+            ignore_irregular_cycle: false,
+          },
+          token
+        ));
+      }
+      if (!response.ok) {
+        const msg = data?.message ?? data?.error ?? `Server error (${response.status})`;
+        Alert.alert("Save failed", msg);
+        setLoading(false);
+        return;
+      }
+    } catch (err: any) {
+      Alert.alert("Network error", err?.message ?? "Could not reach the server.");
+      setLoading(false);
+      return;
+    }
     setLoading(false);
     if (editing) {
       router.back();
