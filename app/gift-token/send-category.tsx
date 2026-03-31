@@ -1,13 +1,16 @@
-import React, { useState } from 'react';
+import { useRouter } from "expo-router";
+import React, { useState } from "react";
 import {
-  View,
   Text,
   TouchableOpacity,
   useWindowDimensions,
-} from 'react-native';
-import { useRouter } from 'expo-router';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Svg, { Path, Circle } from 'react-native-svg';
+  View,
+} from "react-native";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
+import Svg, { Circle, Path } from "react-native-svg";
 
 const MAX_CONTENT_WIDTH = 480;
 
@@ -28,18 +31,38 @@ const BackIcon = () => (
 // Radio button icons
 const RadioSelected = () => (
   <Svg width={20} height={20} viewBox="0 0 20 20">
-    <Circle cx="10" cy="10" r="9" stroke="#FFFFFF" strokeWidth={2} fill="none" />
+    <Circle
+      cx="10"
+      cy="10"
+      r="9"
+      stroke="#FFFFFF"
+      strokeWidth={2}
+      fill="none"
+    />
     <Circle cx="10" cy="10" r="5" fill="#FFFFFF" />
   </Svg>
 );
 
 const RadioUnselected = () => (
   <Svg width={20} height={20} viewBox="0 0 20 20">
-    <Circle cx="10" cy="10" r="9" stroke="#FFFFFF" strokeWidth={2} fill="none" />
+    <Circle
+      cx="10"
+      cy="10"
+      r="9"
+      stroke="#FFFFFF"
+      strokeWidth={2}
+      fill="none"
+    />
   </Svg>
 );
 
-type GiftCategory = 'flowers' | 'sweets' | 'cookies' | 'chocolates' | 'others' | null;
+type GiftCategory =
+  | "flowers"
+  | "sweets"
+  | "cookies"
+  | "chocolates"
+  | "others"
+  | null;
 
 interface CategoryOption {
   id: GiftCategory;
@@ -48,11 +71,11 @@ interface CategoryOption {
 }
 
 const categories: CategoryOption[] = [
-  { id: 'flowers', label: 'Flowers', price: '$10' },
-  { id: 'sweets', label: 'Sweets', price: '$10' },
-  { id: 'cookies', label: 'Cookies', price: '$10' },
-  { id: 'chocolates', label: 'Chocolates', price: '$10' },
-  { id: 'others', label: 'Others', price: '$10' },
+  { id: "flowers", label: "Flowers", price: "$10" },
+  { id: "sweets", label: "Sweets", price: "$10" },
+  { id: "cookies", label: "Cookies", price: "$10" },
+  { id: "chocolates", label: "Chocolates", price: "$10" },
+  { id: "others", label: "Others", price: "$10" },
 ];
 
 export default function SendCategoryScreen() {
@@ -61,42 +84,42 @@ export default function SendCategoryScreen() {
   const { width: screenWidth } = useWindowDimensions();
   const isDesktop = screenWidth > MAX_CONTENT_WIDTH;
 
-  const [selectedCategory, setSelectedCategory] = useState<GiftCategory>('flowers');
+  const [selectedCategory, setSelectedCategory] =
+    useState<GiftCategory>("flowers");
 
   const handleProceed = () => {
     if (selectedCategory) {
       router.push({
-        pathname: '/gift-token/send-amount',
+        pathname: "/gift-token/send-amount",
         params: { category: selectedCategory },
       });
     }
   };
 
   return (
-    <View
-      className="flex-1"
-      style={{
-        backgroundColor: '#FF4081',
-        paddingTop: insets.top,
-      }}
-    >
+    <SafeAreaView className="flex-1" style={{ backgroundColor: "#FF4081" }}>
       {/* Desktop wrapper */}
       <View
         className="flex-1"
-        style={isDesktop ? {
-          maxWidth: MAX_CONTENT_WIDTH,
-          width: '100%',
-          alignSelf: 'center',
-        } : undefined}
+        style={
+          isDesktop
+            ? {
+                maxWidth: MAX_CONTENT_WIDTH,
+                width: "100%",
+                alignSelf: "center",
+              }
+            : undefined
+        }
       >
         {/* Header */}
         <View className="flex-row items-center px-4 py-4">
           <TouchableOpacity onPress={() => router.back()} className="p-2 -ml-2">
             <BackIcon />
           </TouchableOpacity>
-          <Text className="flex-1 text-center text-white text-xl font-semibold mr-8">
+          <Text className="flex-1 text-center text-white text-xl font-semibold">
             Send Gift token
           </Text>
+          <View className="w-8 h-6" />
         </View>
 
         {/* Content */}
@@ -112,10 +135,14 @@ export default function SendCategoryScreen() {
               onPress={() => setSelectedCategory(category.id)}
               className="rounded-xl mb-4 px-4 py-5 flex-row items-center"
               style={{
-                backgroundColor: '#FF6B9D',
+                backgroundColor: "#FF6B9D",
               }}
             >
-              {selectedCategory === category.id ? <RadioSelected /> : <RadioUnselected />}
+              {selectedCategory === category.id ? (
+                <RadioSelected />
+              ) : (
+                <RadioUnselected />
+              )}
               <Text className="text-white text-base font-medium ml-3 flex-1">
                 {category.label}
               </Text>
@@ -127,13 +154,16 @@ export default function SendCategoryScreen() {
         </View>
 
         {/* Proceed Button */}
-        <View className="px-4 pb-8" style={{ paddingBottom: insets.bottom + 32 }}>
+        <View
+          className="px-4 pb-8"
+          style={{ paddingBottom: insets.bottom + 30 }}
+        >
           <TouchableOpacity
             onPress={handleProceed}
             disabled={!selectedCategory}
             className="py-4 rounded-full items-center"
             style={{
-              backgroundColor: selectedCategory ? '#FFB6C1' : '#FF8FAB',
+              backgroundColor: selectedCategory ? "#FFB6C1" : "#FF8FAB",
               opacity: selectedCategory ? 1 : 0.7,
             }}
           >
@@ -141,6 +171,6 @@ export default function SendCategoryScreen() {
           </TouchableOpacity>
         </View>
       </View>
-    </View>
+    </SafeAreaView>
   );
 }

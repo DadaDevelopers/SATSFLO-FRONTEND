@@ -83,7 +83,7 @@ export default function SendGiftAmountScreen() {
   };
 
   return (
-    <View className="flex-1 bg-[#FF4081]">
+    <View className="flex-1 bg-[#FF4081]" style={{ paddingTop: insets.top }}>
       {/* Header */}
       <View className="flex-row items-center justify-between px-5 py-6">
         <Pressable onPress={handleBack} className="p-1">

@@ -9,7 +9,7 @@ import {
   useWindowDimensions,
   View,
 } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import Svg, { Path } from "react-native-svg";
 
 const MAX_CONTENT_WIDTH = 480;
@@ -175,12 +175,9 @@ export default function SendAmountScreen() {
   };
 
   return (
-    <View
+    <SafeAreaView
       className="flex-1"
-      style={{
-        backgroundColor: "#FF4081",
-        paddingTop: insets.top,
-      }}
+      style={{ backgroundColor: "#FF4081" }}
     >
       {/* Desktop wrapper */}
       <View
@@ -200,9 +197,10 @@ export default function SendAmountScreen() {
           <TouchableOpacity onPress={() => router.back()} className="p-2 -ml-2">
             <BackIcon />
           </TouchableOpacity>
-          <Text className="flex-1 text-center text-white text-xl font-semibold mr-8">
+          <Text className="flex-1 text-center text-white text-xl font-semibold">
             Send Gift token
           </Text>
+          <View className="w-8 h-6" />
         </View>
 
         {/* Content */}
@@ -355,6 +353,6 @@ export default function SendAmountScreen() {
           </TouchableOpacity>
         </View>
       </View>
-    </View>
+    </SafeAreaView>
   );
 }
