@@ -59,6 +59,7 @@ export default function HomeScreen() {
     currentDay: 1,
     cycleLength: 28,
     periodLength: 5,
+    ovulationDay: 14,
     daysUntilPeriod: 0,
     currentDate: formatCurrentDate(today),
   });
@@ -68,6 +69,7 @@ export default function HomeScreen() {
       const token = await AsyncStorage.getItem("accessToken");
       if (!token) return;
       try {
+        // Try GET /cycles/current first
         const { response, data } = await api.get("/cycles/current", token);
         if (response.ok) {
           const d = data?.data ?? data;
@@ -75,18 +77,25 @@ export default function HomeScreen() {
             currentDay: d?.current_day ?? 1,
             cycleLength: d?.cycle_length ?? 28,
             periodLength: d?.period_length ?? 5,
-            daysUntilPeriod: d?.days_until_next_period ?? 0,
+            ovulationDay: d?.ovulation_day ?? 14,
+            daysUntilPeriod: d?.days_until_next_period ?? d?.days_until_period ?? 0,
             currentDate: formatCurrentDate(today),
           });
         } else {
-          // fallback to cycle-profile
+          // Fallback to GET /cycle-profile
           const { response: r2, data: d2 } = await api.get("/cycle-profile", token);
           if (r2.ok) {
             const p = d2?.data ?? d2;
+            const cl = p?.cycle_length ?? 28;
+            const pl = p?.period_length ?? 5;
+            const ovDay = p?.ovulation_day ?? Math.max(pl + 2, cl - 14);
             setCycleData((prev) => ({
               ...prev,
-              cycleLength: p?.cycle_length ?? prev.cycleLength,
-              periodLength: p?.period_length ?? prev.periodLength,
+              cycleLength: cl,
+              periodLength: pl,
+              ovulationDay: ovDay,
+              daysUntilPeriod: p?.days_until_period ?? p?.days_until_next_period ?? prev.daysUntilPeriod,
+              currentDay: p?.current_day ?? prev.currentDay,
             }));
           }
         }
@@ -162,6 +171,8 @@ export default function HomeScreen() {
           <CycleTracker
             currentDay={cycleData.currentDay}
             cycleLength={cycleData.cycleLength}
+            periodLength={cycleData.periodLength}
+            ovulationDay={cycleData.ovulationDay}
             size={trackerSize}
           />
           {/* Center overlay: date, countdown, edit button */}

@@ -7,7 +7,7 @@ import { api } from "@/lib/api";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useState } from "react";
-import { ScrollView, Text, useWindowDimensions, View } from "react-native";
+import { Alert, ScrollView, useWindowDimensions, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const MAX_CONTENT_WIDTH = 480;
@@ -35,7 +35,10 @@ export default function LastPeriodScreen() {
   const handleFinish = async () => {
     // Validation
     if (!selectedDate) {
-      setStatusMessage({ text: "Please select your last period start date.", type: "error" });
+      setStatusMessage({
+        text: "Please select your last period start date.",
+        type: "error",
+      });
       return;
     }
 
@@ -44,75 +47,51 @@ export default function LastPeriodScreen() {
 
     try {
       const token = await AsyncStorage.getItem("accessToken");
-
       if (!token) {
-        setStatusMessage({ text: "You are not logged in. Please sign in again.", type: "error" });
+        Alert.alert("Error", "Not authenticated. Please log in again.");
         setLoading(false);
         return;
       }
-
-      const dateStr = selectedDate.toISOString().split("T")[0];
-
+      let response, data;
       if (editing) {
-        const { response, data } = await api.put(
+        ({ response, data } = await api.put(
           "/cycle-profile",
           { last_period_start: dateStr },
-          token
-        );
-        if (!response.ok) {
-          const message = data?.message || data?.error || "Failed to update. Please try again.";
-          setStatusMessage({ text: message, type: "error" });
-          setLoading(false);
-          return;
-        }
+          token,
+        ));
       } else {
-        const cycleLengthNum = Number(cycleLength);
-        const periodLengthNum = Number(periodLength);
-
-        if (!cycleLengthNum || cycleLengthNum < 21 || cycleLengthNum > 35) {
-          setStatusMessage({ text: "Invalid cycle length. Please go back and select a valid value.", type: "error" });
-          setLoading(false);
-          return;
-        }
-        if (!periodLengthNum || periodLengthNum < 3 || periodLengthNum > 9) {
-          setStatusMessage({ text: "Invalid period length. Please go back and select a valid value.", type: "error" });
-          setLoading(false);
-          return;
-        }
-
-        const { response, data } = await api.post(
+        ({ response, data } = await api.post(
           "/cycle-profile",
           {
-            cycle_length: cycleLengthNum,
-            period_length: periodLengthNum,
             last_period_start: dateStr,
+            cycle_length: Number(cycleLength) || 28,
+            period_length: Number(periodLength) || 5,
             luteal_phase_length: 14,
             ignore_irregular_cycle: false,
           },
-          token
-        );
-
-        if (!response.ok) {
-          const message = data?.message || data?.error || "Failed to save your profile. Please try again.";
-          setStatusMessage({ text: message, type: "error" });
-          setLoading(false);
-          return;
-        }
+          token,
+        ));
       }
-
-      setStatusMessage({ text: editing ? "Profile updated!" : "Profile saved!", type: "success" });
-
-      setTimeout(() => {
-        if (editing) {
-          router.back();
-        } else {
-          router.replace("/(tabs)");
-        }
-      }, 800);
-    } catch {
-      setStatusMessage({ text: "Network error. Please check your connection and try again.", type: "error" });
-    } finally {
+      if (!response.ok) {
+        const msg =
+          data?.message ?? data?.error ?? `Server error (${response.status})`;
+        Alert.alert("Save failed", msg);
+        setLoading(false);
+        return;
+      }
+    } catch (err: any) {
+      Alert.alert(
+        "Network error",
+        err?.message ?? "Could not reach the server.",
+      );
       setLoading(false);
+      return;
+    }
+    setLoading(false);
+    if (editing) {
+      router.back();
+    } else {
+      router.replace("/(tabs)");
     }
   };
 
