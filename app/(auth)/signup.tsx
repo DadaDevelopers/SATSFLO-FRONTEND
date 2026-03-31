@@ -4,7 +4,7 @@ import { HomeIndicatorArea } from "@/components/signup/home-indicator-area";
 import { InputField } from "@/components/signup/input-field";
 import { PrimaryButton } from "@/components/signup/primary-button";
 import { TitleSection } from "@/components/signup/title-section";
-import { TermsModal } from "@/app/(auth)/terms-and-conditions";
+import { TermsModal } from "@/components/terms-modal";
 import { api } from "@/lib/api";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";

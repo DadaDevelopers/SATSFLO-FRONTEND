@@ -4,8 +4,8 @@ import { api, clearAuthStorage } from "@/lib/api";
 import { Feather } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { BlurView } from "expo-blur";
-import { router } from "expo-router";
-import React, { useEffect, useState } from "react";
+import { router, useFocusEffect } from "expo-router";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   Image,
   Modal,
@@ -289,8 +289,32 @@ export default function SettingsScreen() {
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [deletePassword, setDeletePassword] = useState("");
   const { selectedTheme, setSelectedTheme } = useTheme();
-  const [user, setUser] = useState<{ name: string; email: string } | null>(
-    null
+  const [user, setUser] = useState<{ name: string; email: string } | null>(null);
+  const [cycleProfile, setCycleProfile] = useState<{
+    period_length: number;
+    cycle_length: number;
+    luteal_phase_length: number;
+  } | null>(null);
+
+  useFocusEffect(
+    useCallback(() => {
+      const loadCycleProfile = async () => {
+        const token = await AsyncStorage.getItem("accessToken");
+        if (!token) return;
+        try {
+          const { response, data } = await api.get("/cycle-profile", token);
+          if (response.ok) {
+            const profile = data?.data ?? data;
+            setCycleProfile({
+              period_length: profile?.period_length ?? 5,
+              cycle_length: profile?.cycle_length ?? 28,
+              luteal_phase_length: profile?.luteal_phase_length ?? 14,
+            });
+          }
+        } catch {}
+      };
+      loadCycleProfile();
+    }, [])
   );
 
   useEffect(() => {
@@ -446,19 +470,19 @@ export default function SettingsScreen() {
           <SettingRow
             icon={<PeriodIcon />}
             label="Period length"
-            rightText="5 days"
+            rightText={`${cycleProfile?.period_length ?? 5} days`}
             onPress={() => router.push("/(tabs)/period-length-settings" as any)}
           />
           <SettingRow
             icon={<CycleIcon />}
             label="Cycle length"
-            rightText="28 days"
+            rightText={`${cycleProfile?.cycle_length ?? 28} days`}
             onPress={() => router.push("/(tabs)/cycle-length-settings" as any)}
           />
           <SettingRow
             icon={<LutealIcon />}
             label="Luteal phase length"
-            rightText="14 days"
+            rightText={`${cycleProfile?.luteal_phase_length ?? 14} days`}
             onPress={() => router.push("/(tabs)/luteal-phase-settings" as any)}
             isLast
           />
