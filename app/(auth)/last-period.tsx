@@ -7,12 +7,7 @@ import { api } from "@/lib/api";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useState } from "react";
-import {
-  ScrollView,
-  Text,
-  useWindowDimensions,
-  View
-} from "react-native";
+import { ScrollView, Text, useWindowDimensions, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const MAX_CONTENT_WIDTH = 480;
@@ -23,49 +18,125 @@ export default function LastPeriodScreen() {
   const { width: screenWidth } = useWindowDimensions();
   const isDesktop = screenWidth > MAX_CONTENT_WIDTH;
 
-  // Default to a date like October 12 (as shown in the design)
   const { cycleLength, periodLength, isEdit } = useLocalSearchParams<{
     cycleLength: string;
     periodLength: string;
     isEdit: string;
   }>();
   const editing = isEdit === "true";
+
   const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
   const [loading, setLoading] = useState(false);
+  const [statusMessage, setStatusMessage] = useState<{
+    text: string;
+    type: "success" | "error";
+  } | null>(null);
 
   const handleFinish = async () => {
-    if (!selectedDate) return;
+    // Validation
+    if (!selectedDate) {
+      setStatusMessage({
+        text: "Please select your last period start date.",
+        type: "error",
+      });
+      return;
+    }
+
     setLoading(true);
-    const dateStr = selectedDate.toISOString().split("T")[0];
+    setStatusMessage(null);
+
     try {
       const token = await AsyncStorage.getItem("accessToken");
-      if (token) {
-        if (editing) {
-          await api.put(
-            "/cycle-profile",
-            { last_period_start: dateStr },
-            token,
-          );
-        } else {
-          await api.post(
-            "/cycle-profile",
-            {
-              last_period_start: dateStr,
-              cycle_length: Number(cycleLength) || 28,
-              period_length: Number(periodLength) || 5,
-              luteal_phase_length: 14,
-              ignore_irregular_cycle: false,
-            },
-            token,
-          );
+
+      if (!token) {
+        setStatusMessage({
+          text: "You are not logged in. Please sign in again.",
+          type: "error",
+        });
+        setLoading(false);
+        return;
+      }
+
+      const dateStr = selectedDate.toISOString().split("T")[0];
+
+      if (editing) {
+        const { response, data } = await api.put(
+          "/cycle-profile",
+          { last_period_start: dateStr },
+          token,
+        );
+        if (!response.ok) {
+          const message =
+            data?.message ||
+            data?.error ||
+            "Failed to update. Please try again.";
+          setStatusMessage({ text: message, type: "error" });
+          setLoading(false);
+          return;
+        }
+      } else {
+        const cycleLengthNum = Number(cycleLength);
+        const periodLengthNum = Number(periodLength);
+
+        if (!cycleLengthNum || cycleLengthNum < 21 || cycleLengthNum > 35) {
+          setStatusMessage({
+            text: "Invalid cycle length. Please go back and select a valid value.",
+            type: "error",
+          });
+          setLoading(false);
+          return;
+        }
+        if (!periodLengthNum || periodLengthNum < 3 || periodLengthNum > 9) {
+          setStatusMessage({
+            text: "Invalid period length. Please go back and select a valid value.",
+            type: "error",
+          });
+          setLoading(false);
+          return;
+        }
+
+        const { response, data } = await api.post(
+          "/cycle-profile",
+          {
+            cycle_length: cycleLengthNum,
+            period_length: periodLengthNum,
+            last_period_start: dateStr,
+            luteal_phase_length: 14,
+            ignore_irregular_cycle: false,
+          },
+          token,
+        );
+
+        if (!response.ok) {
+          const message =
+            data?.message ||
+            data?.error ||
+            "Failed to save your profile. Please try again.";
+          setStatusMessage({ text: message, type: "error" });
+          setLoading(false);
+          return;
         }
       }
-    } catch {}
-    setLoading(false);
-    if (editing) {
-      router.back();
-    } else {
-      router.replace("/(tabs)");
+
+      setStatusMessage({
+        text: editing ? "Profile updated!" : "Profile saved!",
+        type: "success",
+      });
+
+      setTimeout(() => {
+        if (editing) {
+          router.back();
+        } else {
+          router.replace("/(tabs)");
+        }
+      }, 800);
+    } catch {
+      setStatusMessage({
+        text: "Network error. Please check your connection and try again.",
+        type: "error",
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -110,6 +181,7 @@ export default function LastPeriodScreen() {
             bounces={false}
           >
             {/* Back Button */}
+            {/* Back Button */}
             <View className="pt-4 pb-4">
               <BackButton />
             </View>
@@ -125,6 +197,7 @@ export default function LastPeriodScreen() {
             />
 
             {/* Calendar Section */}
+            {/* Calendar Section */}
             <View className="w-full">
               <CalendarPicker
                 selectedDate={selectedDate}
@@ -137,7 +210,25 @@ export default function LastPeriodScreen() {
           </ScrollView>
 
           {/* Bottom Section */}
+          {/* Bottom Section */}
           <View className="px-5 pb-3 pt-2">
+            {/* Status message */}
+            {statusMessage && (
+              <View
+                className="w-full rounded-xl px-4 py-3 mb-3"
+                style={{
+                  backgroundColor:
+                    statusMessage.type === "success"
+                      ? "rgba(255,255,255,0.25)"
+                      : "rgba(0,0,0,0.25)",
+                }}
+              >
+                <Text className="text-sm text-center font-medium text-white">
+                  {statusMessage.text}
+                </Text>
+              </View>
+            )}
+
             {/* Status message */}
             {statusMessage && (
               <View

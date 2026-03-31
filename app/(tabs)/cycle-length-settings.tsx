@@ -3,8 +3,8 @@ import { HomeIndicatorArea } from "@/components/signup/home-indicator-area";
 import { api } from "@/lib/api";
 import { Feather } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { router } from "expo-router";
-import React, { useEffect, useRef, useState } from "react";
+import { router, useFocusEffect } from "expo-router";
+import React, { useCallback, useRef, useState } from "react";
 import {
   Alert,
   Animated,
@@ -79,55 +79,69 @@ function CustomToggle({
 }
 
 const CYCLE_LENGTH_OPTIONS = Array.from({ length: 15 }, (_, i) => i + 21);
+const CYCLE_LENGTH_OPTIONS = Array.from({ length: 15 }, (_, i) => i + 21);
 
 export default function CycleLengthSettingsScreen() {
   const insets = useSafeAreaInsets();
   const [selectedLength, setSelectedLength] = useState(28);
   const [ignoreIrregular, setIgnoreIrregular] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [successMsg, setSuccessMsg] = useState("");
 
-  useEffect(() => {
-    const loadProfile = async () => {
-      const token = await AsyncStorage.getItem("accessToken");
-      if (!token) return;
-      try {
-        const { response, data } = await api.get("/cycle-profile", token);
-        if (response.ok) {
-          const profile = data?.data ?? data;
-          if (profile?.cycle_length) setSelectedLength(profile.cycle_length);
-          if (profile?.ignore_irregular_cycle !== undefined)
-            setIgnoreIrregular(profile.ignore_irregular_cycle);
-        }
-      } catch {}
-    };
-    loadProfile();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      setSuccessMsg("");
+      const loadProfile = async () => {
+        const token = await AsyncStorage.getItem("accessToken");
+        if (!token) return;
+        try {
+          const { response, data } = await api.get("/cycle-profile", token);
+          if (response.ok) {
+            const profile = data?.data ?? data;
+            if (profile?.cycle_length) setSelectedLength(profile.cycle_length);
+            if (profile?.ignore_irregular_cycle !== undefined)
+              setIgnoreIrregular(profile.ignore_irregular_cycle);
+          }
+        } catch {}
+      };
+      loadProfile();
+    }, []),
+  );
 
   const handleSave = async () => {
     setSaving(true);
+    setSuccessMsg("");
     try {
       const token = await AsyncStorage.getItem("accessToken");
-      if (token) {
-        const { response, data } = await api.put(
-          "/cycle-profile",
-          {
-            cycle_length: selectedLength,
-            ignore_irregular_cycle: ignoreIrregular,
-          },
-          token,
-        );
-        if (!response.ok) {
-          Alert.alert("Error", data?.message || "Failed to save.");
-          return;
-        }
+      if (!token) {
+        Alert.alert("Error", "Not logged in. Please sign in again.");
+        return;
       }
+      const { response, data } = await api.put(
+        "/cycle-profile",
+        {
+          cycle_length: selectedLength,
+          ignore_irregular_cycle: ignoreIrregular,
+        },
+        token,
+      );
+      if (!response.ok) {
+        Alert.alert(
+          "Error",
+          data?.message || data?.error || "Failed to save. Please try again.",
+        );
+        return;
+      }
+      setSuccessMsg("Cycle length saved successfully!");
+      setTimeout(() => {
+        setSuccessMsg("");
+        router.push("/(tabs)/settings" as any);
+      }, 1000);
     } catch {
-      Alert.alert("Error", "Could not save. Please try again.");
-      return;
+      Alert.alert("Error", "Network error. Please check your connection.");
     } finally {
       setSaving(false);
     }
-    router.push("/(tabs)/settings" as any);
   };
 
   return (
@@ -150,6 +164,7 @@ export default function CycleLengthSettingsScreen() {
         <View style={{ width: 24 }} />
       </View>
 
+      {/* Picker + toggle */}
       {/* Picker + toggle */}
       <View className="flex-1 px-5 justify-start mt-10 gap-3">
         <DayPicker
@@ -176,6 +191,7 @@ export default function CycleLengthSettingsScreen() {
         ) : null}
         <TouchableOpacity
           onPress={handleSave}
+          disabled={saving}
           disabled={saving}
           activeOpacity={0.8}
           style={{

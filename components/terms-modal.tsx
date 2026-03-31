@@ -76,7 +76,7 @@ const PRIVACY_SECTIONS = [
   },
   {
     heading: "6.  YOUR RIGHTS",
-    body: "Under the Kenya Data Protection Act 2019 and applicable global laws, you have the right to access, correct, port, or delete your data. To exercise these rights, contact us at info@satsflo.app, we respond within 48 hours.",
+    body: "Under the Kenya Data Protection Act 2019 and applicable global laws, you have the right to access, correct, port, or delete your data. To exercise these rights, contact us at hello@satsflo.com, we respond within 48 hours.",
   },
   {
     heading: "7.  POLICY UPDATES",

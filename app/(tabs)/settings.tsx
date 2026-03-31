@@ -4,8 +4,8 @@ import { api, clearAuthStorage } from "@/lib/api";
 import { Feather } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { BlurView } from "expo-blur";
-import { router } from "expo-router";
-import React, { useEffect, useState } from "react";
+import { router, useFocusEffect } from "expo-router";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   Image,
   Modal,
@@ -18,13 +18,7 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import Svg, {
-  Defs,
-  LinearGradient,
-  Path,
-  Rect,
-  Stop,
-} from "react-native-svg";
+import Svg, { Defs, LinearGradient, Path, Rect, Stop } from "react-native-svg";
 
 function InviteIcon() {
   return (
@@ -56,7 +50,14 @@ function LutealIcon() {
   return (
     <Svg width={16} height={17} viewBox="0 0 16 17" fill="none">
       <Defs>
-        <LinearGradient id="luteal_grad" x1="8" y1="0.5" x2="8" y2="16.5" gradientUnits="userSpaceOnUse">
+        <LinearGradient
+          id="luteal_grad"
+          x1="8"
+          y1="0.5"
+          x2="8"
+          y2="16.5"
+          gradientUnits="userSpaceOnUse"
+        >
           <Stop offset="0" stopColor="#FF4081" />
           <Stop offset="1" stopColor="#635497" />
         </LinearGradient>
@@ -139,7 +140,14 @@ function LanguageIcon() {
   return (
     <Svg width={16} height={16} viewBox="0 0 16 16" fill="none">
       <Defs>
-        <LinearGradient id="lang_grad" x1="8.49987" y1="1.5" x2="8.49987" y2="14" gradientUnits="userSpaceOnUse">
+        <LinearGradient
+          id="lang_grad"
+          x1="8.49987"
+          y1="1.5"
+          x2="8.49987"
+          y2="14"
+          gradientUnits="userSpaceOnUse"
+        >
           <Stop offset="0" stopColor="#FF4081" />
           <Stop offset="1" stopColor="#672699" />
         </LinearGradient>
@@ -177,7 +185,15 @@ function SymptomsIcon() {
 function DropIcon() {
   return (
     <Svg width={40} height={40} viewBox="0 0 40 40" fill="none">
-      <Rect x={0.5} y={0.5} width={39} height={39} rx={19.5} stroke="#CC0045" strokeDasharray="2 2" />
+      <Rect
+        x={0.5}
+        y={0.5}
+        width={39}
+        height={39}
+        rx={19.5}
+        stroke="#CC0045"
+        strokeDasharray="2 2"
+      />
       <Path
         d="M24.3125 12.4764C23.1545 11.1389 21.8511 9.93465 20.4266 8.88573C20.3005 8.79739 20.1502 8.75 19.9963 8.75C19.8423 8.75 19.692 8.79739 19.5659 8.88573C18.144 9.93509 16.8432 11.1394 15.6875 12.4764C13.1103 15.436 11.75 18.556 11.75 21.4998C11.75 23.6878 12.6192 25.7862 14.1664 27.3334C15.7135 28.8806 17.812 29.7498 20 29.7498C22.188 29.7498 24.2865 28.8806 25.8336 27.3334C27.3808 25.7862 28.25 23.6878 28.25 21.4998C28.25 18.556 26.8897 15.436 24.3125 12.4764Z"
         fill="#CC0045"
@@ -198,17 +214,30 @@ interface SettingRowProps {
   isLast?: boolean;
 }
 
-function SettingRow({ iconName, iconColor, icon, label, rightText, onPress, isLast }: SettingRowProps) {
+function SettingRow({
+  iconName,
+  iconColor,
+  icon,
+  label,
+  rightText,
+  onPress,
+  isLast,
+}: SettingRowProps) {
   return (
     <>
-      <Pressable onPress={onPress} className="flex-row items-center justify-between px-3 py-4">
+      <Pressable
+        onPress={onPress}
+        className="flex-row items-center justify-between px-3 py-4"
+      >
         <View className="flex-row items-center gap-1">
           {icon ?? <Feather name={iconName!} size={16} color={iconColor} />}
           <Text className="text-sm text-[#1E1E1E] leading-[21px]">{label}</Text>
         </View>
         <View className="flex-row items-center gap-[10px]">
           {rightText && (
-            <Text className="text-sm text-[#FF4081] leading-[21px]">{rightText}</Text>
+            <Text className="text-sm text-[#FF4081] leading-[21px]">
+              {rightText}
+            </Text>
           )}
           <Feather name="chevron-right" size={16} color="#666666" />
         </View>
@@ -241,7 +270,11 @@ function StarIcon({ filled, size = 36 }: { filled: boolean; size?: number }) {
 type ThemeOption = "system" | "light" | "dark";
 
 const THEME_OPTIONS: { id: ThemeOption; label: string; subtitle: string }[] = [
-  { id: "system", label: "System default", subtitle: "Sync app appearance with your device settings" },
+  {
+    id: "system",
+    label: "System default",
+    subtitle: "Sync app appearance with your device settings",
+  },
   { id: "light", label: "Light mode", subtitle: "Use light mode" },
   { id: "dark", label: "Dark mode", subtitle: "Use dark mode" },
 ];
@@ -256,7 +289,35 @@ export default function SettingsScreen() {
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [deletePassword, setDeletePassword] = useState("");
   const { selectedTheme, setSelectedTheme } = useTheme();
-  const [user, setUser] = useState<{ name: string; email: string } | null>(null);
+  const [user, setUser] = useState<{ name: string; email: string } | null>(
+    null,
+  );
+  const [cycleProfile, setCycleProfile] = useState<{
+    period_length: number;
+    cycle_length: number;
+    luteal_phase_length: number;
+  } | null>(null);
+
+  useFocusEffect(
+    useCallback(() => {
+      const loadCycleProfile = async () => {
+        const token = await AsyncStorage.getItem("accessToken");
+        if (!token) return;
+        try {
+          const { response, data } = await api.get("/cycle-profile", token);
+          if (response.ok) {
+            const profile = data?.data ?? data;
+            setCycleProfile({
+              period_length: profile?.period_length ?? 5,
+              cycle_length: profile?.cycle_length ?? 28,
+              luteal_phase_length: profile?.luteal_phase_length ?? 14,
+            });
+          }
+        } catch {}
+      };
+      loadCycleProfile();
+    }, []),
+  );
 
   useEffect(() => {
     const loadUser = async () => {
@@ -282,9 +343,16 @@ export default function SettingsScreen() {
   const handleLogout = async () => {
     setLogoutModalVisible(false);
     try {
-      const [[, accessToken], [, refreshToken]] = await AsyncStorage.multiGet(["accessToken", "refreshToken"]);
+      const [[, accessToken], [, refreshToken]] = await AsyncStorage.multiGet([
+        "accessToken",
+        "refreshToken",
+      ]);
       if (accessToken) {
-        await api.post("/auth/logout", { refreshToken: refreshToken ?? "" }, accessToken);
+        await api.post(
+          "/auth/logout",
+          { refreshToken: refreshToken ?? "" },
+          accessToken,
+        );
       }
     } catch {}
     await clearAuthStorage();
@@ -307,11 +375,20 @@ export default function SettingsScreen() {
 
   const handleTabPress = (tab: TabName) => {
     switch (tab) {
-      case "home": router.push("/(tabs)"); break;
-      case "calendar": router.push("/calendar"); break;
-      case "add": router.push("/add-log"); break;
-      case "chat": router.push("/(tabs)/thread"); break;
-      default: break;
+      case "home":
+        router.push("/(tabs)");
+        break;
+      case "calendar":
+        router.push("/calendar");
+        break;
+      case "add":
+        router.push("/add-log");
+        break;
+      case "chat":
+        router.push("/(tabs)/thread");
+        break;
+      default:
+        break;
     }
   };
 
@@ -319,35 +396,65 @@ export default function SettingsScreen() {
     <View className="flex-1 bg-[#FF4081]">
       <StatusBar barStyle="light-content" backgroundColor="#FF4081" />
 
-      <View className="flex-row justify-between items-center gap-[67px] h-10 px-5" style={{ marginTop: insets.top + 16 }}>
-        <TouchableOpacity onPress={() => router.back()} className="items-center justify-center" activeOpacity={0.7}>
+      <View
+        className="flex-row justify-between items-center gap-[67px] h-10 px-5"
+        style={{ marginTop: insets.top + 16 }}
+      >
+        <TouchableOpacity
+          onPress={() => router.back()}
+          className="items-center justify-center"
+          activeOpacity={0.7}
+        >
           <DropIcon />
         </TouchableOpacity>
-        <Text className="text-white text-2xl font-medium font-inter tracking-tight">Settings</Text>
-        <TouchableOpacity className="w-10 h-10 items-center justify-center rounded-full border border-white" activeOpacity={0.7}>
+        <Text className="text-white text-2xl font-medium font-inter tracking-tight">
+          Settings
+        </Text>
+        <TouchableOpacity
+          className="w-10 h-10 items-center justify-center rounded-full border border-white"
+          activeOpacity={0.7}
+        >
           <Feather name="bell" size={24} color="#FAFAFA" />
         </TouchableOpacity>
       </View>
 
-      <ScrollView className="flex-1" contentContainerClassName="pt-5 px-5 pb-5" showsVerticalScrollIndicator={false}>
-
+      <ScrollView
+        className="flex-1"
+        contentContainerClassName="pt-5 px-5 pb-5"
+        showsVerticalScrollIndicator={false}
+      >
         {/* Profile Card */}
         <SectionCard>
-          <Pressable className="flex-row items-center justify-between p-6" onPress={() => router.push("/(tabs)/my-profile" as any)}>
+          <Pressable
+            className="flex-row items-center justify-between p-6"
+            onPress={() => router.push("/(tabs)/my-profile" as any)}
+          >
             <View className="flex-row items-center gap-3">
-              <Image source={require("@/assets/images/zuri.png")} className="w-10 h-10 rounded-full" />
+              <Image
+                source={require("@/assets/images/zuri.png")}
+                className="w-10 h-10 rounded-full"
+              />
               <View className="gap-1">
-                <Text className="text-sm font-medium text-[#1E1E1E]">{user?.name ?? ""}</Text>
-                <Text className="text-xs text-[#616161]">{user?.email ?? ""}</Text>
+                <Text className="text-sm font-medium text-[#1E1E1E]">
+                  {user?.name ?? ""}
+                </Text>
+                <Text className="text-xs text-[#616161]">
+                  {user?.email ?? ""}
+                </Text>
               </View>
             </View>
             <Feather name="chevron-right" size={16} color="#666666" />
           </Pressable>
           <View className="h-px bg-[#FFD6E8] mx-3" />
-          <Pressable className="flex-row items-center justify-between px-3 py-6" onPress={() => router.push("/(tabs)/invite-partner" as any)}>
+          <Pressable
+            className="flex-row items-center justify-between px-3 py-6"
+            onPress={() => router.push("/(tabs)/invite-partner" as any)}
+          >
             <View className="flex-row items-center gap-1">
               <InviteIcon />
-              <Text className="text-sm text-[#1E1E1E] leading-[21px]">Invite my partner/friend</Text>
+              <Text className="text-sm text-[#1E1E1E] leading-[21px]">
+                Invite my partner/friend
+              </Text>
             </View>
             <Feather name="chevron-right" size={16} color="#666666" />
           </Pressable>
@@ -355,27 +462,71 @@ export default function SettingsScreen() {
 
         {/* Period Settings Card */}
         <SectionCard>
-          <SettingRow icon={<PeriodIcon />} label="Period length" onPress={() => router.push("/(tabs)/period-length-settings" as any)} />
-          <SettingRow icon={<CycleIcon />} label="Cycle length" onPress={() => router.push("/(tabs)/cycle-length-settings" as any)} />
-          <SettingRow icon={<LutealIcon />} label="Luteal phase length" onPress={() => router.push("/(tabs)/luteal-phase-settings" as any)} isLast />
+          <SettingRow
+            icon={<PeriodIcon />}
+            label="Period length"
+            rightText={`${cycleProfile?.period_length ?? 5} days`}
+            onPress={() => router.push("/(tabs)/period-length-settings" as any)}
+          />
+          <SettingRow
+            icon={<CycleIcon />}
+            label="Cycle length"
+            rightText={`${cycleProfile?.cycle_length ?? 28} days`}
+            onPress={() => router.push("/(tabs)/cycle-length-settings" as any)}
+          />
+          <SettingRow
+            icon={<LutealIcon />}
+            label="Luteal phase length"
+            rightText={`${cycleProfile?.luteal_phase_length ?? 14} days`}
+            onPress={() => router.push("/(tabs)/luteal-phase-settings" as any)}
+            isLast
+          />
         </SectionCard>
 
         {/* Reminders Card */}
         <SectionCard>
-          <SettingRow icon={<ReminderIcon />} label="Reminders" onPress={() => router.push("/(tabs)/reminders" as any)} isLast />
+          <SettingRow
+            icon={<ReminderIcon />}
+            label="Reminders"
+            onPress={() => router.push("/(tabs)/reminders" as any)}
+            isLast
+          />
         </SectionCard>
 
         {/* Personalization Card */}
         <SectionCard>
-          <SettingRow icon={<SymptomsIcon />} label="Symptoms" onPress={() => router.push("/add-log/symptoms")} />
-          <SettingRow icon={<MoodsIcon />} label="Moods" onPress={() => router.push("/add-log/moods")} />
-          <SettingRow iconName="eye" iconColor="#077845" label="Theme" onPress={() => setThemeModalVisible(true)} />
-          <SettingRow icon={<LanguageIcon />} label="Language preferences" onPress={() => router.push("/(tabs)/language-settings" as any)} isLast />
+          <SettingRow
+            icon={<SymptomsIcon />}
+            label="Symptoms"
+            onPress={() => router.push("/add-log/symptoms")}
+          />
+          <SettingRow
+            icon={<MoodsIcon />}
+            label="Moods"
+            onPress={() => router.push("/add-log/moods")}
+          />
+          <SettingRow
+            iconName="eye"
+            iconColor="#077845"
+            label="Theme"
+            onPress={() => setThemeModalVisible(true)}
+          />
+          <SettingRow
+            icon={<LanguageIcon />}
+            label="Language preferences"
+            onPress={() => router.push("/(tabs)/language-settings" as any)}
+            isLast
+          />
         </SectionCard>
 
         {/* Wallet Card */}
         <SectionCard>
-          <SettingRow icon={<WalletIcon />} label="Connect wallet" onPress={() => router.push("/(tabs)/connect-wallet" as any)} isLast />
+          <SettingRow
+            icon={<WalletIcon />}
+            label="Connect wallet"
+            onPress={() => router.push("/(tabs)/connect-wallet" as any)}
+            isLast
+          />
         </SectionCard>
 
         {/* Support & Legal Card */}
@@ -383,70 +534,145 @@ export default function SettingsScreen() {
           <SettingRow iconName="help-circle" iconColor="#C62828" label="FAQ" />
           <SettingRow icon={<ContactSupportIcon />} label="Contact support" />
           <SettingRow icon={<PrivacyIcon />} label="Privacy policy" />
-          <SettingRow icon={<RateAppIcon />} label="Rate app" onPress={() => setRateAppModalVisible(true)} />
-          <SettingRow iconName="log-out" iconColor="#C62828" label="Log out" onPress={() => setLogoutModalVisible(true)} isLast />
+          <SettingRow
+            icon={<RateAppIcon />}
+            label="Rate app"
+            onPress={() => setRateAppModalVisible(true)}
+          />
+          <SettingRow
+            iconName="log-out"
+            iconColor="#C62828"
+            label="Log out"
+            onPress={() => setLogoutModalVisible(true)}
+            isLast
+          />
         </SectionCard>
 
         {/* Delete Account */}
         <SectionCard>
-          <Pressable className="flex-row items-center px-3 py-[14px] gap-1" onPress={() => setDeleteModalVisible(true)}>
+          <Pressable
+            className="flex-row items-center px-3 py-[14px] gap-1"
+            onPress={() => setDeleteModalVisible(true)}
+          >
             <Feather name="trash-2" size={16} color="#FF0004" />
-            <Text className="text-sm text-[#1E1E1E] leading-[21px]">Delete account</Text>
+            <Text className="text-sm text-[#1E1E1E] leading-[21px]">
+              Delete account
+            </Text>
           </Pressable>
         </SectionCard>
 
-        <Text className="text-center text-xs text-white leading-[18px] mb-2">version 1.0.5</Text>
+        <Text className="text-center text-xs text-white leading-[18px] mb-2">
+          version 1.0.5
+        </Text>
       </ScrollView>
 
       <BottomNavigation activeTab={activeTab} onTabPress={handleTabPress} />
 
       {/* Theme Modal */}
-      <Modal visible={themeModalVisible} transparent animationType="slide" onRequestClose={() => setThemeModalVisible(false)}>
-        <Pressable className="flex-1 bg-black/50" onPress={() => setThemeModalVisible(false)} />
-        <View className="bg-[#FFE6EE] rounded-t-3xl" style={{ paddingBottom: insets.bottom || 20 }}>
+      <Modal
+        visible={themeModalVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setThemeModalVisible(false)}
+      >
+        <Pressable
+          className="flex-1 bg-black/50"
+          onPress={() => setThemeModalVisible(false)}
+        />
+        <View
+          className="bg-[#FFE6EE] rounded-t-3xl"
+          style={{ paddingBottom: insets.bottom || 20 }}
+        >
           <View className="w-10 h-[5px] bg-[#FF669A] rounded-full self-center mt-3 mb-4" />
-          <Text className="font-inter font-medium text-xl text-black text-center tracking-[-0.3px] mb-4">Select Theme</Text>
+          <Text className="font-inter font-medium text-xl text-black text-center tracking-[-0.3px] mb-4">
+            Select Theme
+          </Text>
           <View className="h-px bg-[#FFB3CD]" />
           {THEME_OPTIONS.map((option) => (
-            <TouchableOpacity key={option.id} onPress={() => setSelectedTheme(option.id)} className="flex-row items-center justify-between px-5 py-4 min-h-[70px]" activeOpacity={0.7}>
+            <TouchableOpacity
+              key={option.id}
+              onPress={() => setSelectedTheme(option.id)}
+              className="flex-row items-center justify-between px-5 py-4 min-h-[70px]"
+              activeOpacity={0.7}
+            >
               <View className="flex-1 gap-1">
-                <Text className="font-inter text-base text-[#1E1E1E]">{option.label}</Text>
-                <Text className="font-inter text-xs text-[#333333] opacity-80">{option.subtitle}</Text>
+                <Text className="font-inter text-base text-[#1E1E1E]">
+                  {option.label}
+                </Text>
+                <Text className="font-inter text-xs text-[#333333] opacity-80">
+                  {option.subtitle}
+                </Text>
               </View>
-              {selectedTheme === option.id && <Feather name="check" size={18} color="#FF4081" />}
+              {selectedTheme === option.id && (
+                <Feather name="check" size={18} color="#FF4081" />
+              )}
             </TouchableOpacity>
           ))}
         </View>
       </Modal>
 
       {/* Rate App Modal */}
-      <Modal visible={rateAppModalVisible} transparent animationType="slide" onRequestClose={() => setRateAppModalVisible(false)}>
+      <Modal
+        visible={rateAppModalVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setRateAppModalVisible(false)}
+      >
         <View className="flex-1">
           <BlurView intensity={10} tint="dark" className="flex-1">
-            <Pressable className="flex-1" onPress={() => setRateAppModalVisible(false)} />
+            <Pressable
+              className="flex-1"
+              onPress={() => setRateAppModalVisible(false)}
+            />
           </BlurView>
           <View className="items-center">
-            <View className="w-[100px] h-[100px] rounded-full bg-[#FFE6EE] items-center justify-center z-10" style={{ marginBottom: -50, elevation: 4 }}>
+            <View
+              className="w-[100px] h-[100px] rounded-full bg-[#FFE6EE] items-center justify-center z-10"
+              style={{ marginBottom: -50, elevation: 4 }}
+            >
               <Text style={{ fontSize: 52 }}>😄</Text>
             </View>
-            <View className="w-full bg-[#FFE6EE] rounded-t-3xl items-center" style={{ paddingBottom: (insets.bottom || 0) + 32 }}>
+            <View
+              className="w-full bg-[#FFE6EE] rounded-t-3xl items-center"
+              style={{ paddingBottom: (insets.bottom || 0) + 32 }}
+            >
               <View className="h-20" />
-              <Text className="font-inter font-medium text-xl text-black tracking-[-0.3px] mb-4">Rate App</Text>
+              <Text className="font-inter font-medium text-xl text-black tracking-[-0.3px] mb-4">
+                Rate App
+              </Text>
               <View className="h-px bg-[#DBE2E8] w-full" />
-              <Text className="font-inter text-base text-[#222222] text-center mt-7 mb-7 px-5">Empower us by rating the app</Text>
+              <Text className="font-inter text-base text-[#222222] text-center mt-7 mb-7 px-5">
+                Empower us by rating the app
+              </Text>
               <View className="flex-row gap-2 mb-9">
                 {[1, 2, 3, 4, 5].map((star) => (
-                  <TouchableOpacity key={star} onPress={() => setRating(star)} activeOpacity={0.7}>
+                  <TouchableOpacity
+                    key={star}
+                    onPress={() => setRating(star)}
+                    activeOpacity={0.7}
+                  >
                     <StarIcon filled={star <= rating} size={40} />
                   </TouchableOpacity>
                 ))}
               </View>
               <View className="flex-row gap-3 px-5 w-full mb-2">
-                <TouchableOpacity onPress={() => setRateAppModalVisible(false)} activeOpacity={0.8} className="flex-1 h-14 bg-[#FFF5F9] rounded-full items-center justify-center">
-                  <Text className="font-inter font-medium text-[15px] text-[#FF4081]">Later</Text>
+                <TouchableOpacity
+                  onPress={() => setRateAppModalVisible(false)}
+                  activeOpacity={0.8}
+                  className="flex-1 h-14 bg-[#FFF5F9] rounded-full items-center justify-center"
+                >
+                  <Text className="font-inter font-medium text-[15px] text-[#FF4081]">
+                    Later
+                  </Text>
                 </TouchableOpacity>
-                <TouchableOpacity onPress={() => setRateAppModalVisible(false)} activeOpacity={0.8} className="flex-1 h-14 bg-[#FF4081] rounded-full items-center justify-center">
-                  <Text className="font-inter font-medium text-[15px] text-white">Rate Now</Text>
+                <TouchableOpacity
+                  onPress={() => setRateAppModalVisible(false)}
+                  activeOpacity={0.8}
+                  className="flex-1 h-14 bg-[#FF4081] rounded-full items-center justify-center"
+                >
+                  <Text className="font-inter font-medium text-[15px] text-white">
+                    Rate Now
+                  </Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -455,22 +681,49 @@ export default function SettingsScreen() {
       </Modal>
 
       {/* Logout Modal */}
-      <Modal visible={logoutModalVisible} transparent animationType="slide" onRequestClose={() => setLogoutModalVisible(false)}>
+      <Modal
+        visible={logoutModalVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setLogoutModalVisible(false)}
+      >
         <View className="flex-1">
           <BlurView intensity={20} tint="dark" className="flex-1">
-            <Pressable className="flex-1" onPress={() => setLogoutModalVisible(false)} />
+            <Pressable
+              className="flex-1"
+              onPress={() => setLogoutModalVisible(false)}
+            />
           </BlurView>
-          <View className="bg-[#FFE6EE] rounded-t-3xl" style={{ paddingBottom: (insets.bottom || 0) + 20 }}>
+          <View
+            className="bg-[#FFE6EE] rounded-t-3xl"
+            style={{ paddingBottom: (insets.bottom || 0) + 20 }}
+          >
             <View className="w-10 h-[5px] bg-[#FF669A] rounded-full self-center mt-4 mb-6" />
-            <Text className="font-inter font-medium text-xl leading-6 tracking-[-0.3px] text-black text-center mb-6">Log Out</Text>
+            <Text className="font-inter font-medium text-xl leading-6 tracking-[-0.3px] text-black text-center mb-6">
+              Log Out
+            </Text>
             <View className="h-px bg-[#FFB3CD]" />
-            <Text className="font-inter text-base leading-[19px] text-[#222222] text-center mt-5 mb-[50px]">Are you sure you want to log out?</Text>
+            <Text className="font-inter text-base leading-[19px] text-[#222222] text-center mt-5 mb-[50px]">
+              Are you sure you want to log out?
+            </Text>
             <View className="flex-row gap-3 px-5">
-              <TouchableOpacity onPress={() => setLogoutModalVisible(false)} activeOpacity={0.8} className="flex-1 h-[50px] bg-[#FFF5F9] rounded-full items-center justify-center">
-                <Text className="font-inter font-medium text-[15px] text-[#FF4081]">Cancel</Text>
+              <TouchableOpacity
+                onPress={() => setLogoutModalVisible(false)}
+                activeOpacity={0.8}
+                className="flex-1 h-[50px] bg-[#FFF5F9] rounded-full items-center justify-center"
+              >
+                <Text className="font-inter font-medium text-[15px] text-[#FF4081]">
+                  Cancel
+                </Text>
               </TouchableOpacity>
-              <TouchableOpacity onPress={handleLogout} activeOpacity={0.8} className="flex-1 h-[50px] bg-[#FF4081] rounded-full items-center justify-center">
-                <Text className="font-inter font-medium text-[15px] text-white">Yes, Logout</Text>
+              <TouchableOpacity
+                onPress={handleLogout}
+                activeOpacity={0.8}
+                className="flex-1 h-[50px] bg-[#FF4081] rounded-full items-center justify-center"
+              >
+                <Text className="font-inter font-medium text-[15px] text-white">
+                  Yes, Logout
+                </Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -478,17 +731,34 @@ export default function SettingsScreen() {
       </Modal>
 
       {/* Delete Account Modal */}
-      <Modal visible={deleteModalVisible} transparent animationType="slide" onRequestClose={() => { setDeleteModalVisible(false); setDeletePassword(""); }}>
+      <Modal
+        visible={deleteModalVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={() => {
+          setDeleteModalVisible(false);
+          setDeletePassword("");
+        }}
+      >
         <View className="flex-1">
           <BlurView intensity={20} tint="dark" className="flex-1">
-            <Pressable className="flex-1" onPress={() => setDeleteModalVisible(false)} />
+            <Pressable
+              className="flex-1"
+              onPress={() => setDeleteModalVisible(false)}
+            />
           </BlurView>
-          <View className="bg-[#FFE6EE] rounded-t-3xl" style={{ paddingBottom: (insets.bottom || 0) + 20 }}>
+          <View
+            className="bg-[#FFE6EE] rounded-t-3xl"
+            style={{ paddingBottom: (insets.bottom || 0) + 20 }}
+          >
             <View className="w-10 h-[5px] bg-[#FF669A] rounded-full self-center mt-4 mb-6" />
-            <Text className="font-inter font-medium text-xl leading-6 tracking-[-0.3px] text-black text-center mb-6">Delete Account</Text>
+            <Text className="font-inter font-medium text-xl leading-6 tracking-[-0.3px] text-black text-center mb-6">
+              Delete Account
+            </Text>
             <View className="h-px bg-[#FFB3CD]" />
             <Text className="font-inter text-base leading-6 text-[#222222] text-center mt-5 mb-5 px-12">
-              Are you sure you want to delete this account? All data will be accessible for only 30 days after confirmation.
+              Are you sure you want to delete this account? All data will be
+              accessible for only 30 days after confirmation.
             </Text>
             <View className="px-5 mb-8">
               <TextInput
@@ -501,11 +771,26 @@ export default function SettingsScreen() {
               />
             </View>
             <View className="flex-row gap-3 px-5">
-              <TouchableOpacity onPress={() => { setDeleteModalVisible(false); setDeletePassword(""); }} activeOpacity={0.8} className="flex-1 h-[50px] bg-[#FFF5F9] rounded-full items-center justify-center">
-                <Text className="font-inter font-medium text-[15px] text-[#FF4081]">Cancel</Text>
+              <TouchableOpacity
+                onPress={() => {
+                  setDeleteModalVisible(false);
+                  setDeletePassword("");
+                }}
+                activeOpacity={0.8}
+                className="flex-1 h-[50px] bg-[#FFF5F9] rounded-full items-center justify-center"
+              >
+                <Text className="font-inter font-medium text-[15px] text-[#FF4081]">
+                  Cancel
+                </Text>
               </TouchableOpacity>
-              <TouchableOpacity onPress={handleDeleteAccount} activeOpacity={0.8} className="flex-1 h-[50px] bg-[#C62828] rounded-full items-center justify-center">
-                <Text className="font-inter font-medium text-[15px] text-white">Yes, Delete</Text>
+              <TouchableOpacity
+                onPress={handleDeleteAccount}
+                activeOpacity={0.8}
+                className="flex-1 h-[50px] bg-[#C62828] rounded-full items-center justify-center"
+              >
+                <Text className="font-inter font-medium text-[15px] text-white">
+                  Yes, Delete
+                </Text>
               </TouchableOpacity>
             </View>
           </View>
