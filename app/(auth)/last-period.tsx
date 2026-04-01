@@ -7,7 +7,7 @@ import { api } from "@/lib/api";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useState } from "react";
-import { Alert, ScrollView, useWindowDimensions, View } from "react-native";
+import { Alert, ScrollView, Text, useWindowDimensions, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const MAX_CONTENT_WIDTH = 480;
@@ -44,6 +44,11 @@ export default function LastPeriodScreen() {
 
     setLoading(true);
     setStatusMessage(null);
+
+    const y = selectedDate.getFullYear();
+    const m = String(selectedDate.getMonth() + 1).padStart(2, "0");
+    const d = String(selectedDate.getDate()).padStart(2, "0");
+    const dateStr = `${y}-${m}-${d}`;
 
     try {
       const token = await AsyncStorage.getItem("accessToken");

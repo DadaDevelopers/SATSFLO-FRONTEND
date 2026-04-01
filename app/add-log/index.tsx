@@ -597,7 +597,7 @@ export default function AddLogScreen() {
             renderItem={renderDateItem}
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={{ paddingHorizontal: 16 }}
-            getItemLayout={(data, index) => ({
+            getItemLayout={(_data, index) => ({
               length: DATE_ITEM_SIZE + 8,
               offset: (DATE_ITEM_SIZE + 8) * index,
               index,
