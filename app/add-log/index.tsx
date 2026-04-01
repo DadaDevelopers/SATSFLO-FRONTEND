@@ -752,10 +752,9 @@ export default function AddLogScreen() {
               data={dates}
               keyExtractor={(item) => item.date.toISOString()}
               renderItem={renderDateItem}
-              extraData={{ selectedDate, dayLogs }}
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={{ paddingHorizontal: 16 }}
-              getItemLayout={(data, index) => ({
+              getItemLayout={(_data, index) => ({
                 length: DATE_ITEM_SIZE + 8,
                 offset: (DATE_ITEM_SIZE + 8) * index,
                 index,
