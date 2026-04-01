@@ -31,7 +31,7 @@ export default function GiftTokenScreen() {
   const isDesktop = screenWidth > MAX_CONTENT_WIDTH;
 
   const handleProceed = () => {
-    router.push("/gift-token/send-category");
+    router.push("/gift-token/send-amount");
   };
 
   return (
