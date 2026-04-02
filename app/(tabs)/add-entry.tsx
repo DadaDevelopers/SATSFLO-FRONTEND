@@ -23,6 +23,10 @@ const MONTHS = [
   'July', 'August', 'September', 'October', 'November', 'December'
 ];
 
+function toDateKey(d: Date): string {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
 const MOODS = [
   { id: 'inlove', emoji: '😍', label: 'In love' },
   { id: 'peaceful', emoji: '😌', label: 'Peaceful' },
@@ -46,7 +50,7 @@ export default function AddEntryScreen() {
   const [searchText, setSearchText] = useState('');
   const [currentMonth, setCurrentMonth] = useState(today.getMonth());
   const [currentYear, setCurrentYear] = useState(today.getFullYear());
-  const [selectedDate, setSelectedDate] = useState(today.getDate());
+  const [selectedDate, setSelectedDate] = useState<string>(() => toDateKey(today));
   const [journalTitle, setJournalTitle] = useState('');
   const [selectedMood, setSelectedMood] = useState<string | null>(null);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
@@ -54,13 +58,11 @@ export default function AddEntryScreen() {
   const [selectedImages, setSelectedImages] = useState<string[]>([]);
   const [showMediaPicker, setShowMediaPicker] = useState(false);
 
-  const getWeekDates = (): number[] => {
-    const refDate = new Date(currentYear, currentMonth, selectedDate);
+  const getWeekDates = (): Date[] => {
+    const [y, m, d] = selectedDate.split('-').map(Number);
+    const refDate = new Date(y, m - 1, d);
     const dayOfWeek = refDate.getDay();
-    return Array.from({ length: 7 }, (_, i) => {
-      const d = new Date(currentYear, currentMonth, selectedDate - dayOfWeek + i);
-      return d.getMonth() === currentMonth ? d.getDate() : 0;
-    }).filter((d) => d > 0);
+    return Array.from({ length: 7 }, (_, i) => new Date(y, m - 1, d - dayOfWeek + i));
   };
 
   const handlePreviousMonth = () => {
@@ -85,8 +87,12 @@ export default function AddEntryScreen() {
     router.back();
   };
 
-  const handleDateSelect = (date: number) => {
-    setSelectedDate(date);
+  const handleDateSelect = (d: Date) => {
+    setSelectedDate(toDateKey(d));
+    if (d.getMonth() !== currentMonth || d.getFullYear() !== currentYear) {
+      setCurrentMonth(d.getMonth());
+      setCurrentYear(d.getFullYear());
+    }
   };
 
   const handleMoodSelect = (moodId: string) => {
@@ -102,7 +108,7 @@ export default function AddEntryScreen() {
   };
 
   const handleSave = async () => {
-    const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(selectedDate).padStart(2, '0')}`;
+    const dateStr = selectedDate;
     try {
       const token = await AsyncStorage.getItem('accessToken');
       if (token) {
@@ -180,7 +186,8 @@ export default function AddEntryScreen() {
   };
 
   const formatDate = () => {
-    return `${MONTHS[currentMonth]} ${selectedDate}, ${currentYear}`;
+    const [y, m, d] = selectedDate.split('-').map(Number);
+    return `${MONTHS[m - 1]} ${d}, ${y}`;
   };
 
   return (
@@ -240,31 +247,41 @@ export default function AddEntryScreen() {
 
         {/* Date Circles Row */}
         <View className="flex-row justify-between px-2 mt-3">
-          {getWeekDates().map((date) => (
-            <TouchableOpacity
-              key={date}
-              onPress={() => handleDateSelect(date)}
-              className={`w-10 h-10 rounded-full items-center justify-center ${
-                selectedDate === date ? 'bg-[#FF4081]' : ''
-              }`}
-              style={{
-                borderWidth: 1,
-                borderColor: selectedDate === date ? '#CC1775' : '#FFE5EE',
-              }}
-            >
-              <Text
-                className={`text-sm ${
-                  selectedDate === date ? 'text-[#090909]' : 'text-[#090909]'
-                }`}
+          {getWeekDates().map((d) => {
+            const key = toDateKey(d);
+            const isSelected = key === selectedDate;
+
+            return (
+              <TouchableOpacity
+                key={key}
+                onPress={() => handleDateSelect(d)}
+                style={{
+                  width: 40,
+                  height: 40,
+                  borderRadius: 20,
+                  borderWidth: 0.5,
+                  borderColor: '#FFDFEA',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  backgroundColor: 'transparent',
+                }}
               >
-                {date}
-              </Text>
-              {/* White dot indicator for selected date */}
-              {selectedDate === date && (
-                <View className="absolute bottom-1 w-1.5 h-1.5 bg-white rounded-full" />
-              )}
-            </TouchableOpacity>
-          ))}
+                <Text style={{ fontSize: 14, color: '#090909' }}>
+                  {d.getDate()}
+                </Text>
+                {isSelected && (
+                  <View style={{
+                    position: 'absolute',
+                    bottom: 4,
+                    width: 5,
+                    height: 5,
+                    borderRadius: 2.5,
+                    backgroundColor: '#FAFAFA',
+                  }} />
+                )}
+              </TouchableOpacity>
+            );
+          })}
         </View>
       </View>
 

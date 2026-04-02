@@ -1,6 +1,7 @@
 import { api } from "@/lib/api";
 import { Feather } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import DateTimePicker, { DateTimePickerEvent } from "@react-native-community/datetimepicker";
 import * as ImagePicker from "expo-image-picker";
 import { router } from "expo-router";
 import React, { useEffect, useState } from "react";
@@ -56,6 +57,8 @@ export default function MyProfileScreen() {
   const [selectedCountry, setSelectedCountry] = useState(countries[0]);
   const [phone, setPhone] = useState("");
   const [dateOfBirth, setDateOfBirth] = useState("");
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [datePickerValue, setDatePickerValue] = useState(new Date());
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -287,9 +290,33 @@ export default function MyProfileScreen() {
                   onChangeText={setDateOfBirth}
                   placeholder="DD-MM-YYYY"
                   keyboardType="numeric"
+                  style={{ flex: 1 }}
                 />
-                <CalendarIcon />
+                <TouchableOpacity onPress={() => setShowDatePicker(true)}>
+                  <CalendarIcon />
+                </TouchableOpacity>
               </View>
+              {showDatePicker && (
+                <DateTimePicker
+                  value={datePickerValue}
+                  mode="date"
+                  display={Platform.OS === "ios" ? "spinner" : "default"}
+                  maximumDate={new Date()}
+                  onChange={(event: DateTimePickerEvent, date?: Date) => {
+                    setShowDatePicker(Platform.OS === "ios");
+                    if (event.type === "set" && date) {
+                      setDatePickerValue(date);
+                      const dd = String(date.getDate()).padStart(2, "0");
+                      const mm = String(date.getMonth() + 1).padStart(2, "0");
+                      const yyyy = date.getFullYear();
+                      setDateOfBirth(`${dd}-${mm}-${yyyy}`);
+                      if (Platform.OS === "ios") setShowDatePicker(false);
+                    } else {
+                      setShowDatePicker(false);
+                    }
+                  }}
+                />
+              )}
             </View>
           </View>
 
