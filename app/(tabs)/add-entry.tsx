@@ -35,7 +35,7 @@ const MONTHS = [
 ];
 
 function toDateKey(d: Date): string {
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
 const MOODS = [
@@ -62,8 +62,8 @@ export default function AddEntryScreen() {
   const [searchText, setSearchText] = useState("");
   const [currentMonth, setCurrentMonth] = useState(today.getMonth());
   const [currentYear, setCurrentYear] = useState(today.getFullYear());
-  const [selectedDate, setSelectedDate] = useState(today.getDate());
-  const [journalTitle, setJournalTitle] = useState("");
+  const [selectedDate, setSelectedDate] = useState<string>(() => toDateKey(today));
+  const [journalTitle, setJournalTitle] = useState('');
   const [selectedMood, setSelectedMood] = useState<string | null>(null);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [notes, setNotes] = useState("");
@@ -73,17 +73,11 @@ export default function AddEntryScreen() {
   const [uploadingImages, setUploadingImages] = useState(false);
   const [showMediaPicker, setShowMediaPicker] = useState(false);
 
-  const getWeekDates = (): number[] => {
-    const refDate = new Date(currentYear, currentMonth, selectedDate);
+  const getWeekDates = (): Date[] => {
+    const [y, m, d] = selectedDate.split('-').map(Number);
+    const refDate = new Date(y, m - 1, d);
     const dayOfWeek = refDate.getDay();
-    return Array.from({ length: 7 }, (_, i) => {
-      const d = new Date(
-        currentYear,
-        currentMonth,
-        selectedDate - dayOfWeek + i,
-      );
-      return d.getMonth() === currentMonth ? d.getDate() : 0;
-    }).filter((d) => d > 0);
+    return Array.from({ length: 7 }, (_, i) => new Date(y, m - 1, d - dayOfWeek + i));
   };
 
   const handlePreviousMonth = () => {
@@ -114,6 +108,12 @@ export default function AddEntryScreen() {
       setCurrentMonth(d.getMonth());
       setCurrentYear(d.getFullYear());
     }
+  const handleDateSelect = (d: Date) => {
+    setSelectedDate(toDateKey(d));
+    if (d.getMonth() !== currentMonth || d.getFullYear() !== currentYear) {
+      setCurrentMonth(d.getMonth());
+      setCurrentYear(d.getFullYear());
+    }
   };
 
   const handleMoodSelect = (moodId: string) => {
@@ -129,7 +129,7 @@ export default function AddEntryScreen() {
   };
 
   const handleSave = async () => {
-    const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, "0")}-${String(selectedDate).padStart(2, "0")}`;
+    const dateStr = selectedDate;
     try {
       const token = await AsyncStorage.getItem("accessToken");
       if (token) {
@@ -248,6 +248,11 @@ export default function AddEntryScreen() {
     setSelectedImages(selectedImages.filter((_, i) => i !== index));
   };
 
+  const formatDate = () => {
+    const [y, m, d] = selectedDate.split('-').map(Number);
+    return `${MONTHS[m - 1]} ${d}, ${y}`;
+  };
+
   return (
     <View
       className="flex-1"
@@ -321,26 +326,24 @@ export default function AddEntryScreen() {
                   height: 40,
                   borderRadius: 20,
                   borderWidth: 0.5,
-                  borderColor: "#FFDFEA",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  backgroundColor: "transparent",
+                  borderColor: '#FFDFEA',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  backgroundColor: 'transparent',
                 }}
               >
-                <Text style={{ fontSize: 14, color: "#090909" }}>
+                <Text style={{ fontSize: 14, color: '#090909' }}>
                   {d.getDate()}
                 </Text>
                 {isSelected && (
-                  <View
-                    style={{
-                      position: "absolute",
-                      bottom: 4,
-                      width: 5,
-                      height: 5,
-                      borderRadius: 2.5,
-                      backgroundColor: "#FAFAFA",
-                    }}
-                  />
+                  <View style={{
+                    position: 'absolute',
+                    bottom: 4,
+                    width: 5,
+                    height: 5,
+                    borderRadius: 2.5,
+                    backgroundColor: '#FAFAFA',
+                  }} />
                 )}
               </TouchableOpacity>
             );
