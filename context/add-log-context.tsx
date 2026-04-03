@@ -81,6 +81,9 @@ interface AddLogContextType {
 
   // Save all data for current date
   saveCurrentDay: () => void;
+
+  // Load data from API for a specific date key (YYYY-MM-DD)
+  setDayLogForDate: (dateKey: string, data: Partial<DayLogData>) => void;
 }
 
 const defaultDayData: DayLogData = {
@@ -286,6 +289,17 @@ export function AddLogProvider({ children }: { children: ReactNode }) {
     console.log('Saved data for', getDateKey(selectedDate), getCurrentDayData());
   };
 
+  // Load data from API for a specific date key (YYYY-MM-DD)
+  const setDayLogForDate = (dateKey: string, data: Partial<DayLogData>) => {
+    setDayLogs((prev) => ({
+      ...prev,
+      [dateKey]: {
+        ...defaultDayData,
+        ...data,
+      },
+    }));
+  };
+
   return (
     <AddLogContext.Provider
       value={{
@@ -313,6 +327,7 @@ export function AddLogProvider({ children }: { children: ReactNode }) {
         setCupStyle,
         isDateInPeriod,
         saveCurrentDay,
+        setDayLogForDate,
       }}
     >
       {children}
