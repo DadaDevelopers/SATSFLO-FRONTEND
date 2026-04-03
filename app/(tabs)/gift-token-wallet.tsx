@@ -17,7 +17,7 @@ export default function GiftTokenWalletScreen() {
   };
 
   const handleProceed = () => {
-    router.push("/(tabs)/send-gift-token");
+    router.push("/(tabs)/send-gift-amount");
   };
 
   return (

@@ -4,7 +4,13 @@ import { Feather } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
-import { default as React, default as React, useCallback, useEffect, useState } from "react";
+import {
+  default as React,
+  default as React,
+  useCallback,
+  useEffect,
+  useState,
+} from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -14,7 +20,7 @@ import {
   StatusBar,
   Text,
   TouchableOpacity,
-  View
+  View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -132,7 +138,9 @@ export default function PartnerSettingsScreen() {
     }
   };
 
-  const handleGiftTokenPress = () => router.push("/(tabs)/send-gift-token");
+  const handleGiftTokenPress = () => {
+    router.push("/(tabs)/gift-token-wallet");
+  };
 
   const pairedDuration = () => {
     if (!partnerInfo?.connected_since) return "Paired recently";
