@@ -1,14 +1,47 @@
-import { api } from '@/lib/api';
-import logger from '@/lib/logger';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { router } from 'expo-router';
-import React, { createContext, ReactNode, useContext, useEffect, useState } from 'react';
+import { api } from "@/lib/api";
+import logger from "@/lib/logger";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { router } from "expo-router";
+import React, {
+  createContext,
+  ReactNode,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 
-type FlowLevel = 'light' | 'medium' | 'heavy' | 'veryHeavy' | null;
-type Symptom = 'cramps' | 'fatigue' | 'bloating' | 'headache' | 'bellyAches' | 'acne' | 'soreBreasts' | 'cravings';
-type Mood = 'normal' | 'happy' | 'calm' | 'hyped' | 'inLove' | 'peaceful' | 'lonely' | 'angry' | 'silly' | 'sad' | 'relaxed';
-type Medicine = 'condom' | 'pill' | 'patch' | 'iud' | 'implant' | 'vRing' | 'injection' | 'spermicide';
-type CupStyle = 'classic' | 'tumbler' | 'tall' | 'mug';
+type FlowLevel = "light" | "medium" | "heavy" | "veryHeavy" | null;
+type Symptom =
+  | "cramps"
+  | "fatigue"
+  | "bloating"
+  | "headache"
+  | "bellyAches"
+  | "acne"
+  | "soreBreasts"
+  | "cravings";
+type Mood =
+  | "normal"
+  | "happy"
+  | "calm"
+  | "hyped"
+  | "inLove"
+  | "peaceful"
+  | "lonely"
+  | "angry"
+  | "silly"
+  | "sad"
+  | "relaxed";
+type Medicine =
+  | "condom"
+  | "pill"
+  | "patch"
+  | "iud"
+  | "implant"
+  | "vRing"
+  | "injection"
+  | "spermicide";
+type CupStyle = "classic" | "tumbler" | "tall" | "mug";
 
 // Data stored per date
 interface DayLogData {
@@ -20,9 +53,9 @@ interface DayLogData {
   medicine: Medicine[];
   note: string;
   weight: string;
-  weightUnit: 'kg' | 'lb';
+  weightUnit: "kg" | "lb";
   temperature: string;
-  temperatureUnit: 'C' | 'F';
+  temperatureUnit: "C" | "F";
   waterIntake: number;
 }
 
@@ -62,11 +95,11 @@ interface AddLogContextType {
 
   // Weight
   setWeight: (weight: string) => void;
-  setWeightUnit: (unit: 'kg' | 'lb') => void;
+  setWeightUnit: (unit: "kg" | "lb") => void;
 
   // Temperature
   setTemperature: (temp: string) => void;
-  setTemperatureUnit: (unit: 'C' | 'F') => void;
+  setTemperatureUnit: (unit: "C" | "F") => void;
 
   // Water
   setWaterIntake: (amount: number) => void;
@@ -87,7 +120,7 @@ interface AddLogContextType {
   dayLogs: Record<string, DayLogData>;
 
   // Save all data for current date
-  saveCurrentDay: () => Promise<void>;
+  saveCurrentDay: () => void;
 
   // Load data from API for a specific date key (YYYY-MM-DD)
   setDayLogForDate: (dateKey: string, data: Partial<DayLogData>) => void;
@@ -100,18 +133,18 @@ const defaultDayData: DayLogData = {
   symptoms: [],
   moods: [],
   medicine: [],
-  note: '',
-  weight: '',
-  weightUnit: 'kg',
-  temperature: '',
-  temperatureUnit: 'C',
+  note: "",
+  weight: "",
+  weightUnit: "kg",
+  temperature: "",
+  temperatureUnit: "C",
   waterIntake: 0,
 };
 
 const defaultSettings: GlobalSettings = {
   waterTarget: 2500,
   cupCapacity: 300,
-  cupStyle: 'classic',
+  cupStyle: "classic",
 };
 
 const AddLogContext = createContext<AddLogContextType | undefined>(undefined);
@@ -119,8 +152,8 @@ const AddLogContext = createContext<AddLogContextType | undefined>(undefined);
 // Helper to get date key for storage
 const getDateKey = (date: Date): string => {
   const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, '0');
-  const d = String(date.getDate()).padStart(2, '0');
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
   return `${y}-${m}-${d}`;
 };
 
@@ -134,12 +167,12 @@ export function AddLogProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const loadData = async () => {
       try {
-        const savedLogs = await AsyncStorage.getItem('dayLogs');
-        const savedSettings = await AsyncStorage.getItem('logSettings');
+        const savedLogs = await AsyncStorage.getItem("dayLogs");
+        const savedSettings = await AsyncStorage.getItem("logSettings");
         if (savedLogs) setDayLogs(JSON.parse(savedLogs));
         if (savedSettings) setSettings(JSON.parse(savedSettings));
       } catch (err) {
-        logger.error('Failed to load logs from storage', err);
+        logger.error("Failed to load logs from storage", err);
       } finally {
         setIsLoaded(true);
       }
@@ -150,40 +183,54 @@ export function AddLogProvider({ children }: { children: ReactNode }) {
   // Fetch logs from server for selected date
   const fetchLogsForDate = async (dateStr: string) => {
     try {
-      const token = await AsyncStorage.getItem('accessToken');
+      const token = await AsyncStorage.getItem("accessToken");
       if (token) {
         const { response, data } = await api.get(`/logs/${dateStr}`, token);
         if (response.status === 401) {
-          await AsyncStorage.removeItem('accessToken');
-          router.replace('/(auth)/login');
+          await AsyncStorage.removeItem("accessToken");
+          router.replace("/(auth)/login");
           return;
         }
         if (response.ok && data) {
           const logData = data.data ?? data;
-          setDayLogs(prev => {
+          setDayLogs((prev) => {
             const existing = prev[dateStr];
             return {
               ...prev,
               [dateStr]: {
                 flowLevel: logData.flow || existing?.flowLevel || null,
-                periodStart: logData.period_start ?? existing?.periodStart ?? false,
+                periodStart:
+                  logData.period_start ?? existing?.periodStart ?? false,
                 periodEnd: logData.period_end ?? existing?.periodEnd ?? false,
-                symptoms: (logData.symptoms?.length > 0) ? logData.symptoms : (existing?.symptoms ?? []),
-                moods: (logData.mood?.length > 0) ? logData.mood : (existing?.moods ?? []),
-                medicine: (logData.medicine?.length > 0) ? logData.medicine : (existing?.medicine ?? []),
-                note: logData.notes || existing?.note || '',
-                weight: logData.weight || existing?.weight || '',
-                weightUnit: logData.weight_unit || existing?.weightUnit || 'kg',
-                temperature: logData.temperature || existing?.temperature || '',
-                temperatureUnit: logData.temperature_unit || existing?.temperatureUnit || 'C',
-                waterIntake: logData.water_intake != null ? logData.water_intake : (existing?.waterIntake ?? 0),
+                symptoms:
+                  logData.symptoms?.length > 0
+                    ? logData.symptoms
+                    : (existing?.symptoms ?? []),
+                moods:
+                  logData.mood?.length > 0
+                    ? logData.mood
+                    : (existing?.moods ?? []),
+                medicine:
+                  logData.medicine?.length > 0
+                    ? logData.medicine
+                    : (existing?.medicine ?? []),
+                note: logData.notes || existing?.note || "",
+                weight: logData.weight || existing?.weight || "",
+                weightUnit: logData.weight_unit || existing?.weightUnit || "kg",
+                temperature: logData.temperature || existing?.temperature || "",
+                temperatureUnit:
+                  logData.temperature_unit || existing?.temperatureUnit || "C",
+                waterIntake:
+                  logData.water_intake != null
+                    ? logData.water_intake
+                    : (existing?.waterIntake ?? 0),
               },
             };
           });
         }
       }
     } catch (err) {
-      logger.error('Failed to fetch logs from server', err);
+      logger.error("Failed to fetch logs from server", err);
     }
   };
 
@@ -198,14 +245,14 @@ export function AddLogProvider({ children }: { children: ReactNode }) {
   // Save logs whenever they change
   useEffect(() => {
     if (isLoaded) {
-      AsyncStorage.setItem('dayLogs', JSON.stringify(dayLogs));
+      AsyncStorage.setItem("dayLogs", JSON.stringify(dayLogs));
     }
   }, [dayLogs, isLoaded]);
 
   // Save settings whenever they change
   useEffect(() => {
     if (isLoaded) {
-      AsyncStorage.setItem('logSettings', JSON.stringify(settings));
+      AsyncStorage.setItem("logSettings", JSON.stringify(settings));
     }
   }, [settings, isLoaded]);
 
@@ -333,7 +380,7 @@ export function AddLogProvider({ children }: { children: ReactNode }) {
     updateCurrentDay({ weight });
   };
 
-  const setWeightUnit = (unit: 'kg' | 'lb') => {
+  const setWeightUnit = (unit: "kg" | "lb") => {
     updateCurrentDay({ weightUnit: unit });
   };
 
@@ -342,7 +389,7 @@ export function AddLogProvider({ children }: { children: ReactNode }) {
     updateCurrentDay({ temperature });
   };
 
-  const setTemperatureUnit = (unit: 'C' | 'F') => {
+  const setTemperatureUnit = (unit: "C" | "F") => {
     updateCurrentDay({ temperatureUnit: unit });
   };
 
@@ -354,7 +401,10 @@ export function AddLogProvider({ children }: { children: ReactNode }) {
 
   const addWater = (amount: number) => {
     const currentData = getCurrentDayData();
-    const newAmount = Math.min(currentData.waterIntake + amount, settings.waterTarget);
+    const newAmount = Math.min(
+      currentData.waterIntake + amount,
+      settings.waterTarget,
+    );
     updateCurrentDay({ waterIntake: newAmount });
   };
 
@@ -372,49 +422,14 @@ export function AddLogProvider({ children }: { children: ReactNode }) {
   };
 
   // Save current day (for explicit save action)
-  const saveCurrentDay = async () => {
-    const dateStr = getDateKey(selectedDate);
-    const dayData = getCurrentDayData();
-    
-    try {
-      const token = await AsyncStorage.getItem('accessToken');
-      if (token) {
-        // 1. Sync the daily logs
-        const { response: logRes } = await api.put(`/logs/${dateStr}`, {
-          flow: dayData.flowLevel,
-          symptoms: dayData.symptoms,
-          mood: dayData.moods,
-          medicine: dayData.medicine,
-          notes: dayData.note,
-          weight: dayData.weight,
-          weight_unit: dayData.weightUnit,
-          temperature: dayData.temperature,
-          temperature_unit: dayData.temperatureUnit,
-          water_intake: dayData.waterIntake,
-        }, token);
-
-        if (!logRes.ok) {
-          throw new Error(logRes.status === 401 ? 'Session expired. Please log in again.' : 'Failed to save logs to server');
-        }
-
-        // 2. Start period cycle if marked
-        if (dayData.periodStart) {
-          const { response: cycleRes } = await api.post('/cycles/start', { start_date: dateStr }, token);
-          if (!cycleRes.ok) logger.warn('Failed to start cycle on server');
-        }
-        
-        // 3. End period cycle if marked
-        if (dayData.periodEnd) {
-          const { response: cycleRes } = await api.post('/cycles/end', { end_date: dateStr }, token);
-          if (!cycleRes.ok) logger.warn('Failed to end cycle on server');
-        }
-        
-        logger.log('Successfully synced all data with server for', dateStr);
-      }
-    } catch (err) {
-      logger.error('Failed to sync with server', err);
-      throw err; // Propagate to caller for UI feedback
-    }
+  const saveCurrentDay = () => {
+    // Data is already being saved on each change
+    // This can be used for additional actions like API calls
+    console.log(
+      "Saved data for",
+      getDateKey(selectedDate),
+      getCurrentDayData(),
+    );
   };
 
   // Load data from API for a specific date key (YYYY-MM-DD)
@@ -457,6 +472,7 @@ export function AddLogProvider({ children }: { children: ReactNode }) {
         isDateInPeriod,
         saveCurrentDay,
         setDayLogForDate,
+        setDayLogForDate,
       }}
     >
       {children}
@@ -467,7 +483,7 @@ export function AddLogProvider({ children }: { children: ReactNode }) {
 export function useAddLog() {
   const context = useContext(AddLogContext);
   if (context === undefined) {
-    throw new Error('useAddLog must be used within an AddLogProvider');
+    throw new Error("useAddLog must be used within an AddLogProvider");
   }
   return context;
 }

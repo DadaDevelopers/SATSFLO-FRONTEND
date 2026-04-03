@@ -1,17 +1,8 @@
 import { api } from "@/lib/api";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useRouter } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
-import {
-  Alert,
-  FlatList,
-  Image,
-  Modal,
-  ScrollView,
-  Text,
-  TouchableOpacity,
-  useWindowDimensions,
-  View,
-} from "react-native";
+import { ActivityIndicator, Alert, FlatList, Image } from "react-native";
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -235,7 +226,7 @@ export default function AddLogScreen() {
     cupCapacity,
     isDateInPeriod,
     saveCurrentDay,
-    dayLogs,
+    setDayLogForDate,
   } = useAddLog();
   const setContextSelectedDate = setSelectedDate;
 
@@ -246,6 +237,66 @@ export default function AddLogScreen() {
   const [viewingMonth, setViewingMonth] = useState(today.getMonth());
   const [viewingYear, setViewingYear] = useState(today.getFullYear());
   const chevronRotation = useSharedValue(0);
+
+  // Log loading state
+  const [logLoading, setLogLoading] = useState(false);
+  const [logError, setLogError] = useState<string | null>(null);
+
+  // Fetch log for selected date
+  useEffect(() => {
+    let cancelled = false;
+    const fetchLog = async () => {
+      setLogLoading(true);
+      setLogError(null);
+      const y = selectedDate.getFullYear();
+      const m = String(selectedDate.getMonth() + 1).padStart(2, "0");
+      const d = String(selectedDate.getDate()).padStart(2, "0");
+      const dateKey = `${y}-${m}-${d}`;
+      try {
+        const token = await AsyncStorage.getItem("accessToken");
+        if (!token) {
+          setLogLoading(false);
+          return;
+        }
+        const { response, data } = await api.get(
+          `/logs?date=${dateKey}`,
+          token,
+        );
+        if (cancelled) return;
+        if (response.status === 404) {
+          // No log for this date — reset to defaults
+          setDayLogForDate(dateKey, {});
+        } else if (!response.ok) {
+          setLogError("Failed to load log data. Please try again.");
+        } else {
+          const log = data?.data ?? data;
+          setDayLogForDate(dateKey, {
+            periodStart: log.period_start ?? false,
+            periodEnd: log.period_end ?? false,
+            flowLevel: log.flow_level ?? null,
+            symptoms: log.symptoms ?? [],
+            moods: log.moods ?? log.mood ?? [],
+            medicine: log.medicine ?? [],
+            note: log.note ?? log.notes ?? "",
+            weight: log.weight != null ? String(log.weight) : "",
+            weightUnit: log.weight_unit ?? "kg",
+            temperature: log.temperature != null ? String(log.temperature) : "",
+            temperatureUnit: log.temperature_unit ?? "C",
+            waterIntake: log.water_intake_ml ?? 0,
+          });
+        }
+      } catch {
+        if (!cancelled)
+          setLogError("Unable to load your log. Check your connection.");
+      } finally {
+        if (!cancelled) setLogLoading(false);
+      }
+    };
+    fetchLog();
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedDate]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Period edit modal state
   const [periodEditModalVisible, setPeriodEditModalVisible] = useState(false);
@@ -774,11 +825,38 @@ export default function AddLogScreen() {
           </View>
         )}
 
+        {/* Error banner */}
+        {logError && (
+          <View className="mx-4 mb-2 px-4 py-3 bg-red-100 rounded-xl flex-row items-center justify-between">
+            <Text className="text-red-600 text-sm flex-1">{logError}</Text>
+            <TouchableOpacity
+              onPress={() => setLogError(null)}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            >
+              <Text className="text-red-400 text-base ml-2">✕</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
         <ScrollView
           className="flex-1 px-4"
           contentContainerStyle={{ paddingBottom: 100, paddingTop: 12 }}
           showsVerticalScrollIndicator={false}
         >
+          {/* Loading overlay */}
+          {logLoading && (
+            <View
+              className="absolute inset-0 items-center justify-center z-10"
+              style={{ backgroundColor: "rgba(255,64,129,0.15)" }}
+            >
+              <View className="bg-white rounded-2xl px-6 py-5 items-center shadow-sm">
+                <ActivityIndicator size="large" color="#FF4081" />
+                <Text className="text-gray-600 text-sm mt-3 font-medium">
+                  Loading your log...
+                </Text>
+              </View>
+            </View>
+          )}
           {/* Period */}
           <Section
             title="Period"
