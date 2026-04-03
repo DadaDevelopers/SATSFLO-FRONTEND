@@ -241,6 +241,9 @@ export function CycleTracker({ currentDay, cycleLength = 28, periodLength = 5, c
         {/* Day numbers */}
         {dayPositions.map(({ day, label, x, y }) => {
           if (day === currentDay) return null;
+          const inMenstrual = day >= 1 && day <= menstrualEnd;
+          const inOvulation = day >= ovulationStart && day <= ovulationEnd;
+          const textColor = (inMenstrual || inOvulation) ? "#FFFFFF" : Colors.textMuted;
           return (
             <SvgText
               key={day}
@@ -249,7 +252,7 @@ export function CycleTracker({ currentDay, cycleLength = 28, periodLength = 5, c
               fontSize={11 * scale}
               fontFamily="Manrope_500Medium"
               fontWeight={getFontWeight(day, currentDay)}
-              fill={Colors.textMuted}
+              fill={textColor}
               textAnchor="middle"
             >
               {label}
