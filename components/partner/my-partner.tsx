@@ -58,7 +58,7 @@ export default function MyPartnerScreen() {
     };
 
     const handleGiftTokenPress = () => {
-        router.push("/(tabs)/send-gift-token");
+        router.push("/(tabs)/gift-token-wallet");
     };
 
     const confirmUnpair = () => {

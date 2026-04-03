@@ -4,7 +4,7 @@ import { api } from "@/lib/api";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
-import { Text, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Alert, Text, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Svg, { Circle, Path, Rect } from "react-native-svg";
 
@@ -82,6 +82,9 @@ export default function DrinkWaterScreen() {
   const [localTarget, setLocalTarget] = useState(waterTarget);
   const [localCupCapacity, setLocalCupCapacity] = useState(cupCapacity);
   const [localCupStyle, setLocalCupStyle] = useState(cupStyle);
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     setLocalTarget(waterTarget);
@@ -93,6 +96,8 @@ export default function DrinkWaterScreen() {
     const loadWaterSettings = async () => {
       const token = await AsyncStorage.getItem("accessToken");
       if (!token) return;
+      setLoading(true);
+      setError(null);
       try {
         const { response, data } = await api.get("/water-settings", token);
         if (response.ok) {
@@ -101,27 +106,71 @@ export default function DrinkWaterScreen() {
             setLocalTarget(d.daily_goal_ml);
             setWaterTarget(d.daily_goal_ml);
           }
+          if (d?.cup_capacity) {
+            setLocalCupCapacity(d.cup_capacity);
+            setCupCapacity(d.cup_capacity);
+          }
+          if (d?.cup_style) {
+            setLocalCupStyle(d.cup_style);
+            setCupStyle(d.cup_style);
+          }
+        } else {
+          setError("Failed to load water settings.");
         }
-      } catch {}
+      } catch {
+        setError("Network error. Please check your connection.");
+      } finally {
+        setLoading(false);
+      }
     };
     loadWaterSettings();
   }, []);
 
   const handleSave = async () => {
-    setWaterTarget(localTarget);
-    setCupCapacity(localCupCapacity);
-    setCupStyle(localCupStyle);
+    if (!localCupStyle) {
+      Alert.alert("Validation", "Please select a cup style.");
+      return;
+    }
+    if (!targetOptions.includes(localTarget)) {
+      Alert.alert("Validation", "Please select a valid daily target.");
+      return;
+    }
+    if (!capacityOptions.includes(localCupCapacity)) {
+      Alert.alert("Validation", "Please select a valid cup capacity.");
+      return;
+    }
+
+    const token = await AsyncStorage.getItem("accessToken");
+    if (!token) {
+      Alert.alert("Error", "Session expired. Please log in again.");
+      return;
+    }
+
+    setSaving(true);
+    setError(null);
     try {
-      const token = await AsyncStorage.getItem("accessToken");
-      if (token) {
-        await api.put(
-          "/water-settings",
-          { daily_goal_ml: localTarget },
-          token
-        );
+      const { response } = await api.put(
+        "/water-settings",
+        {
+          daily_goal_ml: localTarget,
+          cup_capacity: localCupCapacity,
+          cup_style: localCupStyle,
+        },
+        token
+      );
+      if (response.ok) {
+        setWaterTarget(localTarget);
+        setCupCapacity(localCupCapacity);
+        setCupStyle(localCupStyle);
+        router.back();
+      } else {
+        Alert.alert("Error", "Failed to save water settings. Please try again.");
       }
-    } catch {}
-    router.back();
+    } catch {
+      Alert.alert("Error", "Network error. Please check your connection.");
+    } finally {
+      setSaving(false);
+    }
   };
 
   const cupStyles: CupStyle[] = ["classic", "tumbler", "tall", "mug"];
@@ -168,6 +217,23 @@ export default function DrinkWaterScreen() {
 
         {/* Content */}
         <View style={{ flex: 1 }}>
+
+        {/* Loading indicator */}
+        {loading && (
+          <View style={{ alignItems: "center", paddingVertical: 12 }}>
+            <ActivityIndicator color="#FF4081" />
+            <Text style={{ color: "#FF4081", fontSize: 12, marginTop: 4 }}>
+              Loading settings...
+            </Text>
+          </View>
+        )}
+
+        {/* Error message */}
+        {error && (
+          <View style={{ marginHorizontal: 16, marginBottom: 8, backgroundColor: "#FFE5EE", borderRadius: 8, padding: 10 }}>
+            <Text style={{ color: "#CC0045", fontSize: 13, textAlign: "center" }}>{error}</Text>
+          </View>
+        )}
 
         {/* Settings Card */}
         <View className="px-4 mb-4">
@@ -226,10 +292,11 @@ export default function DrinkWaterScreen() {
         <View style={{ alignItems: "center" }}>
           <TouchableOpacity
             onPress={handleSave}
+            disabled={saving || loading}
             style={{
               width: 250,
               height: 56,
-              backgroundColor: "#FF82AD",
+              backgroundColor: saving || loading ? "#FFB3CC" : "#FF82AD",
               borderWidth: 0.5,
               borderColor: "#FF669A",
               borderRadius: 1000,
@@ -239,18 +306,22 @@ export default function DrinkWaterScreen() {
             }}
             activeOpacity={0.8}
           >
-            <Text
-              style={{
-                fontFamily: "Inter",
-                fontWeight: "500",
-                fontSize: 15,
-                lineHeight: 18,
-                color: "#FFFFFF",
-                textAlign: "center",
-              }}
-            >
-              Save
-            </Text>
+            {saving ? (
+              <ActivityIndicator color="#FFFFFF" />
+            ) : (
+              <Text
+                style={{
+                  fontFamily: "Inter",
+                  fontWeight: "500",
+                  fontSize: 15,
+                  lineHeight: 18,
+                  color: "#FFFFFF",
+                  textAlign: "center",
+                }}
+              >
+                Save
+              </Text>
+            )}
           </TouchableOpacity>
 
           {/* Home indicator strip */}

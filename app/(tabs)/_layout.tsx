@@ -51,13 +51,6 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="send-gift-token"
-        options={{
-          title: "Send Gift Token",
-          href: null,
-        }}
-      />
-      <Tabs.Screen
         name="send-gift-amount"
         options={{
           title: "Send Gift Amount",

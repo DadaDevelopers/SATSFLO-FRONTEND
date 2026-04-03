@@ -55,7 +55,7 @@ export default function PartnerCalendarScreen() {
     };
 
     const handleGiftTokenPress = () => {
-        router.push("/(tabs)/send-gift-token");
+        router.push("/(tabs)/gift-token-wallet");
     };
 
     const weekDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];

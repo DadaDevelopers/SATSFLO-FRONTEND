@@ -64,7 +64,7 @@ export default function PartnerDashboardScreen() {
     };
 
     const handleGiftTokenPress = () => {
-        router.push("/(tabs)/send-gift-token");
+        router.push("/(tabs)/gift-token-wallet");
     };
 
     return (

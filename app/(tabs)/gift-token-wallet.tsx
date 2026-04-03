@@ -8,13 +8,11 @@ export default function GiftTokenWalletScreen() {
   const insets = useSafeAreaInsets();
 
   const handleBack = () => {
-    if (router.canGoBack()) {
-      router.back();
-    }
+    router.back();
   };
 
   const handleProceed = () => {
-    router.push("/(tabs)/send-gift-token");
+    router.push("/(tabs)/send-gift-amount");
   };
 
   return (
