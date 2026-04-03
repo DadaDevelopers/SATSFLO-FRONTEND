@@ -84,7 +84,7 @@ function CurrentDayPulse({ x, y, scale }: { x: number; y: number; scale: number 
       -1,
       false
     );
-  }, []);
+  }, [scaleAnim, opacity]);
 
   const pulseStyle = useAnimatedStyle(() => ({
     transform: [{ scale: scaleAnim.value }],
