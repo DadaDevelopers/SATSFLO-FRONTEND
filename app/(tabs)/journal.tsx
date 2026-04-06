@@ -2,8 +2,8 @@ import { api } from '@/lib/api';
 import { Feather } from '@expo/vector-icons';
 import Svg, { Path } from 'react-native-svg';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { router } from 'expo-router';
-import React, { useEffect, useState } from 'react';
+import { router, useFocusEffect } from 'expo-router';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ScrollView,
   StatusBar,
@@ -24,12 +24,20 @@ function formatDate(d: Date): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
+const MOOD_EMOJI: Record<string, string> = {
+  inlove: '😍', peaceful: '😌', lonely: '😢', angry: '😠',
+  normal: '🙂', happy: '😄', calm: '😊', hyped: '🤩',
+};
+
 interface JournalEntry {
   id: string;
   date: string;
   title?: string;
   content?: string;
   mood?: string;
+  symptoms?: string[];
+  images?: string[];
+  cycle_day?: number;
 }
 
 export default function JournalScreen() {
@@ -40,22 +48,51 @@ export default function JournalScreen() {
   const [currentYear, setCurrentYear] = useState(today.getFullYear());
   const [selectedDate, setSelectedDate] = useState<string>(() => formatDate(today));
   const [entries, setEntries] = useState<JournalEntry[]>([]);
+  const [searchResults, setSearchResults] = useState<JournalEntry[]>([]);
+  const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  const loadEntries = useCallback(async () => {
+    const token = await AsyncStorage.getItem('accessToken');
+    if (!token) return;
+    const mm = String(currentMonth + 1).padStart(2, '0');
+    try {
+      const { response, data } = await api.get(`/journal?month=${currentYear}-${mm}`, token);
+      if (response.ok) {
+        const list = data?.data ?? data ?? [];
+        setEntries(Array.isArray(list) ? list : []);
+      }
+    } catch {}
+  }, [currentMonth, currentYear]);
+
+  // Reload when screen comes back into focus (e.g. after add-entry)
+  useFocusEffect(useCallback(() => {
+    loadEntries();
+  }, [loadEntries]));
+
+  // Debounced server-side search
   useEffect(() => {
-    const loadEntries = async () => {
+    if (!searchText.trim()) {
+      setSearchResults([]);
+      return;
+    }
+    if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
+    searchTimerRef.current = setTimeout(async () => {
       const token = await AsyncStorage.getItem('accessToken');
       if (!token) return;
       const mm = String(currentMonth + 1).padStart(2, '0');
       try {
-        const { response, data } = await api.get(`/journal?month=${currentYear}-${mm}`, token);
+        const { response, data } = await api.get(
+          `/journal/search?q=${encodeURIComponent(searchText.trim())}&month=${currentYear}-${mm}`,
+          token
+        );
         if (response.ok) {
           const list = data?.data ?? data ?? [];
-          setEntries(Array.isArray(list) ? list : []);
+          setSearchResults(Array.isArray(list) ? list : []);
         }
       } catch {}
-    };
-    loadEntries();
-  }, [currentMonth, currentYear]);
+    }, 400);
+    return () => { if (searchTimerRef.current) clearTimeout(searchTimerRef.current); };
+  }, [searchText, currentMonth, currentYear]);
 
   // Get all 7 dates for the week containing selectedDate
   const getWeekDates = (): Date[] => {
@@ -65,14 +102,10 @@ export default function JournalScreen() {
     return Array.from({ length: 7 }, (_, i) => new Date(y, m - 1, d - dayOfWeek + i));
   };
 
-  const filteredEntries = entries.filter((e) => {
-    const matchesSearch = !searchText ||
-      e.title?.toLowerCase().includes(searchText.toLowerCase()) ||
-      e.content?.toLowerCase().includes(searchText.toLowerCase());
-    const matchesDate = !selectedDate ||
-      (e.date ?? '').split('T')[0] === selectedDate;
-    return matchesSearch && matchesDate;
-  });
+  // When searching: show server results; when not: show entries for selected date
+  const filteredEntries = searchText.trim()
+    ? searchResults
+    : entries.filter(e => !selectedDate || (e.date ?? '').split('T')[0] === selectedDate);
 
   const handlePreviousMonth = () => {
     if (currentMonth === 0) {
@@ -219,17 +252,35 @@ export default function JournalScreen() {
           contentContainerStyle={{ paddingBottom: 20 }}
         >
           {filteredEntries.map((entry) => (
-            <View
-              key={entry.id}
-              className="bg-[#FFE6EE] rounded-xl px-4 py-3 mb-3"
-            >
-              {entry.title ? (
-                <Text className="text-[#1E1E1E] font-medium text-sm mb-1">{entry.title}</Text>
-              ) : null}
+            <View key={entry.id} className="bg-[#FFE6EE] rounded-xl px-4 py-3 mb-3">
+              {/* Title + mood */}
+              <View className="flex-row items-center justify-between mb-1">
+                {entry.title ? (
+                  <Text className="text-[#1E1E1E] font-medium text-sm flex-1 mr-2">{entry.title}</Text>
+                ) : <View className="flex-1" />}
+                {entry.mood ? <Text className="text-lg">{MOOD_EMOJI[entry.mood] ?? ''}</Text> : null}
+              </View>
+              {/* Content preview */}
               {entry.content ? (
-                <Text className="text-[#4D4D4D] text-xs" numberOfLines={3}>{entry.content}</Text>
+                <Text className="text-[#4D4D4D] text-xs" numberOfLines={2}>{entry.content}</Text>
               ) : null}
-              <Text className="text-[#999] text-xs mt-1">{new Date(entry.date).toDateString()}</Text>
+              {/* Symptom tags */}
+              {entry.symptoms && entry.symptoms.length > 0 ? (
+                <View className="flex-row flex-wrap gap-1 mt-2">
+                  {entry.symptoms.map((tag, i) => (
+                    <View key={i} className="px-2 py-0.5 bg-[#FFCCDD] rounded-full">
+                      <Text className="text-[#090909] text-[10px]">{tag}</Text>
+                    </View>
+                  ))}
+                </View>
+              ) : null}
+              {/* Date + cycle day */}
+              <View className="flex-row justify-between mt-2">
+                <Text className="text-[#999] text-xs">{(entry.date ?? '').split('T')[0]}</Text>
+                {entry.cycle_day ? (
+                  <Text className="text-[#999] text-xs">Cycle day {entry.cycle_day}</Text>
+                ) : null}
+              </View>
             </View>
           ))}
           <TouchableOpacity

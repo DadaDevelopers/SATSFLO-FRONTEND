@@ -1,7 +1,9 @@
 import { HomeIndicatorArea } from "@/components/signup/home-indicator-area";
+import { api } from "@/lib/api";
 import { Feather } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Alert,
   Animated,
@@ -126,7 +128,29 @@ export default function RemindersScreen() {
   const flipToggle = (key: ReminderKey) =>
     setToggles((prev) => ({ ...prev, [key]: !prev[key] }));
 
-  const handleSave = () => {
+  // Load saved preferences on mount
+  useEffect(() => {
+    const load = async () => {
+      const token = await AsyncStorage.getItem("accessToken");
+      if (!token) return;
+      try {
+        const { response, data } = await api.get("/users/preferences", token);
+        if (response.ok) {
+          const prefs = data?.data?.reminders ?? data?.reminders;
+          if (prefs) setToggles((prev) => ({ ...prev, ...prefs }));
+        }
+      } catch {}
+    };
+    load();
+  }, []);
+
+  const handleSave = async () => {
+    const token = await AsyncStorage.getItem("accessToken");
+    if (token) {
+      try {
+        await api.put("/users/preferences", { reminders: toggles }, token);
+      } catch {}
+    }
     Alert.alert("Saved", "Your reminder preferences have been updated.", [
       { text: "OK", onPress: () => router.push("/(tabs)/settings" as any) },
     ]);
