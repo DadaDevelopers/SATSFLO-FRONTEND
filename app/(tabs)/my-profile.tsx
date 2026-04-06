@@ -87,6 +87,7 @@ export default function MyProfileScreen() {
           setFullName(profile.name ?? "");
           setEmail(profile.email ?? "");
           setPhone(profile.phone ?? "");
+          if (profile.avatar_url) setProfileImage(profile.avatar_url);
           if (profile.date_of_birth) {
             const parts = profile.date_of_birth.split("T")[0].split("-");
             if (parts.length === 3)
@@ -188,21 +189,20 @@ export default function MyProfileScreen() {
     setModalVisible(false);
   };
 
-  const handleAvatarUpload = async (uri: string) => {
+  const uploadAvatar = async (base64: string) => {
     const token = await AsyncStorage.getItem("accessToken");
     if (!token) return;
-    setUploadingAvatar(true);
     try {
-      const url = await uploadAvatar(uri, token);
-      if (url) {
-        setProfileImage(url);
-        const userJson = await AsyncStorage.getItem("user");
-        const stored = userJson ? JSON.parse(userJson) : {};
-        await AsyncStorage.setItem("user", JSON.stringify({ ...stored, avatar_url: url }));
+      const { response, data } = await api.post(
+        "/users/profile/avatar",
+        { avatar: `data:image/jpeg;base64,${base64}` },
+        token
+      );
+      if (response.ok) {
+        const url = data?.data?.avatar_url ?? data?.avatar_url;
+        if (url) setProfileImage(url);
       }
-    } finally {
-      setUploadingAvatar(false);
-    }
+    } catch {}
   };
 
   const pickFromGallery = async () => {
@@ -212,10 +212,11 @@ export default function MyProfileScreen() {
       allowsEditing: true,
       aspect: [1, 1],
       quality: 0.8,
+      base64: true,
     });
     if (!result.canceled && result.assets[0]) {
       setProfileImage(result.assets[0].uri);
-      await handleAvatarUpload(result.assets[0].uri);
+      if (result.assets[0].base64) await uploadAvatar(result.assets[0].base64);
     }
   };
 
@@ -225,10 +226,11 @@ export default function MyProfileScreen() {
       allowsEditing: true,
       aspect: [1, 1],
       quality: 0.8,
+      base64: true,
     });
     if (!result.canceled && result.assets[0]) {
       setProfileImage(result.assets[0].uri);
-      await handleAvatarUpload(result.assets[0].uri);
+      if (result.assets[0].base64) await uploadAvatar(result.assets[0].base64);
     }
   };
 

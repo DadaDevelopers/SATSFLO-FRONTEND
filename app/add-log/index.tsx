@@ -258,10 +258,7 @@ export default function AddLogScreen() {
           setLogLoading(false);
           return;
         }
-        const { response, data } = await api.get(
-          `/logs?date=${dateKey}`,
-          token,
-        );
+        const { response, data } = await api.get(`/logs/${dateKey}`, token);
         if (cancelled) return;
         if (response.status === 404) {
           // No log for this date — reset to defaults
@@ -571,8 +568,11 @@ export default function AddLogScreen() {
             symptoms: dayData.symptoms,
             mood: dayData.moods,
             notes: dayData.note,
+            medicine: dayData.medicine,
             weight: dayData.weight,
+            weight_unit: dayData.weightUnit,
             temperature: dayData.temperature,
+            temperature_unit: dayData.temperatureUnit,
             water_intake: dayData.waterIntake,
           },
           token,
