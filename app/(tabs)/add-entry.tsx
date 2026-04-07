@@ -3,7 +3,7 @@ import { Feather } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as ImagePicker from 'expo-image-picker';
 import { router } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Alert,
   Image,
@@ -57,6 +57,34 @@ export default function AddEntryScreen() {
   const [notes, setNotes] = useState('');
   const [selectedImages, setSelectedImages] = useState<string[]>([]);
   const [showMediaPicker, setShowMediaPicker] = useState(false);
+  const [lastPeriodStart, setLastPeriodStart] = useState('');
+  const [cycleLength, setCycleLength] = useState(28);
+
+  useEffect(() => {
+    const loadCycle = async () => {
+      const token = await AsyncStorage.getItem('accessToken');
+      if (!token) return;
+      try {
+        const { response, data } = await api.get('/cycles/current', token);
+        if (response.ok) {
+          const d = data?.data ?? data;
+          if (d?.last_period_start) setLastPeriodStart(d.last_period_start);
+          if (d?.cycle_length) setCycleLength(d.cycle_length);
+        }
+      } catch {}
+    };
+    loadCycle();
+  }, []);
+
+  const computeCycleDay = (): number | null => {
+    if (!lastPeriodStart) return null;
+    const [y, m, d] = selectedDate.split('-').map(Number);
+    const selDate = new Date(y, m - 1, d);
+    const periodDate = new Date(lastPeriodStart + 'T00:00:00');
+    const diffDays = Math.floor((selDate.getTime() - periodDate.getTime()) / 86400000);
+    if (diffDays < 0) return null;
+    return (diffDays % cycleLength) + 1;
+  };
 
   const getWeekDates = (): Date[] => {
     const [y, m, d] = selectedDate.split('-').map(Number);
@@ -111,19 +139,31 @@ export default function AddEntryScreen() {
     const dateStr = selectedDate;
     try {
       const token = await AsyncStorage.getItem('accessToken');
-      if (token) {
-        await api.post(
-          '/journal',
-          {
-            title: journalTitle || undefined,
-            content: notes,
-            mood: selectedMood || undefined,
-            date: dateStr,
-          },
-          token
-        );
+      if (!token) {
+        Alert.alert('Error', 'Not logged in. Please sign in again.');
+        return;
       }
-    } catch {}
+      const symptoms = selectedTags.map((id) => id.replace(/-\d+-\d+$/, ''));
+      const { response, data } = await api.post(
+        '/journal',
+        {
+          title: journalTitle || undefined,
+          content: notes || undefined,
+          mood: selectedMood || undefined,
+          symptoms: symptoms.length > 0 ? symptoms : undefined,
+          images: selectedImages.length > 0 ? selectedImages : undefined,
+          date: dateStr,
+        },
+        token
+      );
+      if (!response.ok) {
+        Alert.alert('Save failed', data?.message ?? `Error ${response.status}`);
+        return;
+      }
+    } catch (err: any) {
+      Alert.alert('Network error', err?.message ?? 'Could not reach server.');
+      return;
+    }
     router.back();
   };
 
@@ -141,13 +181,16 @@ export default function AddEntryScreen() {
     }
 
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.All,
+      mediaTypes: ['images'],
       allowsMultipleSelection: true,
-      quality: 1,
+      quality: 0.8,
+      base64: true,
     });
 
     if (!result.canceled && result.assets) {
-      const newImages = result.assets.map(asset => asset.uri);
+      const newImages = result.assets
+        .filter(a => a.base64)
+        .map(a => `data:image/jpeg;base64,${a.base64}`);
       setSelectedImages([...selectedImages, ...newImages]);
     }
   };
@@ -162,11 +205,12 @@ export default function AddEntryScreen() {
     }
 
     const result = await ImagePicker.launchCameraAsync({
-      quality: 1,
+      quality: 0.8,
+      base64: true,
     });
 
-    if (!result.canceled && result.assets) {
-      setSelectedImages([...selectedImages, result.assets[0].uri]);
+    if (!result.canceled && result.assets?.[0]?.base64) {
+      setSelectedImages([...selectedImages, `data:image/jpeg;base64,${result.assets[0].base64}`]);
     }
   };
 
@@ -300,7 +344,9 @@ export default function AddEntryScreen() {
           </View>
           <View className="flex-row justify-between font-inter items-center px-3 py-5 bg-[#FFE6EE] rounded-lg">
             <Text className="text-[#4D4D4D] text-sm">{formatDate()}</Text>
-            <Text className="text-[#4D4D4D] text-sm">Cycle Day 9</Text>
+            <Text className="text-[#4D4D4D] text-sm">
+              {computeCycleDay() != null ? `Cycle Day ${computeCycleDay()}` : '—'}
+            </Text>
           </View>
         </View>
 
