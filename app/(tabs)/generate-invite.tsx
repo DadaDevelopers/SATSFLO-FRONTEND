@@ -2,7 +2,7 @@ import { api } from "@/lib/api";
 import { Feather } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Clipboard from "expo-clipboard";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import { ActivityIndicator, Alert, Share, Text, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -18,7 +18,15 @@ function formatTime(seconds: number): string {
 
 export default function GenerateInviteScreen() {
   const insets = useSafeAreaInsets();
+  const params = useLocalSearchParams<{
+    share_period_dates?: string;
+    share_fertile_window?: string;
+    share_symptoms_moods?: string;
+    share_cycle_insights?: string;
+    share_sex_drive?: string;
+  }>();
   const [code, setCode] = useState("");
+  const [shareUrl, setShareUrl] = useState("");
   const [timeLeft, setTimeLeft] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -77,7 +85,14 @@ export default function GenerateInviteScreen() {
         setLoading(false);
         return;
       }
-      const { response, data } = await api.post("/partner/invite", {}, token);
+      const shareBody = {
+        share_period_dates: params.share_period_dates !== "false",
+        share_fertile_window: params.share_fertile_window !== "false",
+        share_symptoms_moods: params.share_symptoms_moods === "true",
+        share_cycle_insights: params.share_cycle_insights === "true",
+        share_sex_drive: params.share_sex_drive === "true",
+      };
+      const { response, data } = await api.post("/partner/invite", shareBody, token);
       if (!response.ok) {
         setError("Failed to generate invite code. Please try again.");
         setLoading(false);
@@ -89,6 +104,7 @@ export default function GenerateInviteScreen() {
 
       codeRef.current = inviteCode;
       setCode(inviteCode);
+      if (d?.share_url) setShareUrl(d.share_url);
 
       if (expiresAt) {
         const secondsLeft = Math.max(
@@ -143,9 +159,8 @@ export default function GenerateInviteScreen() {
 
   const handleShare = async () => {
     try {
-      await Share.share({
-        message: `Join me on SATSFLO! Use my invite code: ${code}`,
-      });
+      const content = shareUrl || `Join me on SATSFLO! Use my invite code: ${code}`;
+      await Share.share({ message: content });
     } catch {
       // share dismissed
     }

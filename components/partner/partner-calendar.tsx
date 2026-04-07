@@ -1,8 +1,10 @@
 import { PartnerBottomNavigation } from "@/components/home/partner-bottom-navigation";
+import { api } from "@/lib/api";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
-import React, { useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
     ScrollView,
     StatusBar,
@@ -14,24 +16,46 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 type TabName = "home" | "calendar" | "settings";
 
-// Mock data based on the screenshot provided
-const PERIOD_START = 12;
-const PERIOD_END = 16;
-const FERTILITY_DAYS = [20, 21, 22, 23, 24, 26];
-const OVULATION_DAY = 25;
-const SELECTED_DAY = 26;
-
-// A simple utility to determine the small red cycle number
-const getCycleDay = (day: number) => {
-    if (day >= 12) {
-        return day - 11; // 12 -> 1
-    }
-    return day + 20; // Simplified cycle wrapping mock
-};
+const MONTH_NAMES = ["January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"];
 
 export default function PartnerCalendarScreen() {
     const insets = useSafeAreaInsets();
     const [activeTab, setActiveTab] = useState<TabName>("calendar");
+
+    // Calendar data from API
+    const [periodDays, setPeriodDays] = useState<number[]>([]);
+    const [fertilityDays, setFertilityDays] = useState<number[]>([]);
+    const [ovulationDay, setOvulationDay] = useState<number | null>(null);
+    const [currentDay, setCurrentDay] = useState<number | null>(null);
+    const [displayMonth, setDisplayMonth] = useState(new Date().getMonth());
+    const [displayYear, setDisplayYear] = useState(new Date().getFullYear());
+    const [cycleStartDay, setCycleStartDay] = useState<number | null>(null);
+
+    const loadCalendar = useCallback(async () => {
+        const token = await AsyncStorage.getItem("accessToken");
+        if (!token) return;
+        try {
+            const { response, data } = await api.get("/partner/calendar", token);
+            if (response.ok) {
+                const d = data?.data ?? data;
+                if (Array.isArray(d?.period_days)) setPeriodDays(d.period_days);
+                else if (d?.period_start != null && d?.period_end != null) {
+                    const days: number[] = [];
+                    for (let i = d.period_start; i <= d.period_end; i++) days.push(i);
+                    setPeriodDays(days);
+                }
+                if (Array.isArray(d?.fertile_days)) setFertilityDays(d.fertile_days);
+                if (d?.ovulation_day != null) setOvulationDay(d.ovulation_day);
+                if (d?.current_day != null) setCurrentDay(d.current_day);
+                if (d?.cycle_start_day != null) setCycleStartDay(d.cycle_start_day);
+                if (d?.month != null) setDisplayMonth(d.month - 1);
+                if (d?.year != null) setDisplayYear(d.year);
+            }
+        } catch {}
+    }, []);
+
+    useEffect(() => { loadCalendar(); }, [loadCalendar]);
 
     const handleBack = () => {
         router.back();
@@ -59,14 +83,22 @@ export default function PartnerCalendarScreen() {
     };
 
     const weekDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-    // Offset by 2 days (Oct 1 is Tuesday based on screenshot: Sun, Mon, Tue=1)
-    const monthDays = [
-        { day: 0 }, { day: 0 }, { day: 1 }, { day: 2 }, { day: 3 }, { day: 4 }, { day: 5 },
-        { day: 6 }, { day: 7 }, { day: 8 }, { day: 9 }, { day: 10 }, { day: 11 }, { day: 12 },
-        { day: 13 }, { day: 14 }, { day: 15 }, { day: 16 }, { day: 17 }, { day: 18 }, { day: 19 },
-        { day: 20 }, { day: 21 }, { day: 22 }, { day: 23 }, { day: 24 }, { day: 25 }, { day: 26 },
-        { day: 27 }, { day: 28 }, { day: 29 }, { day: 30 }, { day: 31 }, { day: 0 }, { day: 0 },
+    const daysInMonth = new Date(displayYear, displayMonth + 1, 0).getDate();
+    const firstDayOfWeek = new Date(displayYear, displayMonth, 1).getDay();
+    const monthDays: { day: number }[] = [
+        ...Array(firstDayOfWeek).fill({ day: 0 }),
+        ...Array.from({ length: daysInMonth }, (_, i) => ({ day: i + 1 })),
     ];
+    const remainder = monthDays.length % 7;
+    if (remainder !== 0) {
+        for (let i = 0; i < 7 - remainder; i++) monthDays.push({ day: 0 });
+    }
+
+    const getCycleDay = (day: number) => {
+        if (cycleStartDay == null) return null;
+        const cd = day - cycleStartDay + 1;
+        return cd > 0 ? cd : null;
+    };
 
     return (
         <LinearGradient
@@ -86,10 +118,10 @@ export default function PartnerCalendarScreen() {
                 <View className="flex-1 items-center mr-6">
                     <View className="flex-row bg-[#FFFFFF] rounded-full overflow-hidden items-center justify-center">
                         <View className="px-4 py-1.5 bg-[#FFFFFF]">
-                            <Text className="text-[#1E1E1E] text-[15px] font-medium">October</Text>
+                            <Text className="text-[#1E1E1E] text-[15px] font-medium">{MONTH_NAMES[displayMonth]}</Text>
                         </View>
                         <View className="px-4 py-1.5 bg-[#FF4081]">
-                            <Text className="text-white text-[15px] font-medium">2025</Text>
+                            <Text className="text-white text-[15px] font-medium">{displayYear}</Text>
                         </View>
                     </View>
                 </View>
@@ -119,11 +151,11 @@ export default function PartnerCalendarScreen() {
                                 return <View key={index} className="w-[14.28%] h-14" />;
                             }
 
-                            const isPeriod = item.day >= PERIOD_START && item.day <= PERIOD_END;
-                            const isFertility = FERTILITY_DAYS.includes(item.day);
-                            const isOvulation = item.day === OVULATION_DAY;
-                            const isSelected = item.day === SELECTED_DAY;
-                            const cycleDay = getCycleDay(item.day);
+                            const isPeriod = periodDays.includes(item.day);
+                            const isFertility = fertilityDays.includes(item.day);
+                            const isOvulation = item.day === ovulationDay;
+                            const isSelected = item.day === currentDay;
+                            const dayNum = getCycleDay(item.day);
 
                             return (
                                 <View
@@ -137,11 +169,13 @@ export default function PartnerCalendarScreen() {
                                     )}
 
                                     {/* Cycle Tiny Number */}
-                                    <View className="absolute top-1 left-1.5">
-                                        <Text className={`text-[8px] font-bold ${isPeriod ? "text-[#FFB2CC]" : "text-[#FF8BB3]"}`}>
-                                            {cycleDay}
-                                        </Text>
-                                    </View>
+                                    {dayNum != null && (
+                                        <View className="absolute top-1 left-1.5">
+                                            <Text className={`text-[8px] font-bold ${isPeriod ? "text-[#FFB2CC]" : "text-[#FF8BB3]"}`}>
+                                                {dayNum}
+                                            </Text>
+                                        </View>
+                                    )}
 
                                     {/* Icon Placement (Fertility / Ovulation) */}
                                     {isFertility && !isPeriod && (

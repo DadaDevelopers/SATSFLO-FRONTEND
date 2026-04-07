@@ -1,8 +1,11 @@
 import { BottomNavigation } from "@/components/home/bottom-navigation";
+import { api } from "@/lib/api";
 import { Feather } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
-import React, { useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
+    Alert,
     Image,
     Modal,
     ScrollView,
@@ -20,6 +23,11 @@ export default function MyPartnerScreen() {
     const insets = useSafeAreaInsets();
     const [activeTab, setActiveTab] = useState<TabName>("settings");
 
+    // Partner info
+    const [partnerName, setPartnerName] = useState("");
+    const [myNickname, setMyNickname] = useState("");
+    const [pairedDays, setPairedDays] = useState<number | null>(null);
+
     // Settings state
     const [periodDates, setPeriodDates] = useState(true);
     const [fertileWindow, setFertileWindow] = useState(true);
@@ -29,6 +37,45 @@ export default function MyPartnerScreen() {
 
     // Modal State
     const [showUnpairModal, setShowUnpairModal] = useState(false);
+
+    const loadData = useCallback(async () => {
+        const token = await AsyncStorage.getItem("accessToken");
+        if (!token) return;
+        try {
+            const [partnerRes, settingsRes] = await Promise.all([
+                api.get("/partner", token),
+                api.get("/partner/settings", token),
+            ]);
+            if (partnerRes.response.ok) {
+                const p = partnerRes.data?.data ?? partnerRes.data;
+                if (p?.partner_nickname) setPartnerName(p.partner_nickname);
+                else if (p?.partner?.name) setPartnerName(p.partner.name);
+                if (p?.my_nickname) setMyNickname(p.my_nickname);
+                if (p?.paired_days != null) setPairedDays(p.paired_days);
+                else if (p?.days_paired != null) setPairedDays(p.days_paired);
+            }
+            if (settingsRes.response.ok) {
+                const s = settingsRes.data?.data ?? settingsRes.data;
+                if (s) {
+                    if (s.share_period_dates != null) setPeriodDates(s.share_period_dates);
+                    if (s.share_fertile_window != null) setFertileWindow(s.share_fertile_window);
+                    if (s.share_symptoms_moods != null) setSymptomsMoods(s.share_symptoms_moods);
+                    if (s.share_cycle_insights != null) setFullInsights(s.share_cycle_insights);
+                    if (s.share_sex_drive != null) setSexDrive(s.share_sex_drive);
+                }
+            }
+        } catch {}
+    }, []);
+
+    useEffect(() => { loadData(); }, [loadData]);
+
+    const saveSettings = async (updates: Record<string, boolean>) => {
+        const token = await AsyncStorage.getItem("accessToken");
+        if (!token) return;
+        try {
+            await api.put("/partner/settings", updates, token);
+        } catch {}
+    };
 
     const handleBack = () => {
         router.back();
@@ -61,10 +108,13 @@ export default function MyPartnerScreen() {
         router.push("/(tabs)/gift-token-wallet");
     };
 
-    const confirmUnpair = () => {
+    const confirmUnpair = async () => {
         setShowUnpairModal(false);
-        // Add exact unpair logic here
-        router.back(); // Temporary behavior: return to settings after unpairing
+        try {
+            const token = await AsyncStorage.getItem("accessToken");
+            if (token) await api.delete("/partner", undefined, token);
+        } catch {}
+        router.back();
     };
 
     return (
@@ -115,10 +165,14 @@ export default function MyPartnerScreen() {
                     </View>
 
                     <Text className="text-[20px] font-bold text-[#1E1E1E] mb-1">
-                        Sarah Abraham & My Love
+                        {partnerName || myNickname
+                            ? [partnerName, myNickname].filter(Boolean).join(" & ")
+                            : "Partner"}
                     </Text>
                     <Text className="text-[#616161] text-[14px] mb-6">
-                        Paired for 1 day
+                        {pairedDays != null
+                            ? `Paired for ${pairedDays} day${pairedDays !== 1 ? "s" : ""}`
+                            : ""}
                     </Text>
 
                     {/* Stop Pairing Action */}
@@ -155,7 +209,7 @@ export default function MyPartnerScreen() {
                             </Text>
                             <Switch
                                 value={periodDates}
-                                onValueChange={setPeriodDates}
+                                onValueChange={(v) => { setPeriodDates(v); saveSettings({ share_period_dates: v }); }}
                                 trackColor={{ false: "#E5E5EA", true: "#FF4081" }}
                                 thumbColor={"#FFFFFF"}
                                 ios_backgroundColor="#E5E5EA"
@@ -170,7 +224,7 @@ export default function MyPartnerScreen() {
                             </Text>
                             <Switch
                                 value={fertileWindow}
-                                onValueChange={setFertileWindow}
+                                onValueChange={(v) => { setFertileWindow(v); saveSettings({ share_fertile_window: v }); }}
                                 trackColor={{ false: "#E5E5EA", true: "#FF4081" }}
                                 thumbColor={"#FFFFFF"}
                                 ios_backgroundColor="#E5E5EA"
@@ -185,7 +239,7 @@ export default function MyPartnerScreen() {
                             </Text>
                             <Switch
                                 value={symptomsMoods}
-                                onValueChange={setSymptomsMoods}
+                                onValueChange={(v) => { setSymptomsMoods(v); saveSettings({ share_symptoms_moods: v }); }}
                                 trackColor={{ false: "#E5E5EA", true: "#FF4081" }}
                                 thumbColor={"#FFFFFF"}
                                 ios_backgroundColor="#E5E5EA"
@@ -200,7 +254,7 @@ export default function MyPartnerScreen() {
                             </Text>
                             <Switch
                                 value={fullInsights}
-                                onValueChange={setFullInsights}
+                                onValueChange={(v) => { setFullInsights(v); saveSettings({ share_cycle_insights: v }); }}
                                 trackColor={{ false: "#E5E5EA", true: "#FF4081" }}
                                 thumbColor={"#FFFFFF"}
                                 ios_backgroundColor="#E5E5EA"
@@ -215,7 +269,7 @@ export default function MyPartnerScreen() {
                             </Text>
                             <Switch
                                 value={sexDrive}
-                                onValueChange={setSexDrive}
+                                onValueChange={(v) => { setSexDrive(v); saveSettings({ share_sex_drive: v }); }}
                                 trackColor={{ false: "#E5E5EA", true: "#FF4081" }}
                                 thumbColor={"#FFFFFF"}
                                 ios_backgroundColor="#E5E5EA"
