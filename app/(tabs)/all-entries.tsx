@@ -48,11 +48,40 @@ export default function AllEntriesScreen() {
       try {
         const token = await AsyncStorage.getItem('accessToken');
         if (!token) { setError('Session expired.'); setLoading(false); return; }
-        const { response, data } = await api.get('/journal', token);
+
+        // Fetch last 12 months in parallel (API requires ?month=YYYY-MM)
+        const now = new Date();
+        const months: string[] = [];
+        for (let i = 0; i < 12; i++) {
+          const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+          const mm = String(d.getMonth() + 1).padStart(2, '0');
+          months.push(`${d.getFullYear()}-${mm}`);
+        }
+
+        const results = await Promise.all(
+          months.map((m) => api.get(`/journal?month=${m}`, token).catch(() => null))
+        );
+
         if (cancelled) return;
-        if (!response.ok) { setError('Could not load entries.'); return; }
-        const list = data?.data ?? data ?? [];
-        setEntries(Array.isArray(list) ? list : []);
+
+        const seen = new Set<string>();
+        const all: JournalEntry[] = [];
+        for (const res of results) {
+          if (!res || !res.response.ok) continue;
+          const list = res.data?.data ?? res.data ?? [];
+          if (Array.isArray(list)) {
+            for (const entry of list) {
+              if (!seen.has(entry.id)) {
+                seen.add(entry.id);
+                all.push(entry);
+              }
+            }
+          }
+        }
+
+        // Sort newest first
+        all.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+        setEntries(all);
       } catch {
         if (!cancelled) setError('Unable to load entries. Check your connection.');
       } finally {
