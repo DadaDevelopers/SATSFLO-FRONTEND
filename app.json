@@ -12,7 +12,8 @@
       "bundleIdentifier": "com.anonymous.SATSFLOFRONTEND",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
-      }
+      },
+      "associatedDomains": ["applinks:satsflo.app"]
     },
     "android": {
       "adaptiveIcon": {
@@ -23,7 +24,21 @@
       "permissions": [
         "android.permission.CAMERA"
       ],
-      "package": "com.anonymous.SATSFLOFRONTEND"
+      "package": "com.anonymous.SATSFLOFRONTEND",
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [
+            {
+              "scheme": "https",
+              "host": "satsflo.app",
+              "pathPrefix": "/invite"
+            }
+          ],
+          "category": ["BROWSABLE", "DEFAULT"]
+        }
+      ]
     },
     "web": {
       "output": "static",

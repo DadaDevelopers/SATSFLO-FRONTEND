@@ -3,13 +3,7 @@ import { Feather } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
 import React, { useEffect, useState } from "react";
-import {
-  ActivityIndicator,
-  Alert,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { Text, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 // Custom toggle matching the Figma spec (27×16.5 background, 13×13 knob)
@@ -59,8 +53,6 @@ export default function SharingInviteScreen() {
   const [toggles, setToggles] = useState<Record<string, boolean>>(
     Object.fromEntries(SHARE_OPTIONS.map((o) => [o.id, o.defaultOn])),
   );
-  const [saving, setSaving] = useState(false);
-
   // Load existing partner sharing settings on mount
   useEffect(() => {
     const loadSettings = async () => {
@@ -89,44 +81,17 @@ export default function SharingInviteScreen() {
     setToggles((prev) => ({ ...prev, [id]: !prev[id] }));
   };
 
-  const handleNext = async () => {
-    setSaving(true);
-    try {
-      const token = await AsyncStorage.getItem("accessToken");
-      if (!token) {
-        Alert.alert("Session expired", "Please log in again.");
-        setSaving(false);
-        return;
-      }
-      const { response, data } = await api.put(
-        "/partner/settings",
-        {
-          share_period_dates: toggles.period,
-          share_fertile_window: toggles.fertile,
-          share_symptoms_moods: toggles.symptoms,
-          share_cycle_insights: toggles.insights,
-          share_sex_drive: toggles.sex,
-        },
-        token,
-      );
-      // 404 means no partner connected yet — proceed to generate invite anyway
-      if (!response.ok && response.status !== 404) {
-        Alert.alert(
-          "Error",
-          data?.message ?? "Failed to save sharing options. Please try again.",
-        );
-        setSaving(false);
-        return;
-      }
-      router.push("/(tabs)/generate-invite" as any);
-    } catch {
-      Alert.alert(
-        "Error",
-        "Unable to save. Check your connection and try again.",
-      );
-    } finally {
-      setSaving(false);
-    }
+  const handleNext = () => {
+    router.push({
+      pathname: "/(tabs)/generate-invite",
+      params: {
+        share_period_dates: String(toggles.period),
+        share_fertile_window: String(toggles.fertile),
+        share_symptoms_moods: String(toggles.symptoms),
+        share_cycle_insights: String(toggles.insights),
+        share_sex_drive: String(toggles.sex),
+      },
+    } as any);
   };
 
   return (
@@ -212,17 +177,12 @@ export default function SharingInviteScreen() {
       <View className="items-center" style={{ paddingBottom: 20 }}>
         <TouchableOpacity
           onPress={handleNext}
-          disabled={saving}
           activeOpacity={0.8}
           className="w-[250px] h-14 bg-[#FF82AD] rounded-full items-center justify-center"
         >
-          {saving ? (
-            <ActivityIndicator size="small" color="#FFFFFF" />
-          ) : (
-            <Text className="font-inter font-medium text-[15px] text-white">
-              Next
-            </Text>
-          )}
+          <Text className="font-inter font-medium text-[15px] text-white">
+            Next
+          </Text>
         </TouchableOpacity>
       </View>
 
