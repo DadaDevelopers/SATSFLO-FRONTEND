@@ -132,7 +132,7 @@ export default function ThreadScreen() {
     const isLiked = likedIds.has(threadId);
     setLikedIds((prev) => {
       const next = new Set(prev);
-      isLiked ? next.delete(threadId) : next.add(threadId);
+      if (isLiked) { next.delete(threadId); } else { next.add(threadId); }
       return next;
     });
     setThreads((prev) =>
