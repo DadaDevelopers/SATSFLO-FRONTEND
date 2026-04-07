@@ -40,14 +40,7 @@ export default function TabLayout() {
         name="all-entries"
         options={{
           title: "All Entries",
-          href: null,
-        }}
-      />
-      <Tabs.Screen
-        name="all-entries-journal"
-        options={{
-          title: "All Entries",
-          href: null, // Accessed via journal screen View all link
+          href: null, // Accessed via journal screen view-all link
         }}
       />
       <Tabs.Screen

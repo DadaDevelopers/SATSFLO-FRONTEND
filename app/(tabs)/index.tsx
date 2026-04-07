@@ -70,22 +70,29 @@ export default function HomeScreen() {
       const token = await AsyncStorage.getItem("accessToken");
       if (!token) return;
       try {
-        // Load cycle data and predictions in parallel
-        const [currentRes, predictionsRes] = await Promise.all([
+        // Load cycle-profile (source of truth for user settings), current cycle, and predictions in parallel
+        const [profileRes, currentRes, predictionsRes] = await Promise.all([
+          api.get("/cycle-profile", token),
           api.get("/cycles/current", token),
           api.get("/cycles/predictions", token),
         ]);
 
-        const cycleD = currentRes.data?.data ?? null;
-        const predD = predictionsRes.data?.data ?? null;
+        const profile = profileRes.response.ok ? (profileRes.data?.data ?? profileRes.data) : null;
+        const cycleD = currentRes.response.ok ? (currentRes.data?.data ?? null) : null;
+        const predD = predictionsRes.response.ok ? (predictionsRes.data?.data ?? null) : null;
 
-        // Days until next period — predictions first, then current cycle, then from profile
-        let daysUntilPeriod =
+        // cycle_length and period_length always come from the user's saved profile
+        const cycleLength = profile?.cycle_length ?? cycleD?.cycle_length ?? 28;
+        const periodLength = profile?.period_length ?? cycleD?.period_length ?? 5;
+
+        // Days until next period — predictions first, then current cycle
+        const daysUntilPeriod =
           predD?.days_until_next_period ??
           predD?.next_period?.days_until ??
           cycleD?.days_until_next_period ??
           cycleD?.days_until_period ??
-          null;
+          profile?.days_until_period ??
+          0;
 
         const buildCycleStart = (currentDay: number): Date => {
           const d = new Date(today);
@@ -93,33 +100,16 @@ export default function HomeScreen() {
           return d;
         };
 
-        if (cycleD) {
-          const cd = cycleD.current_day ?? 1;
-          setCycleData({
-            currentDay: cd,
-            cycleLength: cycleD.cycle_length ?? 28,
-            periodLength: cycleD.period_length ?? 5,
-            ovulationDay: cycleD.ovulation_day ?? 14,
-            daysUntilPeriod: daysUntilPeriod ?? 0,
-            currentDate: formatCurrentDate(today),
-            cycleStartDate: buildCycleStart(cd),
-          });
-        } else {
-          // Fallback to GET /cycle-profile
-          const { response: r2, data: d2 } = await api.get("/cycle-profile", token);
-          if (r2.ok) {
-            const p = d2?.data ?? d2;
-            const cd = p?.current_day ?? 1;
-            setCycleData((prev) => ({
-              ...prev,
-              cycleLength: p?.cycle_length ?? prev.cycleLength,
-              periodLength: p?.period_length ?? prev.periodLength,
-              currentDay: cd,
-              daysUntilPeriod: p?.days_until_period ?? prev.daysUntilPeriod,
-              cycleStartDate: buildCycleStart(cd),
-            }));
-          }
-        }
+        const cd = cycleD?.current_day ?? profile?.current_day ?? 1;
+        setCycleData({
+          currentDay: cd,
+          cycleLength,
+          periodLength,
+          ovulationDay: cycleD?.ovulation_day ?? Math.round(cycleLength / 2),
+          daysUntilPeriod,
+          currentDate: formatCurrentDate(today),
+          cycleStartDate: buildCycleStart(cd),
+        });
       } catch {}
     };
     loadCycleData();
