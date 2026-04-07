@@ -3,7 +3,7 @@ import { api } from "@/lib/api";
 import { Feather } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
-import React, { useCallback, useEffect, useState } from "react";
+import { default as React, default as React, useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
   ScrollView,
@@ -147,7 +147,7 @@ export default function PartnerDashboardScreen() {
     }
   };
 
-  const handleGiftTokenPress = () => router.push("/(tabs)/gift-token");
+  const handleGiftTokenPress = () => router.push("/(tabs)/send-gift-token");
 
   const isPeriod = cycleData?.is_period ?? false;
   const nextOvulation = cycleData?.next_ovulation_days;
@@ -180,8 +180,7 @@ export default function PartnerDashboardScreen() {
           <Feather name="arrow-left" size={24} color="#FFFFFF" />
         </TouchableOpacity>
         <Text className="flex-1 text-center text-white text-[18px] font-medium mr-6">
-          {partnerNickname}
-          {"'"}s Cycle
+          {partnerNickname}'s Cycle
         </Text>
         {loading && <ActivityIndicator size="small" color="#FFFFFF" />}
       </View>
@@ -250,13 +249,13 @@ export default function PartnerDashboardScreen() {
           {/* Today's Symptoms Card */}
           <View className="bg-[#F8F1FF] rounded-[24px] p-5 mb-4 shadow-sm">
             <Text className="text-[#B551E5] text-[18px] font-bold mb-2">
-              Today`&apos;`s Symptoms
+              Today's Symptoms
             </Text>
             {cycleData?.symptoms && cycleData.symptoms.length > 0 ? (
               <>
                 <Text className="text-[#616161] text-[15px] leading-5 mb-4">
-                  Here`&apos;`s what {partnerNickname} is logging. Each symptom
-                  matters — take note.
+                  Here's what {partnerNickname} is logging. Each symptom matters
+                  — take note.
                 </Text>
                 <View className="flex-row flex-wrap gap-2 mb-4">
                   {cycleData.symptoms.map((s, i) => (
