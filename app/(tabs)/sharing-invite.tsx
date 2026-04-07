@@ -1,7 +1,9 @@
+import { api } from "@/lib/api";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Feather } from "@expo/vector-icons";
 import { router } from "expo-router";
 import React, { useState } from "react";
-import { Text, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Alert, Text, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 // Custom toggle matching the Figma spec (27×16.5 background, 13×13 knob)
@@ -51,9 +53,43 @@ export default function SharingInviteScreen() {
   const [toggles, setToggles] = useState<Record<string, boolean>>(
     Object.fromEntries(SHARE_OPTIONS.map((o) => [o.id, o.defaultOn]))
   );
+  const [saving, setSaving] = useState(false);
 
   const handleToggle = (id: string) => {
     setToggles((prev) => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  const handleNext = async () => {
+    setSaving(true);
+    try {
+      const token = await AsyncStorage.getItem("accessToken");
+      if (!token) {
+        Alert.alert("Session expired", "Please log in again.");
+        setSaving(false);
+        return;
+      }
+      const { response } = await api.put(
+        "/partner/settings",
+        {
+          share_period_dates: toggles.period,
+          share_fertile_window: toggles.fertile,
+          share_symptoms_moods: toggles.symptoms,
+          share_cycle_insights: toggles.insights,
+          share_sex_drive: toggles.sex,
+        },
+        token
+      );
+      if (!response.ok) {
+        Alert.alert("Error", "Failed to save sharing options. Please try again.");
+        setSaving(false);
+        return;
+      }
+      router.push("/(tabs)/generate-invite" as any);
+    } catch {
+      Alert.alert("Error", "Unable to save. Check your connection and try again.");
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -141,13 +177,18 @@ export default function SharingInviteScreen() {
       {/* Next button */}
       <View className="items-center" style={{ paddingBottom: 20 }}>
         <TouchableOpacity
-          onPress={() => router.push("/(tabs)/generate-invite" as any)}
+          onPress={handleNext}
+          disabled={saving}
           activeOpacity={0.8}
           className="w-[250px] h-14 bg-[#FF82AD] rounded-full items-center justify-center"
         >
-          <Text className="font-inter font-medium text-[15px] text-white">
-            Next
-          </Text>
+          {saving ? (
+            <ActivityIndicator size="small" color="#FFFFFF" />
+          ) : (
+            <Text className="font-inter font-medium text-[15px] text-white">
+              Next
+            </Text>
+          )}
         </TouchableOpacity>
       </View>
 

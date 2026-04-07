@@ -4,7 +4,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
 import React, { useRef, useState } from "react";
 import {
-  Alert,
+  ActivityIndicator,
   Text,
   TextInput,
   TouchableOpacity,
@@ -20,6 +20,18 @@ export default function EnterCodeScreen() {
   const inputRefs = useRef<(TextInput | null)[]>([]);
 
   const handleChange = (text: string, index: number) => {
+    // Handle paste: distribute all characters starting from current index
+    if (text.length > 1) {
+      const chars = text.replace(/[^A-Za-z0-9]/g, "").toUpperCase().slice(0, CODE_LENGTH);
+      const newCode = [...code];
+      chars.split("").forEach((char, i) => {
+        if (index + i < CODE_LENGTH) newCode[index + i] = char;
+      });
+      setCode(newCode);
+      const lastFilled = Math.min(index + chars.length - 1, CODE_LENGTH - 1);
+      inputRefs.current[lastFilled]?.focus();
+      return;
+    }
     const char = text.slice(-1).toUpperCase();
     const newCode = [...code];
     newCode[index] = char;
@@ -38,6 +50,9 @@ export default function EnterCodeScreen() {
     }
   };
 
+  const [submitting, setSubmitting] = useState(false);
+  const [connectError, setConnectError] = useState<string | null>(null);
+
   const isComplete = code.every((c) => c !== "");
 
   const focusFirst = () => {
@@ -47,25 +62,30 @@ export default function EnterCodeScreen() {
   };
 
   const handleConnect = async () => {
-    if (!isComplete) return;
+    if (!isComplete || submitting) return;
+    setConnectError(null);
+    setSubmitting(true);
     try {
       const token = await AsyncStorage.getItem("accessToken");
-      if (token) {
-        const { response, data } = await api.post(
-          "/partner/accept",
-          { invite_code: code.join("") },
-          token
-        );
-        if (!response.ok) {
-          Alert.alert("Error", data?.message || "Invalid or expired code.");
-          return;
-        }
+      if (!token) {
+        setConnectError("Session expired. Please log in again.");
+        return;
       }
+      const { response, data } = await api.post(
+        "/partner/accept",
+        { invite_code: code.join("") },
+        token
+      );
+      if (!response.ok) {
+        setConnectError(data?.message || "Invalid or expired code. Please check and try again.");
+        return;
+      }
+      router.push("/(tabs)/whats-your-partner-name" as any);
     } catch {
-      Alert.alert("Error", "Could not connect. Please try again.");
-      return;
+      setConnectError("Could not connect. Check your connection and try again.");
+    } finally {
+      setSubmitting(false);
     }
-    router.push("/(tabs)/whats-your-partner-name" as any);
   };
 
   return (
@@ -138,6 +158,16 @@ export default function EnterCodeScreen() {
         </TouchableOpacity>
       </View>
 
+      {/* Inline error */}
+      {connectError && (
+        <View className="mx-5 mt-4 px-4 py-3 bg-red-100 rounded-xl flex-row items-center justify-between">
+          <Text className="text-red-600 text-sm flex-1">{connectError}</Text>
+          <TouchableOpacity onPress={() => setConnectError(null)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+            <Text className="text-red-400 text-base ml-2">✕</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
       {/* Push button to bottom */}
       <View className="flex-1" />
 
@@ -145,13 +175,18 @@ export default function EnterCodeScreen() {
       <View className="items-center" style={{ paddingBottom: 28 }}>
         <TouchableOpacity
           onPress={handleConnect}
+          disabled={!isComplete || submitting}
           activeOpacity={0.8}
           className="w-[250px] h-14 rounded-full items-center justify-center"
-          style={{ backgroundColor: isComplete ? "#FF82AD" : "#FF82AD99" }}
+          style={{ backgroundColor: isComplete && !submitting ? "#FF82AD" : "#FF82AD99" }}
         >
-          <Text className="font-inter font-medium text-[15px] text-white">
-            Connect
-          </Text>
+          {submitting ? (
+            <ActivityIndicator size="small" color="#FFFFFF" />
+          ) : (
+            <Text className="font-inter font-medium text-[15px] text-white">
+              Connect
+            </Text>
+          )}
         </TouchableOpacity>
       </View>
 
