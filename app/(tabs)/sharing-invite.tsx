@@ -2,7 +2,7 @@ import { api } from "@/lib/api";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Feather } from "@expo/vector-icons";
 import { router } from "expo-router";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { ActivityIndicator, Alert, Text, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -55,6 +55,30 @@ export default function SharingInviteScreen() {
   );
   const [saving, setSaving] = useState(false);
 
+  // Load existing partner sharing settings on mount
+  useEffect(() => {
+    const loadSettings = async () => {
+      const token = await AsyncStorage.getItem("accessToken");
+      if (!token) return;
+      try {
+        const { response, data } = await api.get("/partner/settings", token);
+        if (response.ok) {
+          const s = data?.data ?? data;
+          if (s) {
+            setToggles({
+              period: s.share_period_dates ?? true,
+              fertile: s.share_fertile_window ?? true,
+              symptoms: s.share_symptoms_moods ?? false,
+              insights: s.share_cycle_insights ?? false,
+              sex: s.share_sex_drive ?? false,
+            });
+          }
+        }
+      } catch {}
+    };
+    loadSettings();
+  }, []);
+
   const handleToggle = (id: string) => {
     setToggles((prev) => ({ ...prev, [id]: !prev[id] }));
   };
@@ -68,7 +92,7 @@ export default function SharingInviteScreen() {
         setSaving(false);
         return;
       }
-      const { response } = await api.put(
+      const { response, data } = await api.put(
         "/partner/settings",
         {
           share_period_dates: toggles.period,
@@ -79,8 +103,9 @@ export default function SharingInviteScreen() {
         },
         token
       );
-      if (!response.ok) {
-        Alert.alert("Error", "Failed to save sharing options. Please try again.");
+      // 404 means no partner connected yet — proceed to generate invite anyway
+      if (!response.ok && response.status !== 404) {
+        Alert.alert("Error", data?.message ?? "Failed to save sharing options. Please try again.");
         setSaving(false);
         return;
       }

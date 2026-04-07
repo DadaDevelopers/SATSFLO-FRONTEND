@@ -6,6 +6,7 @@ import { PrimaryButton } from "@/components/signup/primary-button";
 import { TitleSection } from "@/components/signup/title-section";
 import { TermsModal } from "@/components/terms-modal";
 import { api } from "@/lib/api";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
@@ -83,6 +84,15 @@ export default function SignupScreen() {
         acceptTerms: agreeToTerms,
       });
       if (response.ok) {
+        // Save auth tokens returned by the registration endpoint
+        const accessToken = data?.data?.accessToken ?? data?.accessToken;
+        const refreshToken = data?.data?.refreshToken ?? data?.refreshToken;
+        const user = data?.data?.user ?? data?.user;
+        const tokenPairs: [string, string][] = [];
+        if (accessToken) tokenPairs.push(["accessToken", accessToken]);
+        if (refreshToken) tokenPairs.push(["refreshToken", refreshToken]);
+        if (user) tokenPairs.push(["user", JSON.stringify(user)]);
+        if (tokenPairs.length > 0) await AsyncStorage.multiSet(tokenPairs);
         setStatusMessage({
           text: "Account created successfully!",
           type: "success",

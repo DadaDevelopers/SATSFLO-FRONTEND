@@ -37,6 +37,20 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="all-entries"
+        options={{
+          title: "All Entries",
+          href: null, // Accessed via journal screen view-all link
+        }}
+      />
+      <Tabs.Screen
+        name="view-entry"
+        options={{
+          title: "View Entry",
+          href: null, // Accessed via journal / all-entries entry card
+        }}
+      />
+      <Tabs.Screen
         name="gift-token"
         options={{
           title: "Gift Token",
