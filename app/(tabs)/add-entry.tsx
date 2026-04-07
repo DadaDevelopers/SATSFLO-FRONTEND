@@ -75,6 +75,17 @@ export default function AddEntryScreen() {
   const [lastPeriodStart, setLastPeriodStart] = useState('');
   const [cycleLength, setCycleLength] = useState(28);
 
+  // Date picker modal
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [pickerMonth, setPickerMonth] = useState(today.getMonth());
+  const [pickerYear, setPickerYear] = useState(today.getFullYear());
+  const [pickerDate, setPickerDate] = useState('');
+  const [dateInputText, setDateInputText] = useState(() => {
+    const [y, m, d] = toDateKey(today).split('-').map(Number);
+    return `${MONTHS[m - 1]} ${d}, ${y}`;
+  });
+  const [cycleDayInput, setCycleDayInput] = useState('');
+
   useEffect(() => {
     const loadCycle = async () => {
       const token = await AsyncStorage.getItem('accessToken');
@@ -91,6 +102,22 @@ export default function AddEntryScreen() {
     loadCycle();
   }, []);
 
+  // Keep inline fields in sync whenever selected date or cycle data changes
+  useEffect(() => {
+    const [y, m, d] = selectedDate.split('-').map(Number);
+    setDateInputText(`${MONTHS[m - 1]} ${d}, ${y}`);
+    if (lastPeriodStart) {
+      const selDate = new Date(y, m - 1, d);
+      const periodDate = new Date(lastPeriodStart + 'T00:00:00');
+      const diffDays = Math.floor((selDate.getTime() - periodDate.getTime()) / 86400000);
+      if (diffDays >= 0) {
+        setCycleDayInput(String((diffDays % (cycleLength || 28)) + 1));
+      } else {
+        setCycleDayInput('');
+      }
+    }
+  }, [selectedDate, lastPeriodStart, cycleLength]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const computeCycleDay = (): number | null => {
     if (!lastPeriodStart) return null;
     const [y, m, d] = selectedDate.split('-').map(Number);
@@ -99,6 +126,88 @@ export default function AddEntryScreen() {
     const diffDays = Math.floor((selDate.getTime() - periodDate.getTime()) / 86400000);
     if (diffDays < 0) return null;
     return (diffDays % cycleLength) + 1;
+  };
+
+  // Build full month grid for the date-picker modal
+  const getMonthGrid = (year: number, month: number): (Date | null)[] => {
+    const firstDay = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const grid: (Date | null)[] = [];
+    for (let i = 0; i < firstDay; i++) grid.push(null);
+    for (let d = 1; d <= daysInMonth; d++) grid.push(new Date(year, month, d));
+    while (grid.length % 7 !== 0) grid.push(null);
+    return grid;
+  };
+
+  const computeCycleDayForDate = (dateKey: string): number | null => {
+    if (!lastPeriodStart) return null;
+    const [y, m, d] = dateKey.split('-').map(Number);
+    const selDate = new Date(y, m - 1, d);
+    const periodDate = new Date(lastPeriodStart + 'T00:00:00');
+    const diffDays = Math.floor((selDate.getTime() - periodDate.getTime()) / 86400000);
+    if (diffDays < 0) return null;
+    return (diffDays % cycleLength) + 1;
+  };
+
+  const openDatePicker = () => {
+    const [y, m] = selectedDate.split('-').map(Number);
+    setPickerYear(y);
+    setPickerMonth(m - 1);
+    setPickerDate(selectedDate);
+    setDateInputText(formatDateKey(selectedDate));
+    const cd = computeCycleDayForDate(selectedDate);
+    setCycleDayInput(cd != null ? String(cd) : '');
+    setShowDatePicker(true);
+  };
+
+  const formatDateKey = (key: string): string => {
+    const [y, m, d] = key.split('-').map(Number);
+    return `${MONTHS[m - 1]} ${d}, ${y}`;
+  };
+
+  const handlePickerDateSelect = (d: Date) => {
+    const key = toDateKey(d);
+    setPickerDate(key);
+    setDateInputText(formatDateKey(key));
+    const cd = computeCycleDayForDate(key);
+    setCycleDayInput(cd != null ? String(cd) : '');
+  };
+
+  const handleDateInputBlur = () => {
+    // Try to parse typed date — accept "Month D, YYYY" or "YYYY-MM-DD"
+    const isoMatch = dateInputText.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (isoMatch) {
+      const key = dateInputText;
+      setPickerDate(key);
+      const [, y, m] = isoMatch.map(Number);
+      setPickerMonth(m - 1);
+      setPickerYear(y);
+      const cd = computeCycleDayForDate(key);
+      setCycleDayInput(cd != null ? String(cd) : '');
+      return;
+    }
+    const monthMatch = dateInputText.match(/^([A-Za-z]+)\s+(\d{1,2}),?\s+(\d{4})$/);
+    if (monthMatch) {
+      const mIdx = MONTHS.findIndex(mn => mn.toLowerCase().startsWith(monthMatch[1].toLowerCase()));
+      if (mIdx !== -1) {
+        const key = `${monthMatch[3]}-${String(mIdx + 1).padStart(2, '0')}-${String(Number(monthMatch[2])).padStart(2, '0')}`;
+        setPickerDate(key);
+        setPickerMonth(mIdx);
+        setPickerYear(Number(monthMatch[3]));
+        const cd = computeCycleDayForDate(key);
+        setCycleDayInput(cd != null ? String(cd) : '');
+      }
+    }
+  };
+
+  const confirmDatePicker = () => {
+    if (pickerDate) {
+      setSelectedDate(pickerDate);
+      const [y, m] = pickerDate.split('-').map(Number);
+      setCurrentMonth(m - 1);
+      setCurrentYear(y);
+    }
+    setShowDatePicker(false);
   };
 
   const getWeekDates = (): Date[] => {
@@ -378,18 +487,33 @@ export default function AddEntryScreen() {
         {/* Date and Cycle Day */}
         <View className="mb-5">
           <View className="flex-row justify-between items-center mb-1">
-            <Text className="text-white text-sm font-inter font-medium">
-              Date and Cycle Day
-            </Text>
+            <Text className="text-white text-sm font-inter font-medium">Date and Cycle Day</Text>
             <TouchableOpacity onPress={openDatePicker}>
               <Feather name="edit-2" size={14} color="#FAFAFA" />
             </TouchableOpacity>
           </View>
-          <View className="flex-row justify-between font-inter items-center px-3 py-5 bg-[#FFE6EE] rounded-lg">
-            <Text className="text-[#4D4D4D] text-sm">{formatDate()}</Text>
-            <Text className="text-[#4D4D4D] text-sm">
-              {computeCycleDay() != null ? `Cycle Day ${computeCycleDay()}` : '—'}
-            </Text>
+          <View style={{ height: 60, backgroundColor: '#FFE6EE', borderRadius: 8, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12 }}>
+            <TextInput
+              value={dateInputText}
+              onChangeText={setDateInputText}
+              onBlur={handleDateInputBlur}
+              onSubmitEditing={handleDateInputBlur}
+              placeholder="e.g. April 15, 2025"
+              placeholderTextColor="#AAAAAA"
+              returnKeyType="done"
+              style={{ flex: 1, fontSize: 14, color: '#4D4D4D', fontFamily: 'Inter' }}
+            />
+            <TextInput
+              value={cycleDayInput ? `Cycle Day ${cycleDayInput}` : ''}
+              onChangeText={(text) => {
+                const num = text.replace(/[^0-9]/g, '');
+                setCycleDayInput(num);
+              }}
+              placeholder="Cycle Day"
+              placeholderTextColor="#AAAAAA"
+              keyboardType="number-pad"
+              style={{ fontSize: 14, color: '#4D4D4D', fontFamily: 'Inter', textAlign: 'right' }}
+            />
           </View>
         </View>
 
@@ -592,86 +716,38 @@ export default function AddEntryScreen() {
         onRequestClose={() => setShowDatePicker(false)}
       >
         <TouchableOpacity
-          style={{
-            flex: 1,
-            backgroundColor: "rgba(0,0,0,0.5)",
-            justifyContent: "flex-end",
-          }}
+          style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' }}
           activeOpacity={1}
           onPress={() => setShowDatePicker(false)}
         >
           <TouchableOpacity activeOpacity={1} onPress={() => {}}>
-            <View
-              style={{
-                backgroundColor: "#FFF0F5",
-                borderTopLeftRadius: 24,
-                borderTopRightRadius: 24,
-                paddingHorizontal: 20,
-                paddingTop: 16,
-                paddingBottom: 32,
-              }}
-            >
-              {/* Drag handle */}
-              <View
-                style={{
-                  width: 48,
-                  height: 4,
-                  backgroundColor: "#FFB3CD",
-                  borderRadius: 2,
-                  alignSelf: "center",
-                  marginBottom: 16,
-                }}
-              />
+            <View style={{ backgroundColor: '#FFF0F5', borderTopLeftRadius: 24, borderTopRightRadius: 24, paddingHorizontal: 20, paddingTop: 16, paddingBottom: 32 }}>
 
-              <Text
-                style={{
-                  fontFamily: "Inter",
-                  fontWeight: "600",
-                  fontSize: 16,
-                  color: "#1E1E1E",
-                  textAlign: "center",
-                  marginBottom: 16,
-                }}
-              >
+              {/* Drag handle */}
+              <View style={{ width: 48, height: 4, backgroundColor: '#FFB3CD', borderRadius: 2, alignSelf: 'center', marginBottom: 16 }} />
+
+              <Text style={{ fontFamily: 'Inter', fontWeight: '600', fontSize: 16, color: '#1E1E1E', textAlign: 'center', marginBottom: 16 }}>
                 Pick a Date
               </Text>
 
               {/* Month navigation */}
-              <View
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  marginBottom: 12,
-                }}
-              >
+              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
                 <TouchableOpacity
                   onPress={() => {
-                    if (pickerMonth === 0) {
-                      setPickerMonth(11);
-                      setPickerYear(pickerYear - 1);
-                    } else setPickerMonth(pickerMonth - 1);
+                    if (pickerMonth === 0) { setPickerMonth(11); setPickerYear(pickerYear - 1); }
+                    else setPickerMonth(pickerMonth - 1);
                   }}
                   style={{ padding: 8 }}
                 >
                   <Feather name="chevron-left" size={20} color="#FF4081" />
                 </TouchableOpacity>
-                <Text
-                  style={{
-                    fontFamily: "Inter",
-                    fontWeight: "600",
-                    fontSize: 15,
-                    color: "#1E1E1E",
-                  }}
-                >
+                <Text style={{ fontFamily: 'Inter', fontWeight: '600', fontSize: 15, color: '#1E1E1E' }}>
                   {MONTHS[pickerMonth]} {pickerYear}
                 </Text>
                 <TouchableOpacity
                   onPress={() => {
-                    if (pickerMonth === 11) {
-                      setPickerMonth(0);
-                      setPickerYear(pickerYear + 1);
-                    } else setPickerMonth(pickerMonth + 1);
+                    if (pickerMonth === 11) { setPickerMonth(0); setPickerYear(pickerYear + 1); }
+                    else setPickerMonth(pickerMonth + 1);
                   }}
                   style={{ padding: 8 }}
                 >
@@ -680,18 +756,10 @@ export default function AddEntryScreen() {
               </View>
 
               {/* Weekday headers */}
-              <View style={{ flexDirection: "row", marginBottom: 4 }}>
-                {WEEK_DAYS.map((d) => (
-                  <View key={d} style={{ flex: 1, alignItems: "center" }}>
-                    <Text
-                      style={{
-                        fontFamily: "Inter",
-                        fontSize: 12,
-                        color: "#888888",
-                      }}
-                    >
-                      {d}
-                    </Text>
+              <View style={{ flexDirection: 'row', marginBottom: 4 }}>
+                {WEEK_DAYS.map(d => (
+                  <View key={d} style={{ flex: 1, alignItems: 'center' }}>
+                    <Text style={{ fontFamily: 'Inter', fontSize: 12, color: '#888888' }}>{d}</Text>
                   </View>
                 ))}
               </View>
@@ -700,13 +768,9 @@ export default function AddEntryScreen() {
               {(() => {
                 const grid = getMonthGrid(pickerYear, pickerMonth);
                 const rows: (Date | null)[][] = [];
-                for (let i = 0; i < grid.length; i += 7)
-                  rows.push(grid.slice(i, i + 7));
+                for (let i = 0; i < grid.length; i += 7) rows.push(grid.slice(i, i + 7));
                 return rows.map((row, ri) => (
-                  <View
-                    key={ri}
-                    style={{ flexDirection: "row", marginBottom: 4 }}
-                  >
+                  <View key={ri} style={{ flexDirection: 'row', marginBottom: 4 }}>
                     {row.map((day, ci) => {
                       if (!day) return <View key={ci} style={{ flex: 1 }} />;
                       const key = toDateKey(day);
@@ -715,32 +779,18 @@ export default function AddEntryScreen() {
                         <TouchableOpacity
                           key={ci}
                           onPress={() => handlePickerDateSelect(day)}
-                          style={{
-                            flex: 1,
-                            alignItems: "center",
-                            paddingVertical: 6,
-                          }}
+                          style={{ flex: 1, alignItems: 'center', paddingVertical: 6 }}
                         >
-                          <View
-                            style={{
-                              width: 34,
-                              height: 34,
-                              borderRadius: 17,
-                              backgroundColor: isSelected
-                                ? "#FF4081"
-                                : "transparent",
-                              alignItems: "center",
-                              justifyContent: "center",
-                            }}
-                          >
-                            <Text
-                              style={{
-                                fontFamily: "Inter",
-                                fontSize: 13,
-                                color: isSelected ? "#FFFFFF" : "#1E1E1E",
-                                fontWeight: isSelected ? "600" : "400",
-                              }}
-                            >
+                          <View style={{
+                            width: 34, height: 34, borderRadius: 17,
+                            backgroundColor: isSelected ? '#FF4081' : 'transparent',
+                            alignItems: 'center', justifyContent: 'center',
+                          }}>
+                            <Text style={{
+                              fontFamily: 'Inter', fontSize: 13,
+                              color: isSelected ? '#FFFFFF' : '#1E1E1E',
+                              fontWeight: isSelected ? '600' : '400',
+                            }}>
                               {day.getDate()}
                             </Text>
                           </View>
@@ -753,37 +803,17 @@ export default function AddEntryScreen() {
 
               {/* Date text input */}
               <View style={{ marginTop: 12, marginBottom: 10 }}>
-                <Text
-                  style={{
-                    fontFamily: "Inter",
-                    fontSize: 12,
-                    color: "#888888",
-                    marginBottom: 4,
-                  }}
-                >
+                <Text style={{ fontFamily: 'Inter', fontSize: 12, color: '#888888', marginBottom: 4 }}>
                   Date (e.g. April 15, 2025 or 2025-04-15)
                 </Text>
-                <View
-                  style={{
-                    borderWidth: 1,
-                    borderColor: "#FFB3CD",
-                    borderRadius: 10,
-                    paddingHorizontal: 12,
-                    paddingVertical: 10,
-                    backgroundColor: "#FFFFFF",
-                  }}
-                >
+                <View style={{ borderWidth: 1, borderColor: '#FFB3CD', borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10, backgroundColor: '#FFFFFF' }}>
                   <TextInput
                     value={dateInputText}
                     onChangeText={setDateInputText}
                     onBlur={handleDateInputBlur}
                     placeholder="April 15, 2025"
                     placeholderTextColor="#BBBBBB"
-                    style={{
-                      fontFamily: "Inter",
-                      fontSize: 14,
-                      color: "#1E1E1E",
-                    }}
+                    style={{ fontFamily: 'Inter', fontSize: 14, color: '#1E1E1E' }}
                     returnKeyType="done"
                     onSubmitEditing={handleDateInputBlur}
                   />
@@ -792,40 +822,17 @@ export default function AddEntryScreen() {
 
               {/* Cycle day input */}
               <View style={{ marginBottom: 20 }}>
-                <Text
-                  style={{
-                    fontFamily: "Inter",
-                    fontSize: 12,
-                    color: "#888888",
-                    marginBottom: 4,
-                  }}
-                >
-                  Cycle Day{" "}
-                  <Text style={{ fontStyle: "italic" }}>
-                    (Optional — auto-filled)
-                  </Text>
+                <Text style={{ fontFamily: 'Inter', fontSize: 12, color: '#888888', marginBottom: 4 }}>
+                  Cycle Day <Text style={{ fontStyle: 'italic' }}>(Optional — auto-filled)</Text>
                 </Text>
-                <View
-                  style={{
-                    borderWidth: 1,
-                    borderColor: "#FFB3CD",
-                    borderRadius: 10,
-                    paddingHorizontal: 12,
-                    paddingVertical: 10,
-                    backgroundColor: "#FFFFFF",
-                  }}
-                >
+                <View style={{ borderWidth: 1, borderColor: '#FFB3CD', borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10, backgroundColor: '#FFFFFF' }}>
                   <TextInput
                     value={cycleDayInput}
                     onChangeText={setCycleDayInput}
                     placeholder="e.g. 5"
                     placeholderTextColor="#BBBBBB"
                     keyboardType="number-pad"
-                    style={{
-                      fontFamily: "Inter",
-                      fontSize: 14,
-                      color: "#1E1E1E",
-                    }}
+                    style={{ fontFamily: 'Inter', fontSize: 14, color: '#1E1E1E' }}
                   />
                 </View>
               </View>
@@ -833,25 +840,12 @@ export default function AddEntryScreen() {
               {/* Confirm button */}
               <TouchableOpacity
                 onPress={confirmDatePicker}
-                style={{
-                  backgroundColor: "#FF4081",
-                  borderRadius: 999,
-                  paddingVertical: 14,
-                  alignItems: "center",
-                }}
+                style={{ backgroundColor: '#FF4081', borderRadius: 999, paddingVertical: 14, alignItems: 'center' }}
                 activeOpacity={0.85}
               >
-                <Text
-                  style={{
-                    fontFamily: "Inter",
-                    fontWeight: "600",
-                    fontSize: 15,
-                    color: "#FFFFFF",
-                  }}
-                >
-                  Confirm
-                </Text>
+                <Text style={{ fontFamily: 'Inter', fontWeight: '600', fontSize: 15, color: '#FFFFFF' }}>Confirm</Text>
               </TouchableOpacity>
+
             </View>
           </TouchableOpacity>
         </TouchableOpacity>
