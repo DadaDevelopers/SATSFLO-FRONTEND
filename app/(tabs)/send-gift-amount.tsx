@@ -1,15 +1,22 @@
-import { api } from '@/lib/api';
-import { Feather } from '@expo/vector-icons';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import * as Clipboard from 'expo-clipboard';
-import { router } from 'expo-router';
-import React, { useState } from 'react';
-import { Alert, Pressable, Text, TextInput, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { api } from "@/lib/api";
+import { Feather } from "@expo/vector-icons";
+import * as Clipboard from "expo-clipboard";
+import Svg, { Path } from "react-native-svg";
+import { router } from "expo-router";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import React, { useEffect, useRef, useState } from "react";
+import { Alert, Pressable, Text, TextInput, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 type CurrencyType = "USD" | "EUR" | "KES" | "NGN";
 type CurrencyType = "USD" | "EUR" | "KES" | "NGN";
 
+// Fallback rates (non-USD currencies converted via approximate USD equivalent)
+const usdEquivalent: Record<CurrencyType, number> = {
+  USD: 1,
+  EUR: 1.08,
+  KES: 0.0077,
+  NGN: 0.00065,
 // Fallback rates (non-USD currencies converted via approximate USD equivalent)
 const usdEquivalent: Record<CurrencyType, number> = {
   USD: 1,
@@ -29,6 +36,37 @@ export default function SendGiftAmountScreen() {
   const [note, setNote] = useState("");
   const [currency, setCurrency] = useState<CurrencyType>("USD");
   const [showCurrencyDropdown, setShowCurrencyDropdown] = useState(false);
+
+  // Live BTC price
+  const [satsPerUsd, setSatsPerUsd] = useState<number>(1060);
+
+  // Validation state
+  const [validating, setValidating] = useState(false);
+  const [validated, setValidated] = useState(false);
+  const [minSats, setMinSats] = useState<number>(1);
+  const [maxSats, setMaxSats] = useState<number>(1_000_000);
+  const [destError, setDestError] = useState<string | null>(null);
+
+  // Invoice creation
+  const [creating, setCreating] = useState(false);
+
+  const prevDestRef = useRef("");
+
+  // Fetch live BTC price on mount
+  useEffect(() => {
+    const fetchPrice = async () => {
+      try {
+        const token = await AsyncStorage.getItem("accessToken");
+        if (!token) return;
+        const { response, data } = await api.get("/payments/btc-price", token);
+        if (response.ok) {
+          const d = data?.data ?? data;
+          if (d?.sats_per_usd) setSatsPerUsd(d.sats_per_usd);
+        }
+      } catch {}
+    };
+    fetchPrice();
+  }, []);
 
   // Live BTC price
   const [satsPerUsd, setSatsPerUsd] = useState<number>(1060);
@@ -147,16 +185,53 @@ export default function SendGiftAmountScreen() {
     return Math.min(Math.max(sats, minSats), maxSats);
   };
 
-  const calculateSatsEquivalent = (): string => {
-    const amountValue = parseFloat(amount);
-    if (isNaN(amountValue) || amountValue <= 0) {
-      return "0";
+  // Validate LN address when user leaves the destination field
+  const handleDestinationBlur = async () => {
+    const dest = destination.trim();
+    if (!dest || dest === prevDestRef.current) return;
+    prevDestRef.current = dest;
+    setValidated(false);
+    setDestError(null);
+    setValidating(true);
+    try {
+      const token = await AsyncStorage.getItem("accessToken");
+      if (!token) { setValidating(false); return; }
+      const { response, data } = await api.post(
+        "/payments/validate",
+        { lightning_address: dest },
+        token
+      );
+      if (response.ok) {
+        const d = data?.data ?? data;
+        if (d?.valid) {
+          setValidated(true);
+          if (d.min_sats != null) setMinSats(d.min_sats);
+          if (d.max_sats != null) setMaxSats(d.max_sats);
+        } else {
+          setDestError("Address could not be reached. Please check and try again.");
+        }
+      } else {
+        setDestError("Could not validate address.");
+      }
+    } catch {
+      setDestError("Network error. Please try again.");
+    } finally {
+      setValidating(false);
     }
-    const satsEquivalent = amountValue * conversionRates[currency];
-    return Math.round(satsEquivalent).toLocaleString();
   };
 
-  const [validating, setValidating] = useState(false);
+  const calculateSatsAmount = (): number => {
+    const amountValue = parseFloat(amount);
+    if (isNaN(amountValue) || amountValue <= 0) return 0;
+    const usdAmount = amountValue * usdEquivalent[currency];
+    const sats = Math.round(usdAmount * satsPerUsd);
+    return Math.min(Math.max(sats, minSats), maxSats);
+  };
+
+  const calculateSatsEquivalent = (): string => {
+    const sats = calculateSatsAmount();
+    return sats > 0 ? sats.toLocaleString() : "0";
+  };
 
   const handleProceed = async () => {
     if (!destination || !amount) {
@@ -166,31 +241,57 @@ export default function SendGiftAmountScreen() {
       );
       return;
     }
-    setValidating(true);
-    try {
-      const token = await AsyncStorage.getItem('accessToken');
-      if (token) {
-        const { response, data } = await api.post(
-          '/payments/validate',
-          { lightning_address: destination },
-          token
-        );
-        if (!response.ok) {
-          Alert.alert('Invalid Address', data?.message || 'Please check the lightning address and try again.');
-          return;
-        }
-      }
-    } catch {
-      Alert.alert('Error', 'Could not validate address. Please try again.');
+
+    const sats = calculateSatsAmount();
+    if (sats <= 0) {
+      Alert.alert("Invalid Amount", "Please enter a valid amount.");
       return;
-    } finally {
-      setValidating(false);
     }
-    const amountSats = calculateSatsEquivalent().replace(/,/g, '');
-    router.push({
-      pathname: '/(tabs)/select-wallet' as any,
-      params: { lightning_address: destination, amount_sats: amountSats, note },
-    });
+
+    setCreating(true);
+    try {
+      const token = await AsyncStorage.getItem("accessToken");
+      if (!token) {
+        Alert.alert("Session expired", "Please log in again.");
+        setCreating(false);
+        return;
+      }
+
+      const { response, data } = await api.post(
+        "/payments/tip",
+        {
+          lightning_address: destination.trim(),
+          amount_sats: sats,
+          note: note.trim() || undefined,
+        },
+        token
+      );
+
+      if (!response.ok) {
+        Alert.alert("Error", data?.message ?? "Failed to create invoice. Please try again.");
+        setCreating(false);
+        return;
+      }
+
+      const d = data?.data ?? data;
+      router.push({
+        pathname: "/gift-token/create-invoice",
+        params: {
+          destination: destination.trim(),
+          amount: amount,
+          currency,
+          satsEquivalent: String(d?.amount_sats ?? sats),
+          note: note.trim(),
+          bolt11: d?.bolt11_invoice ?? "",
+          payment_hash: d?.payment_hash ?? "",
+          expires_at: d?.expires_at ?? "",
+        },
+      });
+    } catch {
+      Alert.alert("Error", "Unable to create invoice. Check your connection.");
+    } finally {
+      setCreating(false);
+    }
   };
 
   return (
@@ -229,7 +330,7 @@ export default function SendGiftAmountScreen() {
           >
             Destination
           </Text>
-          <View className="flex-row justify-between items-center px-4" style={{ height: 52, borderWidth: 0.5, borderColor: '#FF99BC', borderRadius: 8.5 }}>
+          <View className="flex-row justify-between items-center px-4" style={{ height: 52, borderWidth: 0.5, borderColor: destError ? '#FF6B6B' : validated ? '#4DC721' : '#FF99BC', borderRadius: 8.5 }}>
             <TextInput
               className="flex-1 text-sm font-inter text-white"
               style={{ fontWeight: "500" }}
@@ -239,9 +340,14 @@ export default function SendGiftAmountScreen() {
               value={destination}
               onChangeText={(t) => { setDestination(t); setValidated(false); setDestError(null); prevDestRef.current = ""; }}
               onBlur={handleDestinationBlur}
+              onChangeText={(t) => { setDestination(t); setValidated(false); setDestError(null); prevDestRef.current = ""; }}
+              onBlur={handleDestinationBlur}
               autoCapitalize="none"
               keyboardType="email-address"
             />
+            <View className="flex-row gap-2 items-center">
+              {validating && <Feather name="loader" size={14} color="#FAFAFA" />}
+              {validated && !validating && <Feather name="check-circle" size={14} color="#4DC721" />}
             <View className="flex-row gap-2 items-center">
               {validating && <Feather name="loader" size={14} color="#FAFAFA" />}
               {validated && !validating && <Feather name="check-circle" size={14} color="#4DC721" />}
@@ -263,6 +369,9 @@ export default function SendGiftAmountScreen() {
               </Pressable>
             </View>
           </View>
+          {destError && (
+            <Text className="text-[10px] font-inter text-red-300 px-1">{destError}</Text>
+          )}
           {destError && (
             <Text className="text-[10px] font-inter text-red-300 px-1">{destError}</Text>
           )}
@@ -462,12 +571,13 @@ export default function SendGiftAmountScreen() {
       >
         <Pressable
           onPress={handleProceed}
-          disabled={validating}
+          disabled={creating || validating}
           className="w-[250px] py-4 bg-[#FF82AD] rounded-full items-center justify-center active:opacity-80 border-[0.5px] border-[#FF669A] mb-5"
+          style={{ opacity: creating || validating ? 0.7 : 1 }}
           style={{ opacity: creating || validating ? 0.7 : 1 }}
         >
           <Text className="text-white font-inter font-medium text-[15px]">
-            {validating ? 'Validating...' : 'Proceed'}
+            {creating ? "Creating..." : "Create Invoice"}
           </Text>
         </Pressable>
         <View className="w-full h-[34px] bg-[#FF3378] items-center justify-center">
