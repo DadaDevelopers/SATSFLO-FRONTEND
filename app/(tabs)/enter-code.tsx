@@ -122,8 +122,16 @@ export default function EnterCodeScreen() {
         <TouchableOpacity
           activeOpacity={1}
           onPress={focusFirst}
-          className="bg-[#FF4081] rounded-full h-14 flex-row items-center justify-center"
-          style={{ width: 309, gap: 6 }}
+          style={{
+            width: 309,
+            height: 56,
+            borderRadius: 28,
+            backgroundColor: "#FF4081",
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 6,
+          }}
         >
           {Array(CODE_LENGTH)
             .fill(null)
@@ -139,20 +147,23 @@ export default function EnterCodeScreen() {
                 maxLength={1}
                 autoCapitalize="characters"
                 style={{
-                  width: 30,
-                  height: 44,
-                  fontWeight: "300",
+                  width: 32,
+                  height: 40,
+                  fontWeight: "700",
                   color: "#FFFFFF",
-                  fontSize: 32,
-                  lineHeight: 40,
+                  fontSize: 20,
                   textAlign: "center",
+                  textAlignVertical: "center",
+                  includeFontPadding: false,
+                  paddingTop: 0,
+                  paddingBottom: 0,
                   borderBottomWidth: 2,
-                  borderBottomColor: code[i] ? "transparent" : "#FF90B6",
+                  borderBottomColor: code[i] ? "transparent" : "#FFFFFF",
                 }}
                 cursorColor="#FFFFFF"
                 selectionColor="rgba(255,255,255,0.3)"
-                placeholderTextColor="#FF90B6"
-                placeholder="_"
+                placeholderTextColor="rgba(255,255,255,0.5)"
+                placeholder=" "
               />
             ))}
         </TouchableOpacity>
