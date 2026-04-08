@@ -131,11 +131,7 @@ export default function JournalScreen() {
   };
 
   // When searching: show server results; when not: show entries for selected date
-  const filteredEntries = searchText.trim()
-    ? searchResults
-    : entries.filter(
-        (e) => !selectedDate || (e.date ?? "").split("T")[0] === selectedDate,
-      );
+  const filteredEntries = searchText.trim() ? searchResults : entries;
 
   const handlePreviousMonth = () => {
     if (currentMonth === 0) {
@@ -326,7 +322,7 @@ export default function JournalScreen() {
             >
               Recent Entries
             </Text>
-            <TouchableOpacity activeOpacity={0.7} onPress={() => router.push('/(tabs)/all-entries' as any)}>
+            <TouchableOpacity activeOpacity={0.7} onPress={() => router.push('/(tabs)/all-entries-journal' as any)}>
               <Text
                 style={{
                   fontFamily: "Inter",
