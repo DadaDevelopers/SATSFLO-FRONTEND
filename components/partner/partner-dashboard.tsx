@@ -1,8 +1,11 @@
 import { PartnerBottomNavigation } from "@/components/home/partner-bottom-navigation";
+import { api } from "@/lib/api";
 import { Feather } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
-import React, { useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
+    ActivityIndicator,
     ScrollView,
     StatusBar,
     Text,
@@ -39,8 +42,43 @@ function PregnancyCurve() {
 export default function PartnerDashboardScreen() {
     const insets = useSafeAreaInsets();
     const [activeTab, setActiveTab] = useState<TabName>("home");
-    // Toggle between the two mockups
-    const [isPeriod, setIsPeriod] = useState(true);
+    const [loading, setLoading] = useState(true);
+
+    // Cycle data from API
+    const [partnerNickname, setPartnerNickname] = useState("Partner");
+    const [cyclePhase, setCyclePhase] = useState<string | null>(null);
+    const [cycleDay, setCycleDay] = useState<number | null>(null);
+    const [daysUntilPeriod, setDaysUntilPeriod] = useState<number | null>(null);
+    const [daysUntilOvulation, setDaysUntilOvulation] = useState<number | null>(null);
+    const [symptoms, setSymptoms] = useState<string[]>([]);
+    const [mood, setMood] = useState<string | null>(null);
+    const [sexDriveLevel, setSexDriveLevel] = useState<string | null>(null);
+    const [pregnancyChance, setPregnancyChance] = useState<string | null>(null);
+
+    const loadCycleData = useCallback(async () => {
+        const token = await AsyncStorage.getItem("accessToken");
+        if (!token) { setLoading(false); return; }
+        try {
+            const { response, data } = await api.get("/partner/cycle", token);
+            if (response.ok) {
+                const d = data?.data ?? data;
+                if (d?.partner_nickname) setPartnerNickname(d.partner_nickname);
+                if (d?.phase) setCyclePhase(d.phase);
+                if (d?.current_day != null) setCycleDay(d.current_day);
+                if (d?.days_until_next_period != null) setDaysUntilPeriod(d.days_until_next_period);
+                if (d?.days_until_ovulation != null) setDaysUntilOvulation(d.days_until_ovulation);
+                if (Array.isArray(d?.symptoms)) setSymptoms(d.symptoms);
+                if (d?.mood) setMood(d.mood);
+                if (d?.sex_drive) setSexDriveLevel(d.sex_drive);
+                if (d?.pregnancy_chance) setPregnancyChance(d.pregnancy_chance);
+            }
+        } catch {}
+        setLoading(false);
+    }, []);
+
+    useEffect(() => { loadCycleData(); }, [loadCycleData]);
+
+    const isPeriod = cyclePhase === "menstruation" || cyclePhase === "period";
 
     const handleBack = () => {
         router.back();
@@ -80,10 +118,15 @@ export default function PartnerDashboardScreen() {
                     <Feather name="arrow-left" size={24} color="#FFFFFF" />
                 </TouchableOpacity>
                 <Text className="flex-1 text-center text-white text-[18px] font-medium mr-6">
-                    Babe's Cycle
+                    {partnerNickname}'s Cycle
                 </Text>
             </View>
 
+            {loading ? (
+                <View className="flex-1 items-center justify-center">
+                    <ActivityIndicator size="large" color="#FFFFFF" />
+                </View>
+            ) : (
             <ScrollView
                 className="flex-1"
                 contentContainerStyle={{
@@ -93,22 +136,24 @@ export default function PartnerDashboardScreen() {
                 showsVerticalScrollIndicator={false}
             >
                 {/* Period Status (Hero Section) */}
-                <TouchableOpacity activeOpacity={0.9} onPress={() => setIsPeriod(!isPeriod)}>
-                    <View className="items-center mt-6 mb-8">
-                        <Text className="text-white text-[16px] font-medium tracking-wide mb-2">
-                            {isPeriod ? "Period" : "Next Ovulation"}
-                        </Text>
-                        <Text
-                            className="text-white font-extrabold mb-3 tracking-tight"
-                            style={{ fontSize: 38, fontFamily: 'impact' }}
-                        >
-                            {isPeriod ? "1st Day of Period" : "7 Days Left"}
-                        </Text>
-                        <Text className="text-white text-[17px]">
-                            {isPeriod ? "Next ovulation: 14 days left" : "Next period: 15 days left"}
-                        </Text>
-                    </View>
-                </TouchableOpacity>
+                <View className="items-center mt-6 mb-8">
+                    <Text className="text-white text-[16px] font-medium tracking-wide mb-2">
+                        {isPeriod ? "Period" : cyclePhase ? cyclePhase.charAt(0).toUpperCase() + cyclePhase.slice(1) : "Cycle"}
+                    </Text>
+                    <Text
+                        className="text-white font-extrabold mb-3 tracking-tight"
+                        style={{ fontSize: 38, fontFamily: 'impact' }}
+                    >
+                        {cycleDay != null ? `Day ${cycleDay}` : "—"}
+                    </Text>
+                    <Text className="text-white text-[17px]">
+                        {daysUntilOvulation != null
+                            ? `Next ovulation: ${daysUntilOvulation} day${daysUntilOvulation !== 1 ? "s" : ""} left`
+                            : daysUntilPeriod != null
+                            ? `Next period: ${daysUntilPeriod} day${daysUntilPeriod !== 1 ? "s" : ""} left`
+                            : ""}
+                    </Text>
+                </View>
 
                 {/* Common Card Style: very light pink/purple #F8F1FF, highly rounded */}
 
@@ -119,12 +164,16 @@ export default function PartnerDashboardScreen() {
                     </Text>
                     <Text className="text-[#616161] text-[15px] leading-5 mb-3">
                         {isPeriod
-                            ? "Your partner is on their first day of period. Keep in touch and stay connected. They need you more now"
-                            : "Your partner is in the ovulation period. Keep in touch and stay connected ."}
+                            ? "Your partner is on their period. Keep in touch and stay connected. They need you more now."
+                            : cyclePhase
+                            ? `Your partner is in the ${cyclePhase} phase. Keep in touch and stay connected.`
+                            : "Your partner's cycle phase is not available."}
                     </Text>
-                    <Text className="text-[#1E1E1E] font-bold text-[16px]">
-                        Cycle Day 12
-                    </Text>
+                    {cycleDay != null && (
+                        <Text className="text-[#1E1E1E] font-bold text-[16px]">
+                            Cycle Day {cycleDay}
+                        </Text>
+                    )}
                 </View>
 
                 {/* Today's Symptoms Card */}
@@ -133,21 +182,17 @@ export default function PartnerDashboardScreen() {
                         Today's Symptoms
                     </Text>
 
-                    {isPeriod ? (
+                    {symptoms.length > 0 ? (
                         <>
                             <Text className="text-[#616161] text-[15px] leading-5 mb-4">
                                 Here's what your partner is logging. Each of these symptoms matter, please take note.
                             </Text>
-
                             <View className="flex-row flex-wrap gap-2 mb-4">
-                                <View className="bg-white border border-[#EBEBEB] flex-row items-center px-3 py-1.5 rounded-full shadow-sm">
-                                    <Text className="text-[14px]">🤕</Text>
-                                    <Text className="text-[#B551E5] ml-2 font-semibold">Headache</Text>
-                                </View>
-                                <View className="bg-white border border-[#EBEBEB] flex-row items-center px-3 py-1.5 rounded-full shadow-sm">
-                                    <Text className="text-[14px]">😖</Text>
-                                    <Text className="text-[#B551E5] ml-2 font-semibold">Cramps</Text>
-                                </View>
+                                {symptoms.map((s) => (
+                                    <View key={s} className="bg-white border border-[#EBEBEB] flex-row items-center px-3 py-1.5 rounded-full shadow-sm">
+                                        <Text className="text-[#B551E5] font-semibold">{s}</Text>
+                                    </View>
+                                ))}
                             </View>
                         </>
                     ) : (
@@ -167,7 +212,9 @@ export default function PartnerDashboardScreen() {
                         <Text className="text-[#B551E5] text-[18px] font-bold mb-2">
                             Pregnancy Chance
                         </Text>
-                        <Text className="text-[#1E1E1E] text-[18px] font-extrabold flex-1 flex-col">Low</Text>
+                        <Text className="text-[#1E1E1E] text-[18px] font-extrabold flex-1 flex-col">
+                            {pregnancyChance ?? "—"}
+                        </Text>
                     </View>
                     <View className="justify-center items-center mt-2">
                         <PregnancyCurve />
@@ -178,34 +225,23 @@ export default function PartnerDashboardScreen() {
                 <View className="flex-row justify-between mb-4 gap-4">
                     <View className="bg-[#F8F1FF] rounded-[24px] p-5 flex-1 items-center shadow-sm">
                         <Text className="text-[#B551E5] text-[18px] font-bold mb-4">Moods</Text>
-                        {isPeriod ? (
-                            <View className="w-[50px] h-[50px] rounded-full justify-center items-center mb-3" style={{ backgroundColor: '#FFD700', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.2, shadowRadius: 4, elevation: 4 }}>
-                                <Text style={{ fontSize: 32, lineHeight: 38 }}>🙂</Text>
-                            </View>
-                        ) : (
-                            <View className="w-[50px] h-[50px] justify-center items-center mb-3">
-                                <Text style={{ fontSize: 40, color: '#B551E5' }}>💠</Text>
-                            </View>
-                        )}
-                        <Text className="text-[#1E1E1E] font-bold text-[16px]">{isPeriod ? "Okay" : "No log"}</Text>
+                        <View className="w-[50px] h-[50px] justify-center items-center mb-3">
+                            <Text style={{ fontSize: 40 }}>{mood ? "🙂" : "💠"}</Text>
+                        </View>
+                        <Text className="text-[#1E1E1E] font-bold text-[16px]">{mood ?? "No log"}</Text>
                     </View>
 
                     <View className="bg-[#F8F1FF] rounded-[24px] p-5 flex-1 items-center shadow-sm">
                         <Text className="text-[#B551E5] text-[18px] font-bold mb-4">Sex Drive</Text>
-                        {isPeriod ? (
-                            <View className="w-[50px] h-[50px] rounded-full justify-center items-center mb-3">
-                                <Feather name="heart" size={40} color="#FFB3C6" solid />
-                            </View>
-                        ) : (
-                            <View className="w-[50px] h-[50px] justify-center items-center mb-3">
-                                <Text style={{ fontSize: 40, color: '#FFB3C6' }}>🌸</Text>
-                            </View>
-                        )}
-                        <Text className="text-[#1E1E1E] font-bold text-[16px]">{isPeriod ? "Low" : "No log"}</Text>
+                        <View className="w-[50px] h-[50px] justify-center items-center mb-3">
+                            <Feather name="heart" size={40} color="#FFB3C6" />
+                        </View>
+                        <Text className="text-[#1E1E1E] font-bold text-[16px]">{sexDriveLevel ?? "No log"}</Text>
                     </View>
                 </View>
 
             </ScrollView>
+            )}
 
             {/* Floating Gift Token Button */}
             <View className="absolute bottom-[90px] left-0 right-0 items-center">

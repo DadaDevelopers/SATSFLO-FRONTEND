@@ -1,8 +1,8 @@
 import { api } from "@/lib/api";
 import { Feather } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { router } from "expo-router";
-import React, { useRef, useState } from "react";
+import { router, useLocalSearchParams } from "expo-router";
+import React, { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Text,
@@ -16,8 +16,18 @@ const CODE_LENGTH = 6;
 
 export default function EnterCodeScreen() {
   const insets = useSafeAreaInsets();
+  const { code: codeParam } = useLocalSearchParams<{ code?: string }>();
   const [code, setCode] = useState<string[]>(Array(CODE_LENGTH).fill(""));
   const inputRefs = useRef<(TextInput | null)[]>([]);
+
+  // Pre-fill from deep link param (e.g. satsflo.app/invite?code=X9L4Q8)
+  useEffect(() => {
+    if (codeParam) {
+      const chars = codeParam.replace(/[^A-Za-z0-9]/g, "").toUpperCase().slice(0, CODE_LENGTH);
+      const filled = Array(CODE_LENGTH).fill("").map((_, i) => chars[i] ?? "");
+      setCode(filled);
+    }
+  }, [codeParam]);
 
   const handleChange = (text: string, index: number) => {
     // Handle paste: distribute all characters starting from current index

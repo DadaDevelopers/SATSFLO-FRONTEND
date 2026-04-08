@@ -1,8 +1,10 @@
 import { PartnerBottomNavigation } from "@/components/home/partner-bottom-navigation";
+import { api } from "@/lib/api";
 import { Feather } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
-import React, { useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
     Image,
     Modal,
@@ -20,6 +22,27 @@ export default function PartnerSettingsScreen() {
     const insets = useSafeAreaInsets();
     const [activeTab, setActiveTab] = useState<TabName>("settings");
     const [showUnpairModal, setShowUnpairModal] = useState(false);
+    const [partnerName, setPartnerName] = useState("");
+    const [myNickname, setMyNickname] = useState("");
+    const [pairedDays, setPairedDays] = useState<number | null>(null);
+
+    const loadPartner = useCallback(async () => {
+        const token = await AsyncStorage.getItem("accessToken");
+        if (!token) return;
+        try {
+            const { response, data } = await api.get("/partner", token);
+            if (response.ok) {
+                const p = data?.data ?? data;
+                if (p?.partner_nickname) setPartnerName(p.partner_nickname);
+                else if (p?.partner?.name) setPartnerName(p.partner.name);
+                if (p?.my_nickname) setMyNickname(p.my_nickname);
+                if (p?.paired_days != null) setPairedDays(p.paired_days);
+                else if (p?.days_paired != null) setPairedDays(p.days_paired);
+            }
+        } catch {}
+    }, []);
+
+    useEffect(() => { loadPartner(); }, [loadPartner]);
 
     const handleBack = () => {
         router.back();
@@ -46,10 +69,21 @@ export default function PartnerSettingsScreen() {
         router.push("/(tabs)/gift-token-wallet");
     };
 
-    const confirmUnpair = () => {
+    const confirmUnpair = async () => {
         setShowUnpairModal(false);
-        // Add unpair logic here
-        router.push("/(tabs)/settings"); // Return to primary settings or auth
+        try {
+            const token = await AsyncStorage.getItem("accessToken");
+            if (token) await api.delete("/partner", undefined, token);
+        } catch {}
+        router.push("/(tabs)/settings");
+    };
+
+    const handleSwitchToMyCycle = async () => {
+        try {
+            const token = await AsyncStorage.getItem("accessToken");
+            if (token) await api.put("/partner/mode", { mode: "my_cycle" }, token);
+        } catch {}
+        router.push("/(tabs)" as any);
     };
 
     return (
@@ -107,15 +141,20 @@ export default function PartnerSettingsScreen() {
                     </View>
 
                     <Text className="text-[20px] font-extrabold text-[#1E1E1E] mt-4 mb-1">
-                        Sarah Abraham & Babe
+                        {partnerName || myNickname
+                            ? [partnerName, myNickname].filter(Boolean).join(" & ")
+                            : "Partner"}
                     </Text>
                     <Text className="text-[#616161] text-[15px] mb-8">
-                        Paired for 1 day
+                        {pairedDays != null
+                            ? `Paired for ${pairedDays} day${pairedDays !== 1 ? "s" : ""}`
+                            : ""}
                     </Text>
 
                     {/* Action Row 1: Switch to my cycle */}
                     <View className="w-full border-t border-[#F5E6EC] pt-4 mb-2">
                         <TouchableOpacity
+                            onPress={handleSwitchToMyCycle}
                             className="flex-row items-center justify-between"
                             activeOpacity={0.7}
                         >

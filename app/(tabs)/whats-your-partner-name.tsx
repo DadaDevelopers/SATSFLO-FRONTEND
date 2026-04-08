@@ -1,4 +1,6 @@
+import { api } from "@/lib/api";
 import { Feather } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
 import React, { useState } from "react";
 import { Text, TextInput, TouchableOpacity, View } from "react-native";
@@ -62,7 +64,15 @@ export default function WhatsYourPartnerNameScreen() {
       {/* Done button */}
       <View className="items-center pb-7">
         <TouchableOpacity
-          onPress={() => router.push("/(tabs)/partner-nickname" as any)}
+          onPress={async () => {
+            try {
+              const token = await AsyncStorage.getItem("accessToken");
+              if (token && name.trim()) {
+                await api.put("/partner/nickname", { my_nickname: name.trim() }, token);
+              }
+            } catch {}
+            router.push("/(tabs)/partner-nickname" as any);
+          }}
           activeOpacity={0.8}
           className="w-[250px] h-14 bg-[#FF82AD] rounded-full items-center justify-center"
         >
