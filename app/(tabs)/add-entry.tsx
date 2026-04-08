@@ -101,17 +101,7 @@ export default function AddEntryScreen() {
         setCycleDayInput('');
       }
     }
-  }, [selectedDate, lastPeriodStart, cycleLength]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  const computeCycleDay = (): number | null => {
-    if (!lastPeriodStart) return null;
-    const [y, m, d] = selectedDate.split('-').map(Number);
-    const selDate = new Date(y, m - 1, d);
-    const periodDate = new Date(lastPeriodStart + 'T00:00:00');
-    const diffDays = Math.floor((selDate.getTime() - periodDate.getTime()) / 86400000);
-    if (diffDays < 0) return null;
-    return (diffDays % cycleLength) + 1;
-  };
+  }, [selectedDate, lastPeriodStart, cycleLength]);
 
   // Build full month grid for the date-picker modal
   const getMonthGrid = (year: number, month: number): (Date | null)[] => {
@@ -336,11 +326,6 @@ export default function AddEntryScreen() {
 
   const removeImage = (index: number) => {
     setSelectedImages(selectedImages.filter((_, i) => i !== index));
-  };
-
-  const formatDate = () => {
-    const [y, m, d] = selectedDate.split('-').map(Number);
-    return `${MONTHS[m - 1]} ${d}, ${y}`;
   };
 
   return (
