@@ -39,12 +39,6 @@ const mockedRouter = router as jest.Mocked<typeof router>;
 describe('InvitePartnerScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    jest.useFakeTimers();
-  });
-
-  afterEach(() => {
-    jest.clearAllTimers();
-    jest.useRealTimers();
   });
 
   it('renders the screen title', () => {
