@@ -9,8 +9,11 @@ coverage/
 nul
 
 .idea/
+<<<<<<< HEAD
 coverage/
 
+=======
+>>>>>>> b79ca63 (test:Added test for auth and partner screen)
 # Expo
 .expo/
 dist/
