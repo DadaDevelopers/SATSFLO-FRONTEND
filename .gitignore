@@ -5,7 +5,7 @@ node_modules/
 # Ignore Windows reserved device file
 nul
 
-
+.idea/
 # Expo
 .expo/
 dist/
