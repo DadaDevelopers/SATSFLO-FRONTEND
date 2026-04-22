@@ -43,7 +43,7 @@ describe('WhatsYourPartnerNameScreen', () => {
   });
 
   afterEach(() => {
-    jest.runAllTimers();
+    jest.clearAllTimers();
     jest.useRealTimers();
   });
 

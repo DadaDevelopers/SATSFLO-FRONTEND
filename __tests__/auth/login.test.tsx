@@ -97,7 +97,7 @@ describe('LoginScreen', () => {
   });
 
   afterEach(() => {
-    jest.runAllTimers();
+    jest.clearAllTimers();
     jest.useRealTimers();
   });
 

@@ -104,7 +104,7 @@ describe('SignupScreen', () => {
   });
 
   afterEach(() => {
-    jest.runAllTimers();
+    jest.clearAllTimers();
     jest.useRealTimers();
   });
 

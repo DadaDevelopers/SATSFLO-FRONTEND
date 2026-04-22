@@ -48,7 +48,7 @@ describe('PartnerPairingSuccessScreen', () => {
   });
 
   afterEach(() => {
-    jest.runAllTimers();
+    jest.clearAllTimers();
     jest.useRealTimers();
   });
 
