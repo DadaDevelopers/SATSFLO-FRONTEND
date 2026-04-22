@@ -1,19 +1,23 @@
-import { fireEvent, render } from '@testing-library/react-native';
-import React from 'react';
+import { fireEvent, render } from "@testing-library/react-native";
+import React from "react";
 
-import InvitePartnerScreen from '@/app/(tabs)/invite-partner';
+import InvitePartnerScreen from "@/app/(tabs)/invite-partner";
+
+// ── Helpers ────────────────────────────────────────────────────────────────────
+
+import { router } from 'expo-router';
 
 // ── Mocks ─────────────────────────────────────────────────────────────────────
 
-jest.mock('expo-router', () => ({ router: { push: jest.fn() } }));
+jest.mock("expo-router", () => ({ router: { push: jest.fn() } }));
 
-jest.mock('react-native-safe-area-context', () => ({
+jest.mock("react-native-safe-area-context", () => ({
   useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }),
 }));
 
-jest.mock('react-native-svg', () => {
-  const React = require('react');
-  const { View } = require('react-native');
+jest.mock("react-native-svg", () => {
+  const React = require("react");
+  const { View } = require("react-native");
   const Svg = ({ children }: { children?: React.ReactNode }) =>
     React.createElement(View, null, children);
   return {
@@ -25,47 +29,43 @@ jest.mock('react-native-svg', () => {
   };
 });
 
-jest.mock('@expo/vector-icons', () => ({
+jest.mock("@expo/vector-icons", () => ({
   Feather: () => null,
 }));
-
-// ── Helpers ────────────────────────────────────────────────────────────────────
-
-import { router } from 'expo-router';
 const mockedRouter = router as jest.Mocked<typeof router>;
 
 // ── Tests ─────────────────────────────────────────────────────────────────────
 
-describe('InvitePartnerScreen', () => {
+describe("InvitePartnerScreen", () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  it('renders the screen title', () => {
+  it("renders the screen title", () => {
     const { getByText } = render(<InvitePartnerScreen />);
-    expect(getByText('Invite Partner')).toBeTruthy();
+    expect(getByText("Invite Partner")).toBeTruthy();
   });
 
-  it('renders description text', () => {
+  it("renders description text", () => {
     const { getByText } = render(<InvitePartnerScreen />);
     expect(getByText(/Invite your partner or friend/)).toBeTruthy();
   });
 
-  it('renders Generate partner code and Join with code buttons', () => {
+  it("renders Generate partner code and Join with code buttons", () => {
     const { getByText } = render(<InvitePartnerScreen />);
-    expect(getByText('Generate partner code')).toBeTruthy();
-    expect(getByText('Join with code')).toBeTruthy();
+    expect(getByText("Generate partner code")).toBeTruthy();
+    expect(getByText("Join with code")).toBeTruthy();
   });
 
-  it('navigates to sharing-invite on Generate partner code press', () => {
+  it("navigates to sharing-invite on Generate partner code press", () => {
     const { getByText } = render(<InvitePartnerScreen />);
-    fireEvent.press(getByText('Generate partner code'));
-    expect(mockedRouter.push).toHaveBeenCalledWith('/(tabs)/sharing-invite');
+    fireEvent.press(getByText("Generate partner code"));
+    expect(mockedRouter.push).toHaveBeenCalledWith("/(tabs)/sharing-invite");
   });
 
-  it('navigates to enter-code on Join with code press', () => {
+  it("navigates to enter-code on Join with code press", () => {
     const { getByText } = render(<InvitePartnerScreen />);
-    fireEvent.press(getByText('Join with code'));
-    expect(mockedRouter.push).toHaveBeenCalledWith('/(tabs)/enter-code');
+    fireEvent.press(getByText("Join with code"));
+    expect(mockedRouter.push).toHaveBeenCalledWith("/(tabs)/enter-code");
   });
 });
