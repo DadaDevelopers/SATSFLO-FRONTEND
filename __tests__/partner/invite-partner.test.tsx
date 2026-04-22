@@ -5,7 +5,7 @@ import InvitePartnerScreen from "@/app/(tabs)/invite-partner";
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
-import { router } from 'expo-router';
+import { router } from "expo-router";
 
 // ── Mocks ─────────────────────────────────────────────────────────────────────
 
