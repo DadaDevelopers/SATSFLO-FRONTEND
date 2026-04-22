@@ -5,8 +5,6 @@ import InvitePartnerScreen from '@/app/(tabs)/invite-partner';
 
 // ── Mocks ─────────────────────────────────────────────────────────────────────
 
-const mockPush = jest.fn();
-
 jest.mock('expo-router', () => ({ router: { push: jest.fn() } }));
 
 jest.mock('react-native-safe-area-context', () => ({
@@ -45,7 +43,7 @@ describe('InvitePartnerScreen', () => {
   });
 
   afterEach(() => {
-    jest.runAllTimers();
+    jest.clearAllTimers();
     jest.useRealTimers();
   });
 
