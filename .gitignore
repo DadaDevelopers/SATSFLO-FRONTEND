@@ -9,6 +9,8 @@ coverage/
 nul
 
 .idea/
+coverage/
+
 # Expo
 .expo/
 dist/
