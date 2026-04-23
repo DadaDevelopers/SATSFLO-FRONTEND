@@ -294,6 +294,11 @@ export default function SettingsScreen() {
     email: string;
     avatar_url?: string;
   } | null>(null);
+  const [user, setUser] = useState<{
+    name: string;
+    email: string;
+    avatar_url?: string;
+  } | null>(null);
   const [cycleProfile, setCycleProfile] = useState<{
     period_length: number;
     cycle_length: number;
@@ -319,6 +324,7 @@ export default function SettingsScreen() {
       };
       loadCycleProfile();
     }, []),
+    }, []),
   );
 
   useFocusEffect(
@@ -332,6 +338,11 @@ export default function SettingsScreen() {
             email: stored.email ?? "",
             avatar_url: stored.avatar_url ?? undefined,
           });
+          setUser({
+            name: stored.name ?? "",
+            email: stored.email ?? "",
+            avatar_url: stored.avatar_url ?? undefined,
+          });
         }
         const token = await AsyncStorage.getItem("accessToken");
         if (!token) return;
@@ -339,6 +350,11 @@ export default function SettingsScreen() {
           const { response, data } = await api.get("/users/profile", token);
           if (response.ok) {
             const u = data?.data ?? data;
+            setUser({
+              name: u.name ?? "",
+              email: u.email ?? "",
+              avatar_url: u.avatar_url ?? undefined,
+            });
             setUser({
               name: u.name ?? "",
               email: u.email ?? "",
@@ -363,6 +379,7 @@ export default function SettingsScreen() {
         await api.post(
           "/auth/logout",
           { refreshToken: refreshToken ?? "" },
+          accessToken,
           accessToken,
         );
       }
@@ -442,14 +459,17 @@ export default function SettingsScreen() {
             onPress={() => router.push("/(tabs)/my-profile" as any)}
           >
             <View className="flex-row items-center gap-3">
-              <Image
-                source={
-                  user?.avatar_url
-                    ? { uri: user.avatar_url }
-                    : require("@/assets/images/zuri.png")
-                }
-                className="w-10 h-10 rounded-full"
-              />
+              {user?.avatar_url ? (
+                <Image
+                  source={{ uri: user.avatar_url }}
+                  className="w-10 h-10 rounded-full"
+                  resizeMode="cover"
+                />
+              ) : (
+                <View className="w-10 h-10 rounded-full bg-[#FFE6EE] items-center justify-center">
+                  <Feather name="user" size={20} color="#FF82AD" />
+                </View>
+              )}
               <View className="gap-1">
                 <Text className="text-sm font-medium text-[#1E1E1E]">
                   {user?.name ?? ""}
@@ -755,6 +775,10 @@ export default function SettingsScreen() {
           setDeleteModalVisible(false);
           setDeletePassword("");
         }}
+        onRequestClose={() => {
+          setDeleteModalVisible(false);
+          setDeletePassword("");
+        }}
       >
         <View className="flex-1">
           <BlurView intensity={20} tint="dark" className="flex-1">
@@ -788,6 +812,10 @@ export default function SettingsScreen() {
             </View>
             <View className="flex-row gap-3 px-5">
               <TouchableOpacity
+                onPress={() => {
+                  setDeleteModalVisible(false);
+                  setDeletePassword("");
+                }}
                 onPress={() => {
                   setDeleteModalVisible(false);
                   setDeletePassword("");

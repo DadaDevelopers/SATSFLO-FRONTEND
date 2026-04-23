@@ -279,11 +279,9 @@ export default function ViewCommentsScreen() {
             {comments.map((comment) => (
               <View key={comment.id} className="flex-row">
                 <View className="relative">
-                  <Image
-                    source={require("@/assets/images/zuri.png")}
-                    className="w-10 h-10 rounded-full"
-                    resizeMode="cover"
-                  />
+                  <View className="w-10 h-10 rounded-full bg-[#FFE6EE] items-center justify-center">
+                    <Feather name="user" size={20} color="#FF82AD" />
+                  </View>
                   <View className="absolute -top-0.5 -right-0.5 w-3 h-3 rounded-full bg-white items-center justify-center">
                     <Feather name="plus-circle" size={12} color="#FF4081" />
                   </View>

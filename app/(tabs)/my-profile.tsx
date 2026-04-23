@@ -200,7 +200,12 @@ export default function MyProfileScreen() {
       );
       if (response.ok) {
         const url = data?.data?.avatar_url ?? data?.avatar_url;
-        if (url) setProfileImage(url);
+        if (url) {
+          setProfileImage(url);
+          const userJson = await AsyncStorage.getItem("user");
+          const stored = userJson ? JSON.parse(userJson) : {};
+          await AsyncStorage.setItem("user", JSON.stringify({ ...stored, avatar_url: url }));
+        }
       }
     } catch {}
   };
@@ -285,15 +290,6 @@ export default function MyProfileScreen() {
                   }}
                 >
                   <Feather name="user" size={36} color="#FF82AD" />
-                </View>
-              )}
-              {uploadingAvatar && (
-                <View style={{
-                  position: "absolute", top: 0, left: 0, width: 80, height: 80,
-                  borderRadius: 2000, backgroundColor: "rgba(0,0,0,0.4)",
-                  alignItems: "center", justifyContent: "center",
-                }}>
-                  <ActivityIndicator color="#FFFFFF" />
                 </View>
               )}
               <TouchableOpacity
