@@ -47,7 +47,6 @@ export default function RootLayout() {
         <Stack.Screen name="how-to-use" />
         <Stack.Screen name="partner-welcome" />
         <Stack.Screen name="enter-partner-code" />
-        <Stack.Screen name="onboarding" />
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="add-log" />
         <Stack.Screen name="gift-token" />
