@@ -1,12 +1,16 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Href, router } from "expo-router";
 import { useEffect } from "react";
 import { Image, View } from "react-native";
 
 export default function SplashScreen() {
   useEffect(() => {
-    setTimeout(() => {
-      router.replace("/how-to-use" as Href);
-    }, 2000);
+    const navigate = async () => {
+      const token = await AsyncStorage.getItem("accessToken");
+      router.replace((token ? "/(tabs)" : "/how-to-use") as Href);
+    };
+    const timer = setTimeout(navigate, 2000);
+    return () => clearTimeout(timer);
   }, []);
 
   return (
