@@ -5,7 +5,6 @@ import { router } from "expo-router";
 import React, { useState } from "react";
 import {
   Alert,
-  Image,
   KeyboardAvoidingView,
   Platform,
   Text,
@@ -86,11 +85,9 @@ export default function AddThreadScreen() {
             {/* Left column: avatar + timeline */}
             <View className="items-center">
               {/* Avatar */}
-              <Image
-                source={require("@/assets/images/zuri.png")}
-                className="w-10 h-10 rounded-full"
-                resizeMode="cover"
-              />
+              <View className="w-10 h-10 rounded-full bg-[#FFE6EE] items-center justify-center">
+                <Feather name="user" size={20} color="#FF82AD" />
+              </View>
               {/* Top dot */}
               <View className="w-2.5 h-2.5 rounded-full bg-[#FD7BA7] mt-1" />
               {/* Vertical line */}

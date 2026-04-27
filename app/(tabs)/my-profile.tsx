@@ -161,7 +161,12 @@ export default function MyProfileScreen() {
       );
       if (response.ok) {
         const url = data?.data?.avatar_url ?? data?.avatar_url;
-        if (url) setProfileImage(url);
+        if (url) {
+          setProfileImage(url);
+          const userJson = await AsyncStorage.getItem("user");
+          const stored = userJson ? JSON.parse(userJson) : {};
+          await AsyncStorage.setItem("user", JSON.stringify({ ...stored, avatar_url: url }));
+        }
       }
     } catch {}
   };
@@ -229,14 +234,25 @@ export default function MyProfileScreen() {
           {/* AVATAR */}
           <View className="items-center mt-10 mb-10">
             <View style={{ width: 84, height: 84 }}>
-              <Image
-                source={
-                  profileImage
-                    ? { uri: profileImage }
-                    : require("@/assets/images/zuri.png")
-                }
-                style={{ width: 80, height: 80, borderRadius: 2000 }}
-              />
+              {profileImage ? (
+                <Image
+                  source={{ uri: profileImage }}
+                  style={{ width: 80, height: 80, borderRadius: 2000 }}
+                />
+              ) : (
+                <View
+                  style={{
+                    width: 80,
+                    height: 80,
+                    borderRadius: 2000,
+                    backgroundColor: "#FFE6EE",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <Feather name="user" size={36} color="#FF82AD" />
+                </View>
+              )}
               <TouchableOpacity
                 activeOpacity={0.8}
                 onPress={() => setAvatarModalVisible(true)}

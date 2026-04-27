@@ -137,12 +137,9 @@ export default function ViewCommentsScreen() {
           <View className="px-5">
             <View className="flex-row">
               <View className="relative">
-                <Image
-                  source={require("@/assets/images/zuri.png")}
-                  className="w-[46px] h-[46px] rounded-full"
-                  style={{ borderWidth: 4, borderColor: "#FFFFFF" }}
-                  resizeMode="cover"
-                />
+                <View className="w-[46px] h-[46px] rounded-full bg-[#FFE6EE] items-center justify-center" style={{ borderWidth: 4, borderColor: "#FFFFFF" }}>
+                  <Feather name="user" size={22} color="#FF82AD" />
+                </View>
                 <View className="absolute -top-0.5 -right-0.5 w-3 h-3 rounded-full bg-white items-center justify-center">
                   <Feather name="plus-circle" size={12} color="#FF4081" />
                 </View>
@@ -207,11 +204,9 @@ export default function ViewCommentsScreen() {
             {comments.map((comment) => (
               <View key={comment.id} className="flex-row">
                 <View className="relative">
-                  <Image
-                    source={require("@/assets/images/zuri.png")}
-                    className="w-10 h-10 rounded-full"
-                    resizeMode="cover"
-                  />
+                  <View className="w-10 h-10 rounded-full bg-[#FFE6EE] items-center justify-center">
+                    <Feather name="user" size={20} color="#FF82AD" />
+                  </View>
                   <View className="absolute -top-0.5 -right-0.5 w-3 h-3 rounded-full bg-white items-center justify-center">
                     <Feather name="plus-circle" size={12} color="#FF4081" />
                   </View>
@@ -255,12 +250,9 @@ export default function ViewCommentsScreen() {
         {/* Post a comment bar */}
         <View className="flex-row items-center px-5 py-2.5 gap-3">
           {/* User avatar */}
-          <Image
-            source={require("@/assets/images/zuri.png")}
-            className="w-[26px] h-[26px] rounded-full"
-            style={{ borderWidth: 1, borderColor: "#FFFFFF" }}
-            resizeMode="cover"
-          />
+          <View className="w-[26px] h-[26px] rounded-full bg-[#FFE6EE] items-center justify-center" style={{ borderWidth: 1, borderColor: "#FFFFFF" }}>
+            <Feather name="user" size={14} color="#FF82AD" />
+          </View>
 
           {/* Input field */}
           <View className="flex-1 flex-row items-center bg-[#FF4E8A] rounded-[18px] h-10 px-4">

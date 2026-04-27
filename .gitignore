@@ -5,6 +5,8 @@ node_modules/
 # Ignore Windows reserved device file
 nul
 
+.idea/
+coverage/
 
 # Expo
 .expo/
