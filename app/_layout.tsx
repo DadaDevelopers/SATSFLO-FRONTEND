@@ -1,9 +1,22 @@
-import { AddLogProvider } from "@/context/add-log-context";
 import { ThemeProvider } from "@/context/theme-context";
-import { checkInitialNotification, setupNotificationListeners } from "@/lib/notifications";
-import { Inter_400Regular, useFonts as useInter } from "@expo-google-fonts/inter";
-import { Manrope_500Medium, Manrope_700Bold, useFonts as useManrope } from "@expo-google-fonts/manrope";
-import { Poppins_400Regular, Poppins_600SemiBold, useFonts as usePoppins } from "@expo-google-fonts/poppins";
+import {
+  checkInitialNotification,
+  setupNotificationListeners,
+} from "@/lib/notifications";
+import {
+  Inter_400Regular,
+  useFonts as useInter,
+} from "@expo-google-fonts/inter";
+import {
+  Manrope_500Medium,
+  Manrope_700Bold,
+  useFonts as useManrope,
+} from "@expo-google-fonts/manrope";
+import {
+  Poppins_400Regular,
+  Poppins_600SemiBold,
+  useFonts as usePoppins,
+} from "@expo-google-fonts/poppins";
 import { Feather, Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useFonts } from "expo-font";
 import { router, Stack } from "expo-router";
@@ -38,7 +51,8 @@ export default function RootLayout() {
     ...MaterialCommunityIcons.font,
   });
 
-  const fontsLoaded = poppinsLoaded && interLoaded && manropeLoaded && iconsLoaded;
+  const fontsLoaded =
+    poppinsLoaded && interLoaded && manropeLoaded && iconsLoaded;
 
   useEffect(() => {
     if (fontsLoaded) {
@@ -52,7 +66,7 @@ export default function RootLayout() {
     // Handle notification tap while app was in background/foreground
     const cleanup = setupNotificationListeners(
       (title, body) => Alert.alert(title, body),
-      goToNotifications
+      goToNotifications,
     );
 
     // Handle notification tap when app was fully killed
@@ -70,19 +84,18 @@ export default function RootLayout() {
   return (
     <SafeAreaProvider>
       <ThemeProvider>
-        <AddLogProvider>
         <Stack screenOptions={{ headerShown: false }}>
           <Stack.Screen name="splash" />
           <Stack.Screen name="how-to-use" />
           <Stack.Screen name="partner-welcome" />
           <Stack.Screen name="enter-partner-code" />
+          <Stack.Screen name="onboarding" />
           <Stack.Screen name="(tabs)" />
           <Stack.Screen name="add-log" />
           <Stack.Screen name="gift-token" />
           <Stack.Screen name="chat" />
           <Stack.Screen name="modal" options={{ presentation: "modal" }} />
         </Stack>
-        </AddLogProvider>
       </ThemeProvider>
     </SafeAreaProvider>
   );

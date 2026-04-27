@@ -1,9 +1,15 @@
+import { api } from "@/lib/api";
 import { Feather } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
 import { useRef, useState } from "react";
-import { ActivityIndicator, Text, TextInput, TouchableOpacity, View } from "react-native";
-import { api } from "@/lib/api";
+import {
+  ActivityIndicator,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const CODE_LENGTH = 6;
@@ -69,25 +75,20 @@ export default function EnterPartnerCodeScreen() {
       const { response, data } = await api.post(
         "/partner/accept",
         { invite_code: code.join("") },
-        token
+        token,
       );
       if (!response.ok) {
-        const msg: string = data?.message ?? data?.error ?? "";
-        const lower = msg.toLowerCase();
-        if (lower.includes("duplicate") || lower.includes("unique constraint") || lower.includes("already connected") || lower.includes("already paired")) {
-          setConnectError("You're already connected to a partner. To link a new partner, go to Settings → Partner Mode and disconnect first.");
-        } else if (response.status === 404 || lower.includes("not found") || lower.includes("invalid")) {
-          setConnectError("Code not found. Double-check the code and try again.");
-        } else if (response.status === 410 || lower.includes("expired")) {
-          setConnectError("This code has expired. Ask your partner to generate a new one.");
-        } else {
-          setConnectError(msg || "Could not connect. Please try again.");
-        }
+        setConnectError(
+          data?.message ||
+            "Invalid or expired code. Please check and try again.",
+        );
         return;
       }
       router.push("/(tabs)/partner-pairing-success");
     } catch {
-      setConnectError("Could not connect. Check your connection and try again.");
+      setConnectError(
+        "Could not connect. Check your connection and try again.",
+      );
     } finally {
       setSubmitting(false);
     }
