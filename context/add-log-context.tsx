@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type FlowLevel = 'light' | 'medium' | 'heavy' | 'veryHeavy' | null;
 type Symptom = 'cramps' | 'fatigue' | 'bloating' | 'headache' | 'bellyAches' | 'acne' | 'soreBreasts' | 'cravings';
@@ -114,13 +115,48 @@ const AddLogContext = createContext<AddLogContextType | undefined>(undefined);
 
 // Helper to get date key for storage
 const getDateKey = (date: Date): string => {
-  return date.toISOString().split('T')[0];
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
 };
 
 export function AddLogProvider({ children }: { children: ReactNode }) {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [dayLogs, setDayLogs] = useState<Record<string, DayLogData>>({});
   const [settings, setSettings] = useState<GlobalSettings>(defaultSettings);
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  // Load data on mount
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const savedLogs = await AsyncStorage.getItem('dayLogs');
+        const savedSettings = await AsyncStorage.getItem('logSettings');
+        if (savedLogs) setDayLogs(JSON.parse(savedLogs));
+        if (savedSettings) setSettings(JSON.parse(savedSettings));
+      } catch (err) {
+        console.error('Failed to load logs from storage', err);
+      } finally {
+        setIsLoaded(true);
+      }
+    };
+    loadData();
+  }, []);
+
+  // Save logs whenever they change
+  useEffect(() => {
+    if (isLoaded) {
+      AsyncStorage.setItem('dayLogs', JSON.stringify(dayLogs));
+    }
+  }, [dayLogs, isLoaded]);
+
+  // Save settings whenever they change
+  useEffect(() => {
+    if (isLoaded) {
+      AsyncStorage.setItem('logSettings', JSON.stringify(settings));
+    }
+  }, [settings, isLoaded]);
 
   // Get data for current selected date
   const getCurrentDayData = (): DayLogData => {

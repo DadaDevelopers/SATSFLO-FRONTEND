@@ -3,7 +3,7 @@ import { api } from "@/lib/api";
 import { Feather } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
-import { default as React, default as React, useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
     ActivityIndicator,
     ScrollView,
@@ -147,7 +147,7 @@ export default function PartnerDashboardScreen() {
     }
   };
 
-  const handleGiftTokenPress = () => router.push("/(tabs)/send-gift-token");
+  const handleGiftTokenPress = () => router.push("/(tabs)/gift-token");
 
   const isPeriod = cycleData?.is_period ?? false;
   const nextOvulation = cycleData?.next_ovulation_days;

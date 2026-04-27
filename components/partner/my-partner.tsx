@@ -3,7 +3,7 @@ import { api } from "@/lib/api";
 import { Feather } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
-import { default as React, default as React, useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
     ActivityIndicator,
     Alert,
@@ -175,7 +175,7 @@ export default function MyPartnerScreen() {
     }
   };
 
-  const handleGiftTokenPress = () => router.push("/(tabs)/send-gift-token");
+  const handleGiftTokenPress = () => router.push("/(tabs)/gift-token");
 
   const pairedDuration = () => {
     if (!partnerInfo?.connected_since) return "Paired recently";
