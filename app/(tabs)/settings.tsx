@@ -5,7 +5,7 @@ import { Feather } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { BlurView } from "expo-blur";
 import { router, useFocusEffect } from "expo-router";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useState } from "react";
 import {
   Image,
   Modal,
@@ -289,9 +289,11 @@ export default function SettingsScreen() {
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [deletePassword, setDeletePassword] = useState("");
   const { selectedTheme, setSelectedTheme } = useTheme();
-  const [user, setUser] = useState<{ name: string; email: string } | null>(
-    null,
-  );
+  const [user, setUser] = useState<{
+    name: string;
+    email: string;
+    avatar_url?: string;
+  } | null>(null);
   const [cycleProfile, setCycleProfile] = useState<{
     period_length: number;
     cycle_length: number;
@@ -319,26 +321,36 @@ export default function SettingsScreen() {
     }, []),
   );
 
-  useEffect(() => {
-    const loadUser = async () => {
-      const userJson = await AsyncStorage.getItem("user");
-      if (userJson) {
-        const stored = JSON.parse(userJson);
-        setUser({ name: stored.name ?? "", email: stored.email ?? "" });
-      }
-      const token = await AsyncStorage.getItem("accessToken");
-      if (!token) return;
-      try {
-        const { response, data } = await api.get("/auth/me", token);
-        if (response.ok) {
-          const u = data?.data ?? data;
-          setUser({ name: u.name ?? "", email: u.email ?? "" });
-          await AsyncStorage.setItem("user", JSON.stringify(u));
+  useFocusEffect(
+    useCallback(() => {
+      const loadUser = async () => {
+        const userJson = await AsyncStorage.getItem("user");
+        if (userJson) {
+          const stored = JSON.parse(userJson);
+          setUser({
+            name: stored.name ?? "",
+            email: stored.email ?? "",
+            avatar_url: stored.avatar_url ?? undefined,
+          });
         }
-      } catch {}
-    };
-    loadUser();
-  }, []);
+        const token = await AsyncStorage.getItem("accessToken");
+        if (!token) return;
+        try {
+          const { response, data } = await api.get("/users/profile", token);
+          if (response.ok) {
+            const u = data?.data ?? data;
+            setUser({
+              name: u.name ?? "",
+              email: u.email ?? "",
+              avatar_url: u.avatar_url ?? undefined,
+            });
+            await AsyncStorage.setItem("user", JSON.stringify(u));
+          }
+        } catch {}
+      };
+      loadUser();
+    }, []),
+  );
 
   const handleLogout = async () => {
     setLogoutModalVisible(false);
@@ -431,7 +443,11 @@ export default function SettingsScreen() {
           >
             <View className="flex-row items-center gap-3">
               <Image
-                source={require("@/assets/images/zuri.png")}
+                source={
+                  user?.avatar_url
+                    ? { uri: user.avatar_url }
+                    : require("@/assets/images/zuri.png")
+                }
                 className="w-10 h-10 rounded-full"
               />
               <View className="gap-1">
