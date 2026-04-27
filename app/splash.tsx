@@ -5,7 +5,7 @@ import { Image, Text, View } from 'react-native';
 export default function SplashScreen() {
   useEffect(() => {
     setTimeout(() => {
-      router.replace('/onboarding' as Href);
+      router.replace('/how-to-use' as Href);
     }, 2000);
   }, []);
 

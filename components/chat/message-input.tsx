@@ -1,5 +1,10 @@
 import { Ionicons } from '@expo/vector-icons';
-import { Audio } from 'expo-av';
+import {
+  RecordingPresets,
+  requestRecordingPermissionsAsync,
+  setAudioModeAsync,
+  useAudioRecorder,
+} from 'expo-audio';
 import * as ImagePicker from 'expo-image-picker';
 import React, { useRef, useState } from 'react';
 import {
@@ -25,7 +30,7 @@ export function MessageInput({ onSendText, onSendImage, onSendVoice }: MessageIn
   const [isRecording, setIsRecording] = useState(false);
   const [recordingDuration, setRecordingDuration] = useState(0);
   const [showCameraModal, setShowCameraModal] = useState(false);
-  const recordingRef = useRef<Audio.Recording | null>(null);
+  const recorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const insets = useSafeAreaInsets();
   const bottomPadding = Platform.OS === 'ios' ? Math.max(insets.bottom, 8) : 8;
@@ -80,19 +85,17 @@ export function MessageInput({ onSendText, onSendImage, onSendVoice }: MessageIn
   // ---- Voice Recording ----
   const startRecording = async () => {
     try {
-      const permission = await Audio.requestPermissionsAsync();
+      const permission = await requestRecordingPermissionsAsync();
       if (permission.status !== 'granted') {
         Alert.alert('Permission Required', 'Microphone access is needed to record voice notes.');
         return;
       }
-      await Audio.setAudioModeAsync({
-        allowsRecordingIOS: true,
-        playsInSilentModeIOS: true,
+      await setAudioModeAsync({
+        allowsRecording: true,
+        playsInSilentMode: true,
       });
-      const { recording } = await Audio.Recording.createAsync(
-        Audio.RecordingOptionsPresets.HIGH_QUALITY
-      );
-      recordingRef.current = recording;
+      await recorder.prepareToRecordAsync();
+      recorder.record();
       setIsRecording(true);
       setRecordingDuration(0);
       timerRef.current = setInterval(() => {
@@ -104,16 +107,14 @@ export function MessageInput({ onSendText, onSendImage, onSendVoice }: MessageIn
   };
 
   const stopRecording = async () => {
-    if (!recordingRef.current) return;
+    if (!isRecording) return;
     try {
       clearInterval(timerRef.current!);
       timerRef.current = null;
-      await recordingRef.current.stopAndUnloadAsync();
-      await Audio.setAudioModeAsync({ allowsRecordingIOS: false });
-      const uri = recordingRef.current.getURI();
-      const status = await recordingRef.current.getStatusAsync();
-      const durationMs = status.durationMillis ?? 0;
-      recordingRef.current = null;
+      const durationMs = recorder.currentTime * 1000;
+      await recorder.stop();
+      await setAudioModeAsync({ allowsRecording: false });
+      const uri = recorder.uri;
       setIsRecording(false);
       setRecordingDuration(0);
       if (uri) onSendVoice?.(uri, durationMs);
@@ -124,16 +125,15 @@ export function MessageInput({ onSendText, onSendImage, onSendVoice }: MessageIn
   };
 
   const cancelRecording = async () => {
-    if (!recordingRef.current) return;
+    if (!isRecording) return;
     try {
       clearInterval(timerRef.current!);
       timerRef.current = null;
-      await recordingRef.current.stopAndUnloadAsync();
-      await Audio.setAudioModeAsync({ allowsRecordingIOS: false });
+      await recorder.stop();
+      await setAudioModeAsync({ allowsRecording: false });
     } catch {
       // ignore
     }
-    recordingRef.current = null;
     setIsRecording(false);
     setRecordingDuration(0);
   };

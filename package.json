@@ -3,7 +3,7 @@
   "main": "expo-router/entry",
   "version": "1.0.0",
   "scripts": {
-    "start": "expo start",
+    "start": "expo start --offline",
     "reset-project": "node ./scripts/reset-project.js",
     "android": "expo run:android",
     "ios": "expo run:ios",
@@ -23,7 +23,7 @@
     "ansi-escapes": "^7.2.0",
     "clsx": "^2.1.1",
     "expo": "~54.0.31",
-    "expo-av": "~16.0.8",
+    "expo-audio": "~1.1.1",
     "expo-blur": "~15.0.8",
     "expo-clipboard": "~8.0.8",
     "expo-constants": "~18.0.13",

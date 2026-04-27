@@ -1,4 +1,3 @@
-import { HomeIndicatorArea } from "@/components/signup/home-indicator-area";
 import TopWave from "@/components/TopWave";
 import { router } from "expo-router";
 import {
@@ -65,7 +64,6 @@ export default function OnboardingScreen2() {
           backgroundColor: "#FFDBE7",
           paddingHorizontal: 32,
           paddingTop: 16,
-          paddingBottom: Math.max(insets.bottom, 16) + 12,
         }}
       >
         <Text className="text-2xl font-poppins font-semibold text-[#212121] text-center leading-8 mb-3">
@@ -94,8 +92,20 @@ export default function OnboardingScreen2() {
             <Text className="text-white font-medium text-[15px]">Continue</Text>
           </Pressable>
         </View>
+        <View style={{ flex: 1 }} />
+        {/* Home indicator */}
+        <View
+          style={{
+            backgroundColor: "#FF3378",
+            alignItems: "center",
+            paddingTop: 8,
+            paddingBottom: Math.max(insets.bottom, 8) + 3,
+            marginHorizontal: -32,
+          }}
+        >
+          <View style={{ width: 134, height: 5, backgroundColor: "#FF99BC", borderRadius: 100 }} />
+        </View>
       </View>
-      <HomeIndicatorArea />
     </View>
   );
 }
