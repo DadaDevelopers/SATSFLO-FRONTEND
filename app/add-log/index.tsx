@@ -771,7 +771,7 @@ export default function AddLogScreen() {
             {dayData.symptoms.length > 0 ? (
               <View className="flex-row flex-wrap">
                 {dayData.symptoms.map((s) => (
-                  <View key={s} className="bg-pink-100 rounded-full px-4 py-2 mr-2 mb-2 flex-row items-center gap-2">
+                  <View key={s} className="flex-row items-center mr-4 mb-2 gap-2">
                     <Image source={SYMPTOM_IMAGES[s] as any} style={{ width: 18, height: 18, tintColor: "#EC4899" }} resizeMode="contain" />
                     <Text className="text-pink-500 text-sm font-medium">{symptomLabels[s]}</Text>
                   </View>

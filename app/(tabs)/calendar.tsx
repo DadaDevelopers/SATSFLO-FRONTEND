@@ -392,11 +392,11 @@ export default function CalendarScreen() {
 
                   {/* Moods */}
                   {dayLogs.moods.length > 0 && (
-                    <View className="flex-row flex-wrap gap-3">
+                    <View className="flex-row flex-wrap gap-4">
                       {dayLogs.moods.map(m => (
-                        <View key={m} className="flex-row items-center bg-[#FF4D4D] px-4 py-1.5 rounded-full gap-2 shadow-sm">
+                        <View key={m} className="flex-row items-center gap-2">
                           <Text className="text-xl">{moodEmojis[m]}</Text>
-                          <Text className="text-white text-sm font-inter capitalize font-bold">{m}</Text>
+                          <Text className="text-white text-base font-inter capitalize font-bold">{m}</Text>
                         </View>
                       ))}
                     </View>
@@ -404,11 +404,11 @@ export default function CalendarScreen() {
 
                   {/* Symptoms */}
                   {dayLogs.symptoms.length > 0 && (
-                    <View className="flex-row flex-wrap gap-3 mt-1">
+                    <View className="flex-row flex-wrap gap-4 mt-2">
                       {dayLogs.symptoms.map(s => (
-                        <View key={s} className="flex-row items-center bg-[#8A2BE2] px-4 py-1.5 rounded-xl gap-2 shadow-sm">
+                        <View key={s} className="flex-row items-center gap-2">
                           <Image source={SYMPTOM_IMAGES[s]} style={{ width: 22, height: 22, tintColor: 'white' }} resizeMode="contain" />
-                          <Text className="text-white text-sm font-inter capitalize font-bold">{s}</Text>
+                          <Text className="text-white text-base font-inter capitalize font-bold">{s}</Text>
                         </View>
                       ))}
                     </View>
@@ -416,11 +416,11 @@ export default function CalendarScreen() {
 
                   {/* Medicine */}
                   {dayLogs.medicine && dayLogs.medicine.length > 0 && (
-                    <View className="flex-row flex-wrap gap-3 mt-1">
+                    <View className="flex-row flex-wrap gap-4 mt-2">
                       {dayLogs.medicine.map(med => (
-                        <View key={med} className="flex-row items-center bg-white/10 px-4 py-1.5 rounded-full gap-2 border border-white/20">
+                        <View key={med} className="flex-row items-center gap-2">
                           <Image source={MEDICINE_IMAGES[med]} style={{ width: 20, height: 20, tintColor: 'white' }} resizeMode="contain" />
-                          <Text className="text-white text-sm font-inter capitalize font-bold">{med}</Text>
+                          <Text className="text-white text-base font-inter capitalize font-bold">{med}</Text>
                         </View>
                       ))}
                     </View>
