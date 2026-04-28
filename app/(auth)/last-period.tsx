@@ -57,6 +57,9 @@ export default function LastPeriodScreen() {
         setLoading(false);
         return;
       }
+      if (editing) {
+        await api.put("/cycles/start", { date: dateStr }, token);
+      }
       let response, data;
       if (editing) {
         ({ response, data } = await api.put(

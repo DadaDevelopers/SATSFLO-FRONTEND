@@ -1,5 +1,7 @@
 import { FlowDroplet, flowLevelLabel } from "@/components/add-log/flow-droplet";
 import { useAddLog } from "@/context/add-log-context";
+import { api } from "@/lib/api";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import {
@@ -123,6 +125,7 @@ export default function AddLogScreen() {
     saveCurrentDay,
     dayLogs,
   } = useAddLog();
+  const setContextSelectedDate = setSelectedDate;
 
   const dayData = getCurrentDayData();
 
@@ -155,6 +158,7 @@ export default function AddLogScreen() {
     }
 
     setSelectedDate(targetDate);
+    setContextSelectedDate(targetDate);
     setViewingMonth(targetDate.getMonth());
     setViewingYear(targetDate.getFullYear());
 
@@ -173,7 +177,7 @@ export default function AddLogScreen() {
         });
       }, 100);
     }
-  }, [paramDate, setSelectedDate, dates.length]);
+  }, [paramDate, setSelectedDate, setContextSelectedDate, dates.length]);
 
   // Toggle calendar
   const toggleCalendar = () => {
@@ -204,6 +208,7 @@ export default function AddLogScreen() {
   // Handle date selection from horizontal scroll
   const handleDateSelectFromScroll = (date: Date, index: number) => {
     setSelectedDate(date);
+    setContextSelectedDate(date);
     setViewingMonth(date.getMonth());
     setViewingYear(date.getFullYear());
 
@@ -298,6 +303,7 @@ export default function AddLogScreen() {
 
   const handleDateSelect = (fullDate: Date) => {
     setSelectedDate(fullDate);
+    setContextSelectedDate(fullDate);
     setViewingMonth(fullDate.getMonth());
     setViewingYear(fullDate.getFullYear());
   };
@@ -341,6 +347,7 @@ export default function AddLogScreen() {
   // Handle date selection in edit modal
   const handleEditModalDateSelect = (fullDate: Date) => {
     setSelectedDate(fullDate);
+    setContextSelectedDate(fullDate);
     if (editingPeriodType === "start") {
       setPeriodStart(true);
     } else {
@@ -414,24 +421,25 @@ export default function AddLogScreen() {
       // Perform the save
       await saveCurrentDay();
 
-      // Navigate back to the calendar tab explicitly
-      // We use navigate to ensure it switches the tab if necessary
+      const token = await AsyncStorage.getItem("accessToken");
+      if (token) {
+        if (dayData.periodStart) {
+          await api.post("/cycles/start", { start_date: dateStr }, token);
+        }
+        if (dayData.periodEnd) {
+          await api.post("/cycles/end", { end_date: dateStr }, token);
+        }
+      }
       router.navigate({
         pathname: "/(tabs)/calendar",
         params: { date: dateStr },
       } as any);
     } catch (error) {
       console.error("Error saving log:", error);
-      // Even if the server sync fails, we might want to go back since local state is saved
       Alert.alert(
         "Sync Error",
         "Saved locally, but failed to sync with server. Please check your connection.",
-        [
-          {
-            text: "OK",
-            onPress: () => router.navigate("/(tabs)/calendar" as any),
-          },
-        ],
+        [{ text: "OK", onPress: () => router.navigate("/(tabs)/calendar" as any) }],
       );
     }
   };
@@ -763,18 +771,9 @@ export default function AddLogScreen() {
             {dayData.symptoms.length > 0 ? (
               <View className="flex-row flex-wrap">
                 {dayData.symptoms.map((s) => (
-                  <View
-                    key={s}
-                    className="flex-row items-center mr-4 mb-2 gap-2"
-                  >
-                    <Image
-                      source={SYMPTOM_IMAGES[s] as any}
-                      style={{ width: 18, height: 18, tintColor: "#EC4899" }}
-                      resizeMode="contain"
-                    />
-                    <Text className="text-pink-500 text-sm font-medium">
-                      {symptomLabels[s]}
-                    </Text>
+                  <View key={s} className="bg-pink-100 rounded-full px-4 py-2 mr-2 mb-2 flex-row items-center gap-2">
+                    <Image source={SYMPTOM_IMAGES[s] as any} style={{ width: 18, height: 18, tintColor: "#EC4899" }} resizeMode="contain" />
+                    <Text className="text-pink-500 text-sm font-medium">{symptomLabels[s]}</Text>
                   </View>
                 ))}
               </View>
