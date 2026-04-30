@@ -50,13 +50,12 @@ interface DayData {
 export default function CalendarScreen() {
   const insets = useSafeAreaInsets();
   const { date: paramDate } = useLocalSearchParams<{ date: string }>();
-  const { isDateInPeriod, getCurrentDayData, setSelectedDate: setContextSelectedDate } = useAddLog();
+  const { isDateInPeriod, getCurrentDayData, setSelectedDate: setContextSelectedDate, dayLogs: allDayLogs, selectedDate: contextSelectedDate } = useAddLog();
   
   const todayDate = new Date();
-  const [currentDate, setCurrentDate] = useState(todayDate);
-  const [selectedDate, setSelectedDate] = useState(todayDate.getDate());
-  const currentMonthNum = currentDate.getMonth();
-  const currentYear = currentDate.getFullYear();
+  const selectedDate = contextSelectedDate.getDate();
+  const currentMonthNum = contextSelectedDate.getMonth();
+  const currentYear = contextSelectedDate.getFullYear();
   
   const [activeTab, setActiveTab] = useState<TabName>('calendar');
 
@@ -67,19 +66,14 @@ export default function CalendarScreen() {
       if (parts.length === 3) {
         const d = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
         if (!isNaN(d.getTime())) {
-          setCurrentDate(d);
-          setSelectedDate(d.getDate());
           setContextSelectedDate(d);
         }
       }
-    } else {
-      setContextSelectedDate(todayDate);
     }
-  }, [paramDate]);
+  }, [paramDate, setContextSelectedDate]);
 
   const handleDateSelect = (day: number) => {
     if (day === 0) return;
-    setSelectedDate(day);
     const cellDate = new Date(currentYear, currentMonthNum, day);
     
     // Difference in days from lastPeriodDate using UTC to avoid DST shifts
@@ -89,7 +83,24 @@ export default function CalendarScreen() {
     setContextSelectedDate(cellDate);
   };
 
-  const dayLogs = getCurrentDayData();
+  // Memoize current day logs to ensure reactivity when allDayLogs updates
+  const dayLogs = React.useMemo(() => {
+    const key = `${currentYear}-${String(currentMonthNum + 1).padStart(2, '0')}-${String(selectedDate).padStart(2, '0')}`;
+    return allDayLogs[key] || { 
+      flowLevel: null, 
+      periodStart: false, 
+      periodEnd: false, 
+      symptoms: [], 
+      moods: [], 
+      medicine: [], 
+      note: '', 
+      weight: '', 
+      weightUnit: 'kg', 
+      temperature: '', 
+      temperatureUnit: 'C', 
+      waterIntake: 0 
+    };
+  }, [allDayLogs, selectedDate, currentMonthNum, currentYear]);
 
   const [cycleData, setCycleData] = useState({
     cycleLength: 28,
@@ -188,7 +199,8 @@ export default function CalendarScreen() {
     const diffDays = Math.floor((utc1 - utc2) / (1000 * 60 * 60 * 24));
     const cycleDay = (diffDays % cycleData.cycleLength) + 1;
 
-    const isPeriod = cycleDay >= 1 && cycleDay <= cycleData.periodLength;
+    // Use context's isDateInPeriod for real-time reflection of changes
+    const isPeriod = isDateInPeriod(cellDate);
     const isFertility = cycleDay >= cycleData.fertilityStart && cycleDay <= cycleData.fertilityEnd && !isPeriod;
     const isOvulation = cycleDay === cycleData.ovulationDay;
 
@@ -378,7 +390,8 @@ export default function CalendarScreen() {
               </Pressable>
             </View>
             
-            {dayLogs.flowLevel || dayLogs.note || dayLogs.moods.length > 0 || dayLogs.symptoms.length > 0 || dayLogs.waterIntake > 0 || dayLogs.weight || dayLogs.temperature ? (
+            {/* Log Data Summary (Reactive to allDayLogs change) */}
+            {(dayLogs.flowLevel || dayLogs.note || (dayLogs.moods && dayLogs.moods.length > 0) || (dayLogs.symptoms && dayLogs.symptoms.length > 0) || dayLogs.waterIntake > 0 || dayLogs.weight || dayLogs.temperature) ? (
               <View className="gap-6">
                 {/* 1. Vertical List Style - Now at the Top */}
                 <View className="gap-6">

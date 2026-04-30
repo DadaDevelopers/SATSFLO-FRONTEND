@@ -158,7 +158,6 @@ export default function AddLogScreen() {
     }
 
     setSelectedDate(targetDate);
-    setContextSelectedDate(targetDate);
     setViewingMonth(targetDate.getMonth());
     setViewingYear(targetDate.getFullYear());
 
@@ -208,7 +207,6 @@ export default function AddLogScreen() {
   // Handle date selection from horizontal scroll
   const handleDateSelectFromScroll = (date: Date, index: number) => {
     setSelectedDate(date);
-    setContextSelectedDate(date);
     setViewingMonth(date.getMonth());
     setViewingYear(date.getFullYear());
 
@@ -303,7 +301,6 @@ export default function AddLogScreen() {
 
   const handleDateSelect = (fullDate: Date) => {
     setSelectedDate(fullDate);
-    setContextSelectedDate(fullDate);
     setViewingMonth(fullDate.getMonth());
     setViewingYear(fullDate.getFullYear());
   };
