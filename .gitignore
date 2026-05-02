@@ -17,6 +17,7 @@ dist/
 web-build/
 expo-env.d.ts
 
+.nvmrc
 # Native
 .kotlin/
 *.orig.*
