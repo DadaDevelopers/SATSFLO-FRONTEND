@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { router } from 'expo-router';
 import { api } from '@/lib/api';
 
 type FlowLevel = 'light' | 'medium' | 'heavy' | 'veryHeavy' | null;
@@ -146,35 +147,38 @@ export function AddLogProvider({ children }: { children: ReactNode }) {
   }, []);
 
   // Fetch logs from server for selected date
-  const fetchLogsForDate = async (date: Date) => {
-    const dateStr = getDateKey(date);
+  const fetchLogsForDate = async (dateStr: string) => {
     try {
       const token = await AsyncStorage.getItem('accessToken');
       if (token) {
         const { response, data } = await api.get(`/logs/${dateStr}`, token);
         if (response.status === 401) {
-          console.error('Session expired');
+          await AsyncStorage.removeItem('accessToken');
+          router.replace('/(auth)/login');
           return;
         }
         if (response.ok && data) {
           const logData = data.data ?? data;
-          setDayLogs(prev => ({
-            ...prev,
-            [dateStr]: {
-              flowLevel: logData.flow || null,
-              periodStart: logData.period_start || false,
-              periodEnd: logData.period_end || false,
-              symptoms: logData.symptoms || [],
-              moods: logData.mood || [],
-              medicine: logData.medicine || [],
-              note: logData.notes || '',
-              weight: logData.weight || '',
-              weightUnit: logData.weight_unit || 'kg',
-              temperature: logData.temperature || '',
-              temperatureUnit: logData.temperature_unit || 'C',
-              waterIntake: logData.water_intake || 0,
-            }
-          }));
+          setDayLogs(prev => {
+            const existing = prev[dateStr];
+            return {
+              ...prev,
+              [dateStr]: {
+                flowLevel: logData.flow || existing?.flowLevel || null,
+                periodStart: logData.period_start ?? existing?.periodStart ?? false,
+                periodEnd: logData.period_end ?? existing?.periodEnd ?? false,
+                symptoms: (logData.symptoms?.length > 0) ? logData.symptoms : (existing?.symptoms ?? []),
+                moods: (logData.mood?.length > 0) ? logData.mood : (existing?.moods ?? []),
+                medicine: (logData.medicine?.length > 0) ? logData.medicine : (existing?.medicine ?? []),
+                note: logData.notes || existing?.note || '',
+                weight: logData.weight || existing?.weight || '',
+                weightUnit: logData.weight_unit || existing?.weightUnit || 'kg',
+                temperature: logData.temperature || existing?.temperature || '',
+                temperatureUnit: logData.temperature_unit || existing?.temperatureUnit || 'C',
+                waterIntake: logData.water_intake != null ? logData.water_intake : (existing?.waterIntake ?? 0),
+              },
+            };
+          });
         }
       }
     } catch (err) {
@@ -182,12 +186,13 @@ export function AddLogProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  // Fetch from server when date changes
+  // Fetch from server only when the actual calendar date changes (not on every new Date object reference)
+  const selectedDateStr = getDateKey(selectedDate);
   useEffect(() => {
     if (isLoaded) {
-      fetchLogsForDate(selectedDate);
+      fetchLogsForDate(selectedDateStr);
     }
-  }, [selectedDate, isLoaded]);
+  }, [selectedDateStr, isLoaded]);
 
   // Save logs whenever they change
   useEffect(() => {
@@ -378,9 +383,12 @@ export function AddLogProvider({ children }: { children: ReactNode }) {
           flow: dayData.flowLevel,
           symptoms: dayData.symptoms,
           mood: dayData.moods,
+          medicine: dayData.medicine,
           notes: dayData.note,
           weight: dayData.weight,
+          weight_unit: dayData.weightUnit,
           temperature: dayData.temperature,
+          temperature_unit: dayData.temperatureUnit,
           water_intake: dayData.waterIntake,
         }, token);
 

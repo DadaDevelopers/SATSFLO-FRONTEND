@@ -1,13 +1,18 @@
-import { BottomNavigation } from '@/components/home/bottom-navigation';
-import { Feather, FontAwesome5, MaterialCommunityIcons } from '@expo/vector-icons';
-import { router, useLocalSearchParams, useFocusEffect } from 'expo-router';
-import React, { useState, useEffect, useCallback } from 'react';
-import { Pressable, ScrollView, Text, View, ActivityIndicator, Image } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { api } from '@/lib/api';
-import { useAddLog } from '@/context/add-log-context';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Svg, { Circle, Rect, Path } from 'react-native-svg';
+import { BottomNavigation } from "@/components/home/bottom-navigation";
+import { useAddLog } from "@/context/add-log-context";
+import { api } from "@/lib/api";
+import {
+  Feather,
+  FontAwesome5,
+  MaterialCommunityIcons,
+} from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
+import React, { useCallback, useEffect, useState } from "react";
+import { Image, Pressable, ScrollView, Text, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { FlowDroplet, flowLevelLabel } from "@/components/add-log/flow-droplet";
+import { SvgXml } from "react-native-svg";
 
 const SYMPTOM_IMAGES: Record<string, any> = {
   cramps: require("@/assets/images/cramps.png"),
@@ -21,23 +26,56 @@ const SYMPTOM_IMAGES: Record<string, any> = {
 };
 
 const MEDICINE_IMAGES: Record<string, any> = {
-  condom: require('@/assets/images/condom.png'),
-  pill: require('@/assets/images/pill.png'),
-  patch: require('@/assets/images/patch.png'),
-  iud: require('@/assets/images/IUD.png'),
-  implant: require('@/assets/images/implant.png'),
-  vRing: require('@/assets/images/V-ring.png'),
-  injection: require('@/assets/images/injection.png'),
-  spermicide: require('@/assets/images/spermicide.png'),
+  condom: require("@/assets/images/condom.png"),
+  pill: require("@/assets/images/pill.png"),
+  patch: require("@/assets/images/patch.png"),
+  iud: require("@/assets/images/IUD.png"),
+  implant: require("@/assets/images/implant.png"),
+  vRing: require("@/assets/images/V-ring.png"),
+  injection: require("@/assets/images/injection.png"),
+  spermicide: require("@/assets/images/spermicide.png"),
 };
+
+const weightIconXml = `<svg width="70" height="70" viewBox="0 0 70 70" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect x="0.7" y="0.7" width="68.6" height="68.6" rx="34.3" stroke="#FFE4ED" stroke-width="1.4"/>
+  <rect x="22" y="25" width="26" height="20" rx="3" fill="#8ECAE6" />
+  <circle cx="35" cy="30" r="4" fill="#E9ECEF" />
+  <rect x="25" y="28" width="20" height="2" rx="1" fill="#219EBC" />
+</svg>`;
+
+const temperatureIconXml = `<svg width="70" height="70" viewBox="0 0 70 70" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect x="0.7" y="0.7" width="68.6" height="68.6" rx="34.3" stroke="#FFE4ED" stroke-width="1.4"/>
+  <path d="M45 25L30 45C30 45 28 47 25 45C22 43 24 40 24 40L39 20L45 25Z" fill="#E63946" />
+  <circle cx="25" cy="45" r="5" fill="#E63946" />
+  <rect x="32" y="32" width="8" height="2" transform="rotate(-53 32 32)" fill="white" opacity="0.5" />
+</svg>`;
+
+const waterIconXml = `<svg width="70" height="70" viewBox="0 0 70 70" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect x="0.7" y="0.7" width="68.6" height="68.6" rx="34.3" stroke="#FFE4ED" stroke-width="1.4"/>
+<path d="M22.2817 19.5411C22.2043 18.8251 22.7653 18.2002 23.4855 18.2002H46.5177C47.2379 18.2002 47.7989 18.8251 47.7215 19.5411L44.3508 50.7195C44.2844 51.3343 43.7654 51.8002 43.147 51.8002H26.8561C26.2378 51.8002 25.7188 51.3343 25.6523 50.7195L22.2817 19.5411Z" fill="#BBCAFF"/>
+<path d="M23.043 21.8321C23.043 21.8321 28.2156 21.3134 31.5186 21.8323C34.7571 22.341 36.119 23.7193 39.3889 23.9511C42.5966 24.1784 46.9565 21.8321 46.9565 21.8321L44.2322 51.7997H25.7673L23.043 21.8321Z" fill="#4770FD"/>
+<circle cx="29.0976" cy="32.7294" r="0.605405" fill="#D9D9D9"/>
+<circle cx="40.2987" cy="37.2704" r="0.908108" fill="#D9D9D9"/>
+<circle cx="36.0624" cy="41.5077" r="0.605405" fill="#D9D9D9"/>
+<circle cx="39.6933" cy="45.746" r="0.908108" fill="#D9D9D9"/>
+<circle cx="35.457" cy="34.2431" r="0.605405" fill="#D9D9D9"/>
+</svg>`;
 
 const moodEmojis: Record<string, string> = {
-  normal: '😐', happy: '😊', calm: '😌', hyped: '🤩',
-  inLove: '😍', peaceful: '😇', lonely: '😢', angry: '😠',
-  silly: '😜', sad: '😔', relaxed: '🙂',
+  normal: "😐",
+  happy: "😊",
+  calm: "😌",
+  hyped: "🤩",
+  inLove: "😍",
+  peaceful: "😇",
+  lonely: "😢",
+  angry: "😠",
+  silly: "😜",
+  sad: "😔",
+  relaxed: "🙂",
 };
 
-type TabName = 'home' | 'calendar' | 'add' | 'chat' | 'settings';
+type TabName = "home" | "calendar" | "add" | "chat" | "settings";
 
 interface DayData {
   day: number;
@@ -50,21 +88,30 @@ interface DayData {
 export default function CalendarScreen() {
   const insets = useSafeAreaInsets();
   const { date: paramDate } = useLocalSearchParams<{ date: string }>();
-  const { isDateInPeriod, getCurrentDayData, setSelectedDate: setContextSelectedDate, dayLogs: allDayLogs, selectedDate: contextSelectedDate } = useAddLog();
-  
+  const {
+    isDateInPeriod,
+    setSelectedDate: setContextSelectedDate,
+    dayLogs: allDayLogs,
+    selectedDate: contextSelectedDate,
+  } = useAddLog();
+
   const todayDate = new Date();
   const selectedDate = contextSelectedDate.getDate();
   const currentMonthNum = contextSelectedDate.getMonth();
   const currentYear = contextSelectedDate.getFullYear();
-  
-  const [activeTab, setActiveTab] = useState<TabName>('calendar');
+
+  const [activeTab, setActiveTab] = useState<TabName>("calendar");
 
   // Initialize from param if provided
   useEffect(() => {
     if (paramDate) {
-      const parts = paramDate.split('-');
+      const parts = paramDate.split("-");
       if (parts.length === 3) {
-        const d = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+        const d = new Date(
+          parseInt(parts[0]),
+          parseInt(parts[1]) - 1,
+          parseInt(parts[2]),
+        );
         if (!isNaN(d.getTime())) {
           setContextSelectedDate(d);
         }
@@ -75,31 +122,28 @@ export default function CalendarScreen() {
   const handleDateSelect = (day: number) => {
     if (day === 0) return;
     const cellDate = new Date(currentYear, currentMonthNum, day);
-    
-    // Difference in days from lastPeriodDate using UTC to avoid DST shifts
-    const utc1 = Date.UTC(cellDate.getFullYear(), cellDate.getMonth(), cellDate.getDate());
-    const utc2 = Date.UTC(cycleData.lastPeriodDate.getFullYear(), cycleData.lastPeriodDate.getMonth(), cycleData.lastPeriodDate.getDate());
-    const diffDays = Math.floor((utc1 - utc2) / (1000 * 60 * 60 * 24));
     setContextSelectedDate(cellDate);
   };
 
   // Memoize current day logs to ensure reactivity when allDayLogs updates
   const dayLogs = React.useMemo(() => {
-    const key = `${currentYear}-${String(currentMonthNum + 1).padStart(2, '0')}-${String(selectedDate).padStart(2, '0')}`;
-    return allDayLogs[key] || { 
-      flowLevel: null, 
-      periodStart: false, 
-      periodEnd: false, 
-      symptoms: [], 
-      moods: [], 
-      medicine: [], 
-      note: '', 
-      weight: '', 
-      weightUnit: 'kg', 
-      temperature: '', 
-      temperatureUnit: 'C', 
-      waterIntake: 0 
-    };
+    const key = `${currentYear}-${String(currentMonthNum + 1).padStart(2, "0")}-${String(selectedDate).padStart(2, "0")}`;
+    return (
+      allDayLogs[key] || {
+        flowLevel: null,
+        periodStart: false,
+        periodEnd: false,
+        symptoms: [],
+        moods: [],
+        medicine: [],
+        note: "",
+        weight: "",
+        weightUnit: "kg",
+        temperature: "",
+        temperatureUnit: "C",
+        waterIntake: 0,
+      }
+    );
   }, [allDayLogs, selectedDate, currentMonthNum, currentYear]);
 
   const [cycleData, setCycleData] = useState({
@@ -118,9 +162,15 @@ export default function CalendarScreen() {
         const token = await AsyncStorage.getItem("accessToken");
         if (!token) return;
         try {
-          const { response: profileRes, data: profileData } = await api.get('/cycle-profile', token);
-          const { response: currentRes, data: currentData } = await api.get('/cycles/current', token);
-          
+          const { response: profileRes, data: profileData } = await api.get(
+            "/cycle-profile",
+            token,
+          );
+          const { response: currentRes, data: currentData } = await api.get(
+            "/cycles/current",
+            token,
+          );
+
           let pLength = 5;
           let cLength = 28;
           let lastPDate = new Date();
@@ -131,21 +181,29 @@ export default function CalendarScreen() {
             pLength = pd.period_length || 5;
             cLength = pd.cycle_length || 28;
             if (pd.last_period_start) {
-              const parts = pd.last_period_start.split('-');
+              const parts = pd.last_period_start.split("-");
               if (parts.length === 3) {
-                 lastPDate = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+                lastPDate = new Date(
+                  parseInt(parts[0]),
+                  parseInt(parts[1]) - 1,
+                  parseInt(parts[2]),
+                );
               }
             }
           }
 
           if (currentRes.ok && currentData?.data) {
-             cDay = currentData.data.current_day || 1;
-             if (currentData.data.last_period_start) {
-               const parts = currentData.data.last_period_start.split('-');
-               if (parts.length === 3) {
-                 lastPDate = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
-               }
-             }
+            cDay = currentData.data.current_day || 1;
+            if (currentData.data.last_period_start) {
+              const parts = currentData.data.last_period_start.split("-");
+              if (parts.length === 3) {
+                lastPDate = new Date(
+                  parseInt(parts[0]),
+                  parseInt(parts[1]) - 1,
+                  parseInt(parts[2]),
+                );
+              }
+            }
           }
 
           const ovulation = cLength - 14;
@@ -166,42 +224,73 @@ export default function CalendarScreen() {
         }
       };
       loadCycleData();
-    }, [])
+    }, []),
   );
 
   const generateMonthDays = (month: number, year: number) => {
     const firstDay = new Date(year, month, 1).getDay();
     const daysInMonth = new Date(year, month + 1, 0).getDate();
     const days = [];
-    
+
     // Padding for first week
     for (let i = 0; i < firstDay; i++) days.push({ day: 0 });
-    
+
     // Days of month
     for (let i = 1; i <= daysInMonth; i++) days.push({ day: i });
-    
+
     // Padding for last week
     while (days.length % 7 !== 0) days.push({ day: 0 });
-    
+
     return days;
   };
 
   const monthDays = generateMonthDays(currentMonthNum, currentYear);
-  const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+  const MONTHS = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+  ];
 
   const getDayInfo = (day: number): DayData => {
-    if (day === 0) return { day: 0, cycleDay: 0, isPeriod: false, isFertility: false, isOvulation: false };
+    if (day === 0)
+      return {
+        day: 0,
+        cycleDay: 0,
+        isPeriod: false,
+        isFertility: false,
+        isOvulation: false,
+      };
 
     // Calculate cycle day based on difference from last period start
     const cellDate = new Date(currentYear, currentMonthNum, day);
-    const utc1 = Date.UTC(cellDate.getFullYear(), cellDate.getMonth(), cellDate.getDate());
-    const utc2 = Date.UTC(cycleData.lastPeriodDate.getFullYear(), cycleData.lastPeriodDate.getMonth(), cycleData.lastPeriodDate.getDate());
+    const utc1 = Date.UTC(
+      cellDate.getFullYear(),
+      cellDate.getMonth(),
+      cellDate.getDate(),
+    );
+    const utc2 = Date.UTC(
+      cycleData.lastPeriodDate.getFullYear(),
+      cycleData.lastPeriodDate.getMonth(),
+      cycleData.lastPeriodDate.getDate(),
+    );
     const diffDays = Math.floor((utc1 - utc2) / (1000 * 60 * 60 * 24));
     const cycleDay = (diffDays % cycleData.cycleLength) + 1;
 
     // Use context's isDateInPeriod for real-time reflection of changes
     const isPeriod = isDateInPeriod(cellDate);
-    const isFertility = cycleDay >= cycleData.fertilityStart && cycleDay <= cycleData.fertilityEnd && !isPeriod;
+    const isFertility =
+      cycleDay >= cycleData.fertilityStart &&
+      cycleDay <= cycleData.fertilityEnd &&
+      !isPeriod;
     const isOvulation = cycleDay === cycleData.ovulationDay;
 
     return { day, cycleDay, isPeriod, isFertility, isOvulation };
@@ -210,17 +299,17 @@ export default function CalendarScreen() {
   const handleTabPress = (tab: TabName) => {
     setActiveTab(tab);
     switch (tab) {
-      case 'home':
-        router.push('/');
+      case "home":
+        router.push("/");
         break;
-      case 'add':
-        router.push('/add-log' as any);
+      case "add":
+        router.push("/add-log" as any);
         break;
-      case 'chat':
-        router.push('/(tabs)/thread' as any);
+      case "chat":
+        router.push("/(tabs)/thread" as any);
         break;
-      case 'settings':
-        router.push('/(tabs)/settings' as any);
+      case "settings":
+        router.push("/(tabs)/settings" as any);
         break;
       default:
         break;
@@ -234,10 +323,13 @@ export default function CalendarScreen() {
     });
   };
 
-  const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const weekDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
   return (
-    <View className="flex-1 bg-[#FF4081] text-[#FAFAFA]" style={{ paddingTop: insets.top }}>
+    <View
+      className="flex-1 bg-[#FF4081] text-[#FAFAFA]"
+      style={{ paddingTop: insets.top }}
+    >
       {/* Header */}
       <View className="flex-row items-center justify-between px-5 py-4 mt-6">
         {/* Blood Drop Icon */}
@@ -248,7 +340,13 @@ export default function CalendarScreen() {
         {/* Month Title */}
         <View className="items-center">
           <Text className="text-sm font-inter text-white opacity-80 uppercase tracking-widest mb-1">
-            {new Date(currentYear, currentMonthNum, selectedDate).toDateString() === todayDate.toDateString() ? "Today's Status" : "Log Summary"}
+            {new Date(
+              currentYear,
+              currentMonthNum,
+              selectedDate,
+            ).toDateString() === todayDate.toDateString()
+              ? "Today's Status"
+              : "Log Summary"}
           </Text>
           <Text className="text-2xl font-inter font-bold text-white tracking-tight">
             {MONTHS[currentMonthNum]} {selectedDate}
@@ -268,7 +366,9 @@ export default function CalendarScreen() {
           <View className="flex-row justify-between px-2 mb-6">
             {weekDays.map((day, index) => (
               <View key={index} className="flex-1 items-center py-2">
-                <Text className="text-sm font-inter text-white font-medium">{day}</Text>
+                <Text className="text-sm font-inter text-white font-medium">
+                  {day}
+                </Text>
               </View>
             ))}
           </View>
@@ -278,44 +378,68 @@ export default function CalendarScreen() {
             {monthDays.map((item, index) => {
               const dayInfo = getDayInfo(item.day);
               const isSelected = item.day === selectedDate;
-              const isToday = item.day === todayDate.getDate() && currentMonthNum === todayDate.getMonth() && currentYear === todayDate.getFullYear();
+              const isToday =
+                item.day === todayDate.getDate() &&
+                currentMonthNum === todayDate.getMonth() &&
+                currentYear === todayDate.getFullYear();
 
               return (
                 <Pressable
                   key={index}
                   onPress={() => handleDateSelect(item.day)}
                   className={`w-[14.28%] h-14 items-center justify-center relative ${
-                    dayInfo.isPeriod ? 'bg-[#CC0045]' : ''
-                  } ${isSelected && !dayInfo.isPeriod ? 'bg-[#FF669A] rounded-xl' : ''} ${
-                    isToday && !isSelected ? 'border-2 border-[#FFB2CD] rounded-xl' : ''
+                    dayInfo.isPeriod ? "bg-[#CC0045]" : ""
+                  } ${isSelected && !dayInfo.isPeriod ? "bg-[#FF669A] rounded-xl" : ""} ${
+                    isToday && !isSelected
+                      ? "border-2 border-[#FFB2CD] rounded-xl"
+                      : ""
                   }`}
                 >
                   {item.day > 0 && (
                     <>
                       {/* Cycle Day Number (small) */}
-                      <Text className={`absolute top-1 right-2 text-[8px] font-inter ${
-                        dayInfo.isPeriod ? 'text-[#FFB2CC]' :
-                        dayInfo.isFertility ? 'text-[#8027A5]' : 'text-[#FFCCDD]'
-                      }`}>
+                      <Text
+                        className={`absolute top-1 right-2 text-[8px] font-inter ${
+                          dayInfo.isPeriod
+                            ? "text-[#FFB2CC]"
+                            : dayInfo.isFertility
+                              ? "text-[#8027A5]"
+                              : "text-[#FFCCDD]"
+                        }`}
+                      >
                         {dayInfo.cycleDay}
                       </Text>
 
                       {/* Day Number */}
-                      <Text className={`text-base font-inter ${
-                        dayInfo.isPeriod ? 'text-white font-bold' : isToday ? 'text-white font-bold' : 'text-[#FAFAFA]'
-                      }`}>
+                      <Text
+                        className={`text-base font-inter ${
+                          dayInfo.isPeriod
+                            ? "text-white font-bold"
+                            : isToday
+                              ? "text-white font-bold"
+                              : "text-[#FAFAFA]"
+                        }`}
+                      >
                         {item.day}
                       </Text>
 
                       {/* Fertility/Ovulation Indicator */}
                       {dayInfo.isFertility && !dayInfo.isOvulation && (
                         <View className="absolute bottom-1.5">
-                          <MaterialCommunityIcons name="cards-heart" size={10} color="#8027A5" />
+                          <MaterialCommunityIcons
+                            name="cards-heart"
+                            size={10}
+                            color="#8027A5"
+                          />
                         </View>
                       )}
                       {dayInfo.isOvulation && (
                         <View className="absolute bottom-1.5">
-                          <MaterialCommunityIcons name="cards-heart" size={10} color="#FFD700" />
+                          <MaterialCommunityIcons
+                            name="cards-heart"
+                            size={10}
+                            color="#FFD700"
+                          />
                         </View>
                       )}
                     </>
@@ -326,215 +450,213 @@ export default function CalendarScreen() {
           </View>
         </View>
 
-        {/* Selected Date Info */}
-        <View className="flex-row items-center justify-between mt-8 px-5">
-          <View>
-            <Text className="text-xl font-bold font-inter text-[#FAFAFA]">
-              {MONTHS[currentMonthNum].substring(0, 3)} {selectedDate}
-            </Text>
-            <Text className="text-sm font-inter text-[#FAFAFA] opacity-90">
-              Cycle day {getDayInfo(selectedDate).cycleDay}
-            </Text>
-          </View>
+        {/* Log Summary */}
+        <View style={{ paddingHorizontal: 20, paddingTop: 20, paddingBottom: 40, gap: 24, marginTop: 8 }}>
 
-          <Pressable
-            onPress={handleEditPeriod}
-            className="px-4 py-2 border border-[#FFB4CD] rounded-full bg-white/10"
-          >
-            <Text className="text-xs font-inter font-semibold text-white">
-              Edit Period
-            </Text>
-          </Pressable>
-        </View>
-
-        {/* Divider */}
-        <View className="h-[1px] bg-[#FFB2CD] mx-5 my-6 opacity-30" />
-        
-        {/* Pregnancy Chance */}
-        <View className="px-5 mb-4">
-          <Text className="text-sm font-inter text-white bg-white/10 self-start px-3 py-1 rounded-full">
-            <Text className="font-bold">Medium</Text> chance of getting pregnant
-          </Text>
-        </View>
-
-        {/* Legend */}
-        <View className="flex-row items-center justify-between px-5 mb-6">
-          {/* Period Days */}
-          <View className="items-center gap-1 flex-1">
-            <View className="w-4 h-4 rounded-full bg-[#CC0045]" />
-            <Text className="text-[10px] font-inter text-white text-center">Period days</Text>
-          </View>
-
-          {/* Fertility Window */}
-          <View className="items-center gap-1 flex-1">
-            <MaterialCommunityIcons name="cards-heart" size={16} color="#8027A5" />
-            <Text className="text-[10px] font-inter text-white text-center">Fertility window</Text>
-          </View>
-
-          {/* Ovulation Day */}
-          <View className="items-center gap-1 flex-1">
-            <MaterialCommunityIcons name="cards-heart" size={16} color="#FFD700" />
-            <Text className="text-[10px] font-inter text-white text-center">Ovulation Day</Text>
-          </View>
-        </View>
-
-        {/* Health Log Summary Card */}
-        <View className="px-5 mb-10">
-          <View className="bg-[#FF4081] rounded-3xl p-6">
-            <View className="flex-row items-center justify-between mb-8">
-              <Text className="text-white font-inter font-bold text-xl">
-                Daily Health Log
+          {/* Date Header */}
+          <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+            <View style={{ gap: 4 }}>
+              <Text style={{ fontWeight: "600", fontSize: 16, color: "#FFFFFF" }}>
+                {MONTHS[currentMonthNum].substring(0, 3)} {selectedDate}
               </Text>
-              <Pressable onPress={() => router.push({ pathname: '/add-log', params: { date: `${currentYear}-${String(currentMonthNum + 1).padStart(2, '0')}-${String(selectedDate).padStart(2, '0')}` } } as any)}>
-                <Feather name="edit-3" size={20} color="white" />
+              <Text style={{ fontWeight: "400", fontSize: 14, color: "#FAFAFA" }}>
+                Cycle day {getDayInfo(selectedDate).cycleDay}
+              </Text>
+            </View>
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+              <Pressable
+                onPress={() => router.push({ pathname: "/add-log", params: { date: `${currentYear}-${String(currentMonthNum + 1).padStart(2, "0")}-${String(selectedDate).padStart(2, "0")}` } } as any)}
+              >
+                <Feather name="edit-3" size={18} color="#FFFFFF" />
+              </Pressable>
+              <Pressable
+                onPress={handleEditPeriod}
+                style={{ borderWidth: 1, borderColor: "#FFB4CD", borderRadius: 20, paddingVertical: 10, paddingHorizontal: 12 }}
+              >
+                <Text style={{ fontWeight: "500", fontSize: 12, color: "#FFFFFF" }}>Edit Period</Text>
               </Pressable>
             </View>
-            
-            {/* Log Data Summary (Reactive to allDayLogs change) */}
-            {(dayLogs.flowLevel || dayLogs.note || (dayLogs.moods && dayLogs.moods.length > 0) || (dayLogs.symptoms && dayLogs.symptoms.length > 0) || dayLogs.waterIntake > 0 || dayLogs.weight || dayLogs.temperature) ? (
-              <View className="gap-6">
-                {/* 1. Vertical List Style - Now at the Top */}
-                <View className="gap-6">
-                  {/* Flow */}
-                  {dayLogs.flowLevel && (
-                    <View className="flex-row items-center gap-4">
-                      <FontAwesome5 name="tint" size={22} color="white" />
-                      <Text className="text-white text-xl font-bold capitalize">Flow: {dayLogs.flowLevel}</Text>
-                    </View>
-                  )}
+          </View>
 
-                  {/* Moods */}
-                  {dayLogs.moods.length > 0 && (
-                    <View className="flex-row flex-wrap gap-4">
-                      {dayLogs.moods.map(m => (
-                        <View key={m} className="flex-row items-center gap-2">
-                          <Text className="text-xl">{moodEmojis[m]}</Text>
-                          <Text className="text-white text-base font-inter capitalize font-bold">{m}</Text>
-                        </View>
-                      ))}
-                    </View>
-                  )}
+          {/* Divider + Pregnancy Chance */}
+          <View style={{ gap: 16 }}>
+            <View style={{ height: 0.5, backgroundColor: "#FF99BC" }} />
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 5 }}>
+              <View style={{ width: 5, height: 5, borderRadius: 2.5, backgroundColor: "#FF4081" }} />
+              <Text style={{ fontWeight: "500", fontSize: 14, color: "#FFFFFF", letterSpacing: -0.14 }}>
+                Medium - Chance of getting pregnant
+              </Text>
+            </View>
+          </View>
 
-                  {/* Symptoms */}
-                  {dayLogs.symptoms.length > 0 && (
-                    <View className="flex-row flex-wrap gap-4 mt-2">
-                      {dayLogs.symptoms.map(s => (
-                        <View key={s} className="flex-row items-center gap-2">
-                          <Image source={SYMPTOM_IMAGES[s]} style={{ width: 22, height: 22, tintColor: 'white' }} resizeMode="contain" />
-                          <Text className="text-white text-base font-inter capitalize font-bold">{s}</Text>
-                        </View>
-                      ))}
-                    </View>
-                  )}
+          {/* Legend */}
+          <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+            <View style={{ alignItems: "center", gap: 4, flex: 1 }}>
+              <View style={{ width: 16, height: 16, borderRadius: 8, backgroundColor: "#CC0045" }} />
+              <Text style={{ fontSize: 10, color: "#FFFFFF", textAlign: "center" }}>Period days</Text>
+            </View>
+            <View style={{ alignItems: "center", gap: 4, flex: 1 }}>
+              <MaterialCommunityIcons name="cards-heart" size={16} color="#8027A5" />
+              <Text style={{ fontSize: 10, color: "#FFFFFF", textAlign: "center" }}>Fertility window</Text>
+            </View>
+            <View style={{ alignItems: "center", gap: 4, flex: 1 }}>
+              <MaterialCommunityIcons name="cards-heart" size={16} color="#FFD700" />
+              <Text style={{ fontSize: 10, color: "#FFFFFF", textAlign: "center" }}>Ovulation Day</Text>
+            </View>
+          </View>
 
-                  {/* Medicine */}
-                  {dayLogs.medicine && dayLogs.medicine.length > 0 && (
-                    <View className="flex-row flex-wrap gap-4 mt-2">
-                      {dayLogs.medicine.map(med => (
-                        <View key={med} className="flex-row items-center gap-2">
-                          <Image source={MEDICINE_IMAGES[med]} style={{ width: 20, height: 20, tintColor: 'white' }} resizeMode="contain" />
-                          <Text className="text-white text-base font-inter capitalize font-bold">{med}</Text>
-                        </View>
-                      ))}
-                    </View>
-                  )}
-                </View>
+          {/* Log Sections */}
+          <View style={{ gap: 20 }}>
 
-                {/* Divider */}
-                <View className="h-[1px] bg-white/10 my-2" />
-                
-                {/* 2. Three Circular Icons Arrangement */}
-                <View className="flex-row justify-between items-start mt-2">
-                  {/* Weight */}
-                  <View className="items-center flex-1">
-                    <View className="w-[60px] h-[60px] items-center justify-center mb-2">
-                      <Svg height="60" width="60" viewBox="0 0 60 60">
-                        <Circle cx="30" cy="30" r="28" stroke="white" strokeWidth="1" strokeOpacity="0.4" fill="none" />
-                        <Circle cx="30" cy="30" r="20" stroke="white" strokeWidth="1" strokeOpacity="0.8" fill="none" />
-                        {/* Weight Scale Icon */}
-                        <Rect x="20" y="24" width="20" height="14" rx="2" fill="#66CCFF" />
-                        <Rect x="26" y="26" width="8" height="4" rx="1" fill="#FFFFFF" />
-                      </Svg>
-                    </View>
-                    <Text className="text-white text-lg font-bold">
-                      {dayLogs.weight ? `${dayLogs.weight}` : '--'} <Text className="text-[10px] font-normal">{dayLogs.weightUnit}</Text>
-                    </Text>
-                    <Text className="text-white/80 text-[10px] mt-0.5">Weight</Text>
-                  </View>
-
-                  {/* Temperature */}
-                  <View className="items-center flex-1">
-                    <View className="w-[60px] h-[60px] items-center justify-center mb-2">
-                      <Svg height="60" width="60" viewBox="0 0 60 60">
-                        <Circle cx="30" cy="30" r="28" stroke="white" strokeWidth="1" strokeOpacity="0.4" fill="none" />
-                        <Circle cx="30" cy="30" r="20" stroke="white" strokeWidth="1" strokeOpacity="0.8" fill="none" />
-                        {/* Thermometer Icon */}
-                        <Path d="M33.535 30.535l4.243-4.243a3 3 0 00-4.243-4.242l-4.243 4.242a5 5 0 104.243 4.243z" fill="#FF3366" />
-                        <Circle cx="28" cy="32" r="2" fill="#FFFFFF" />
-                      </Svg>
-                    </View>
-                    <Text className="text-white text-lg font-bold">
-                      {dayLogs.temperature ? `${dayLogs.temperature}` : '--'} <Text className="text-[10px] font-normal">°{dayLogs.temperatureUnit}</Text>
-                    </Text>
-                    <Text className="text-white/80 text-[10px] mt-0.5">Temperature</Text>
-                  </View>
-
-                  {/* Water */}
-                  <View className="items-center flex-1">
-                    <View className="w-[60px] h-[60px] items-center justify-center mb-2">
-                      <Svg height="60" width="60" viewBox="0 0 60 60">
-                        <Circle cx="30" cy="30" r="28" stroke="white" strokeWidth="1" strokeOpacity="0.4" fill="none" />
-                        <Circle cx="30" cy="30" r="20" stroke="white" strokeWidth="1" strokeOpacity="0.8" fill="none" />
-                        {/* Water Glass Icon */}
-                        <Path d="M24 22l1 12a2 2 0 002 2h6a2 2 0 002-2l1-12H24z" fill="#3399FF" />
-                        <Path d="M24.5 26h11M25 31h10" stroke="#FFFFFF" strokeWidth="1" strokeOpacity="0.5" />
-                      </Svg>
-                    </View>
-                    <Text className="text-white text-lg font-bold">
-                      {dayLogs.waterIntake} <Text className="text-[10px] font-normal">ml</Text>
-                    </Text>
-                    <Text className="text-white/80 text-[10px] mt-0.5">Drink Water</Text>
-                  </View>
-                </View>
-
-                  {/* Note */}
-                  {dayLogs.note && (
-                    <View className="mt-4 p-4 bg-white/10 rounded-2xl">
-                      <Text className="text-white/90 text-sm font-inter italic">"{dayLogs.note}"</Text>
-                    </View>
-                  )}
+            {/* Flow — always visible */}
+            <View style={{ gap: 12 }}>
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+                <Text style={{ fontWeight: "500", fontSize: 14, color: "#FFFFFF", letterSpacing: -0.14 }}>Flow</Text>
+                <View style={{ flex: 1, height: 0.5, backgroundColor: "#FF99BC" }} />
               </View>
-          ) : (
-              <View className="items-center py-6">
-                <View className="w-16 h-16 rounded-full bg-white/10 items-center justify-center mb-3">
-                  <Feather name="file-text" size={24} color="white" opacity={0.5} />
+              {dayLogs.flowLevel ? (
+                <View style={{ alignItems: "center", gap: 4, width: 60 }}>
+                  <FlowDroplet level={dayLogs.flowLevel} selected={false} fillColor="#FF0057" />
+                  <Text style={{ fontWeight: "400", fontSize: 14, color: "#FAFAFA" }}>
+                    {flowLevelLabel(dayLogs.flowLevel)}
+                  </Text>
                 </View>
-                <Text className="text-white opacity-60 text-sm font-inter mb-4">No health logs found for this date</Text>
-                <Pressable 
-                  onPress={() => router.push({ pathname: '/add-log', params: { date: `${currentYear}-${String(currentMonthNum + 1).padStart(2, '0')}-${String(selectedDate).padStart(2, '0')}` } } as any)}
-                  className="bg-white px-6 py-2 rounded-full"
+              ) : (
+                <Text style={{ fontWeight: "400", fontSize: 14, color: "rgba(250,250,250,0.4)" }}>--</Text>
+              )}
+            </View>
+
+            {/* Symptoms */}
+            {dayLogs.symptoms.length > 0 && (
+              <View style={{ gap: 12 }}>
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+                  <Text style={{ fontWeight: "500", fontSize: 14, color: "#FFFFFF", letterSpacing: -0.14 }}>Symptoms</Text>
+                  <View style={{ flex: 1, height: 0.5, backgroundColor: "#FF99BC" }} />
+                </View>
+                <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 24 }}>
+                  {dayLogs.symptoms.map((s) => (
+                    <View key={s} style={{ alignItems: "center", gap: 4, width: 50 }}>
+                      <View style={{ width: 50, height: 50, borderRadius: 1000, backgroundColor: "#FFE4ED", alignItems: "center", justifyContent: "center" }}>
+                        <Image source={SYMPTOM_IMAGES[s]} style={{ width: 24, height: 24 }} resizeMode="contain" />
+                      </View>
+                      <Text style={{ fontSize: 14, color: "#FFFFFF", textAlign: "center" }} numberOfLines={1}>
+                        {s.charAt(0).toUpperCase() + s.slice(1)}
+                      </Text>
+                    </View>
+                  ))}
+                </View>
+              </View>
+            )}
+
+            {/* Moods */}
+            {dayLogs.moods.length > 0 && (
+              <View style={{ gap: 12 }}>
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+                  <Text style={{ fontWeight: "500", fontSize: 14, color: "#FFFFFF", letterSpacing: -0.14 }}>Moods</Text>
+                  <View style={{ flex: 1, height: 0.5, backgroundColor: "#FF99BC" }} />
+                </View>
+                <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 24 }}>
+                  {dayLogs.moods.map((m) => (
+                    <View key={m} style={{ alignItems: "center", gap: 4, width: 50 }}>
+                      <View style={{ width: 50, height: 50, borderRadius: 1000, backgroundColor: "#FFFFFF", borderWidth: 1, borderColor: "#FFE4ED", alignItems: "center", justifyContent: "center" }}>
+                        <Text style={{ fontSize: 24 }}>{moodEmojis[m]}</Text>
+                      </View>
+                      <Text style={{ fontSize: 14, color: "#FFFFFF", textAlign: "center" }} numberOfLines={1}>
+                        {m.charAt(0).toUpperCase() + m.slice(1)}
+                      </Text>
+                    </View>
+                  ))}
+                </View>
+              </View>
+            )}
+
+            {/* Medicine — always visible */}
+            <View style={{ gap: 12 }}>
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+                <Text style={{ fontWeight: "500", fontSize: 14, color: "#FFFFFF", letterSpacing: -0.14 }}>Medicine</Text>
+                <View style={{ flex: 1, height: 0.5, backgroundColor: "#FF99BC" }} />
+              </View>
+              {dayLogs.medicine && dayLogs.medicine.length > 0 ? (
+                <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 24 }}>
+                  {dayLogs.medicine.map((med) => (
+                    <View key={med} style={{ alignItems: "center", gap: 4, width: 60 }}>
+                      <View style={{ width: 60, height: 60, borderRadius: 1000, borderWidth: 0.681818, borderColor: "#FFDFEA", alignItems: "center", justifyContent: "center" }}>
+                        <Image source={MEDICINE_IMAGES[med]} style={{ width: 32, height: 32 }} resizeMode="contain" />
+                      </View>
+                      <Text style={{ fontSize: 14, color: "#FAFAFA", textAlign: "center" }} numberOfLines={2}>
+                        {med.charAt(0).toUpperCase() + med.slice(1)}
+                      </Text>
+                    </View>
+                  ))}
+                </View>
+              ) : (
+                <Text style={{ fontWeight: "400", fontSize: 14, color: "rgba(250,250,250,0.4)" }}>--</Text>
+              )}
+            </View>
+
+            {/* Note */}
+            {!!dayLogs.note && (
+              <View style={{ gap: 12 }}>
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+                  <Text style={{ fontWeight: "500", fontSize: 14, color: "#FFFFFF", letterSpacing: -0.14 }}>Note</Text>
+                  <View style={{ flex: 1, height: 0.5, backgroundColor: "#FF99BC" }} />
+                </View>
+                <Text style={{ fontWeight: "400", fontSize: 14, color: "#FAFAFA" }}>
+                  {dayLogs.note}
+                </Text>
+              </View>
+            )}
+
+            {/* Empty state — shown when no symptoms, moods, or note */}
+            {dayLogs.symptoms.length === 0 && dayLogs.moods.length === 0 && !dayLogs.note && (
+              <View style={{ alignItems: "center", paddingVertical: 16 }}>
+                <Text style={{ color: "rgba(255,255,255,0.6)", fontSize: 14 }}>No health logs for this date</Text>
+                <Pressable
+                  onPress={() => router.push({ pathname: "/add-log", params: { date: `${currentYear}-${String(currentMonthNum + 1).padStart(2, "0")}-${String(selectedDate).padStart(2, "0")}` } } as any)}
+                  style={{ marginTop: 12, backgroundColor: "rgba(255,255,255,0.15)", borderRadius: 20, paddingHorizontal: 20, paddingVertical: 8 }}
                 >
-                  <Text className="text-[#FF4081] text-sm font-bold font-inter">Add Log</Text>
+                  <Text style={{ color: "#FFFFFF", fontSize: 14, fontWeight: "500" }}>Add Log</Text>
                 </Pressable>
               </View>
             )}
           </View>
-        </View>
 
-        {/* Scroll Indicator */}
-        <View className="items-center mb-8">
-          <Text className="text-[10px] font-inter text-[#FFB3CD] uppercase tracking-widest">Keep Logging Daily</Text>
-          <Feather name="chevron-down" size={20} color="#FFB3CD" style={{ marginTop: 4 }} />
-        </View>
+          {/* Weight / Temp / Water */}
+          <View style={{ gap: 16, alignItems: "center" }}>
+            <View style={{ height: 0.5, backgroundColor: "#FF99BC", alignSelf: "stretch" }} />
+            <View style={{ flexDirection: "row", gap: 40, alignItems: "flex-start", justifyContent: "center" }}>
+              {/* Weight */}
+              <View style={{ alignItems: "center", gap: 4 }}>
+                <SvgXml xml={weightIconXml} width={70} height={70} />
+                <Text style={{ fontWeight: "500", fontSize: 16, color: "#FAFAFA" }}>
+                  {dayLogs.weight ? `${dayLogs.weight} ${dayLogs.weightUnit}` : "--"}
+                </Text>
+                <Text style={{ fontWeight: "400", fontSize: 12, color: "#FAFAFA" }}>Weight</Text>
+              </View>
+              {/* Temperature */}
+              <View style={{ alignItems: "center", gap: 4 }}>
+                <SvgXml xml={temperatureIconXml} width={70} height={70} />
+                <Text style={{ fontWeight: "500", fontSize: 16, color: "#FAFAFA" }}>
+                  {dayLogs.temperature ? `${dayLogs.temperature} °${dayLogs.temperatureUnit}` : "--"}
+                </Text>
+                <Text style={{ fontWeight: "400", fontSize: 12, color: "#FAFAFA" }}>Temperature</Text>
+              </View>
+              {/* Water */}
+              <View style={{ alignItems: "center", gap: 4 }}>
+                <SvgXml xml={waterIconXml} width={70} height={70} />
+                <Text style={{ fontWeight: "500", fontSize: 16, color: "#FAFAFA" }}>
+                  {dayLogs.waterIntake ? `${dayLogs.waterIntake} ml` : "--"}
+                </Text>
+                <Text style={{ fontWeight: "400", fontSize: 12, color: "#FAFAFA" }}>Drink Water</Text>
+              </View>
+            </View>
+          </View>
 
+        </View>
       </ScrollView>
 
-
       {/* Bottom Navigation */}
-        <BottomNavigation
-          activeTab={activeTab}
-          onTabPress={handleTabPress}
-        />
+      <BottomNavigation activeTab={activeTab} onTabPress={handleTabPress} />
     </View>
   );
 }
