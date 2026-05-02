@@ -1,19 +1,10 @@
 import { AddLogProvider } from "@/context/add-log-context";
 import { ThemeProvider } from "@/context/theme-context";
-import {
-  Inter_400Regular,
-  useFonts as useInter,
-} from "@expo-google-fonts/inter";
-import {
-  Manrope_500Medium,
-  Manrope_700Bold,
-  useFonts as useManrope,
-} from "@expo-google-fonts/manrope";
-import {
-  Poppins_400Regular,
-  Poppins_600SemiBold,
-  useFonts as usePoppins,
-} from "@expo-google-fonts/poppins";
+import { Inter_400Regular, useFonts as useInter } from "@expo-google-fonts/inter";
+import { Manrope_500Medium, Manrope_700Bold, useFonts as useManrope } from "@expo-google-fonts/manrope";
+import { Poppins_400Regular, Poppins_600SemiBold, useFonts as usePoppins } from "@expo-google-fonts/poppins";
+import { Feather, Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
@@ -39,7 +30,13 @@ export default function RootLayout() {
     Manrope_700Bold,
   });
 
-  const fontsLoaded = poppinsLoaded && interLoaded && manropeLoaded;
+  const [iconsLoaded] = useFonts({
+    ...Feather.font,
+    ...Ionicons.font,
+    ...MaterialCommunityIcons.font,
+  });
+
+  const fontsLoaded = poppinsLoaded && interLoaded && manropeLoaded && iconsLoaded;
 
   useEffect(() => {
     if (fontsLoaded) {
