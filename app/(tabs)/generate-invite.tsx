@@ -94,7 +94,10 @@ export default function GenerateInviteScreen() {
       };
       const { response, data } = await api.post("/partner/invite", shareBody, token);
       if (!response.ok) {
-        setError("Failed to generate invite code. Please try again.");
+        console.error("Invite API error:", response.status, JSON.stringify(data));
+        const msg =
+          data?.message || data?.error || `Server error (${response.status}). Please try again.`;
+        setError(msg);
         setLoading(false);
         return;
       }
