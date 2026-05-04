@@ -62,6 +62,7 @@ export default function LastPeriodScreen() {
         return;
       }
 
+
       if (editing) {
         const { response, data } = await api.put(
           "/cycle-profile",

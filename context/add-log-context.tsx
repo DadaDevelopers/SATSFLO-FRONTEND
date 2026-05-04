@@ -1,5 +1,4 @@
 import { api } from "@/lib/api";
-import logger from "@/lib/logger";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
 import React, {
@@ -120,7 +119,7 @@ interface AddLogContextType {
   dayLogs: Record<string, DayLogData>;
 
   // Save all data for current date
-  saveCurrentDay: () => void;
+  saveCurrentDay: () => Promise<void>;
 
   // Load data from API for a specific date key (YYYY-MM-DD)
   setDayLogForDate: (dateKey: string, data: Partial<DayLogData>) => void;
@@ -172,7 +171,7 @@ export function AddLogProvider({ children }: { children: ReactNode }) {
         if (savedLogs) setDayLogs(JSON.parse(savedLogs));
         if (savedSettings) setSettings(JSON.parse(savedSettings));
       } catch (err) {
-        logger.error("Failed to load logs from storage", err);
+        console.error("Failed to load logs from storage", err);
       } finally {
         setIsLoaded(true);
       }
@@ -230,7 +229,7 @@ export function AddLogProvider({ children }: { children: ReactNode }) {
         }
       }
     } catch (err) {
-      logger.error("Failed to fetch logs from server", err);
+      console.error("Failed to fetch logs from server", err);
     }
   };
 
@@ -422,14 +421,65 @@ export function AddLogProvider({ children }: { children: ReactNode }) {
   };
 
   // Save current day (for explicit save action)
-  const saveCurrentDay = () => {
-    // Data is already being saved on each change
-    // This can be used for additional actions like API calls
-    console.log(
-      "Saved data for",
-      getDateKey(selectedDate),
-      getCurrentDayData(),
-    );
+  const saveCurrentDay = async () => {
+    const dateStr = getDateKey(selectedDate);
+    const dayData = getCurrentDayData();
+
+    try {
+      const token = await AsyncStorage.getItem("accessToken");
+      if (token) {
+        // 1. Sync the daily logs
+        const { response: logRes } = await api.put(
+          `/logs/${dateStr}`,
+          {
+            flow: dayData.flowLevel,
+            symptoms: dayData.symptoms,
+            mood: dayData.moods,
+            medicine: dayData.medicine,
+            notes: dayData.note,
+            weight: dayData.weight,
+            weight_unit: dayData.weightUnit,
+            temperature: dayData.temperature,
+            temperature_unit: dayData.temperatureUnit,
+            water_intake: dayData.waterIntake,
+          },
+          token,
+        );
+
+        if (!logRes.ok) {
+          throw new Error(
+            logRes.status === 401
+              ? "Session expired. Please log in again."
+              : "Failed to save logs to server",
+          );
+        }
+
+        // 2. Start period cycle if marked
+        if (dayData.periodStart) {
+          const { response: cycleRes } = await api.post(
+            "/cycles/start",
+            { start_date: dateStr },
+            token,
+          );
+          if (!cycleRes.ok) console.warn("Failed to start cycle on server");
+        }
+
+        // 3. End period cycle if marked
+        if (dayData.periodEnd) {
+          const { response: cycleRes } = await api.post(
+            "/cycles/end",
+            { end_date: dateStr },
+            token,
+          );
+          if (!cycleRes.ok) console.warn("Failed to end cycle on server");
+        }
+
+        console.log("Successfully synced all data with server for", dateStr);
+      }
+    } catch (err) {
+      console.error("Failed to sync with server", err);
+      throw err; // Propagate to caller for UI feedback
+    }
   };
 
   // Load data from API for a specific date key (YYYY-MM-DD)
@@ -448,6 +498,7 @@ export function AddLogProvider({ children }: { children: ReactNode }) {
       value={{
         selectedDate,
         setSelectedDate,
+        dayLogs,
         dayLogs,
         getCurrentDayData,
         setPeriodStart,
@@ -469,7 +520,6 @@ export function AddLogProvider({ children }: { children: ReactNode }) {
         setCupCapacity,
         cupStyle: settings.cupStyle,
         setCupStyle,
-        dayLogs,
         isDateInPeriod,
         saveCurrentDay,
         setDayLogForDate,
