@@ -145,7 +145,7 @@ export default function LoginScreen() {
             <View className="w-full pt-4 pb-8">
               {/* Back Button */}
               <TouchableOpacity
-                onPress={() => router.back()}
+                onPress={() => router.canGoBack() ? router.back() : router.replace('/how-to-use' as any)}
                 className="w-10 h-10 justify-center items-center -ml-2 mb-4"
                 hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
               >
