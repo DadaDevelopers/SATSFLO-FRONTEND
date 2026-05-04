@@ -79,6 +79,9 @@ interface AddLogContextType {
   // Check if date is in period range
   isDateInPeriod: (date: Date) => boolean;
 
+  // All day logs keyed by date string
+  dayLogs: Record<string, DayLogData>;
+
   // Save all data for current date
   saveCurrentDay: () => void;
 
@@ -147,7 +150,6 @@ export function AddLogProvider({ children }: { children: ReactNode }) {
   };
 
   const setPeriodEnd = (value: boolean) => {
-    const currentData = getCurrentDayData();
     // Can only set end if there's a start somewhere before
     if (value && !hasPeriodStartBefore(selectedDate)) {
       return;
@@ -325,6 +327,7 @@ export function AddLogProvider({ children }: { children: ReactNode }) {
         setCupCapacity,
         cupStyle: settings.cupStyle,
         setCupStyle,
+        dayLogs,
         isDateInPeriod,
         saveCurrentDay,
         setDayLogForDate,
