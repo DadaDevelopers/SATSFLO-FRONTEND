@@ -1,4 +1,3 @@
-import { Feather } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useState } from "react";
 import { Pressable, Text, TouchableOpacity, View } from "react-native";
@@ -17,20 +16,6 @@ export default function HowToUseScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: "#FF4081" }}>
-      {/* Back arrow */}
-      <TouchableOpacity
-        onPress={() => router.back()}
-        activeOpacity={0.7}
-        style={{
-          position: "absolute",
-          top: insets.top + 16,
-          left: 20,
-          zIndex: 10,
-        }}
-      >
-        <Feather name="arrow-left" size={24} color="#FFFFFF" />
-      </TouchableOpacity>
-
       {/* Content */}
       <View style={{ flex: 1, paddingHorizontal: 20 }}>
         {/* Title */}

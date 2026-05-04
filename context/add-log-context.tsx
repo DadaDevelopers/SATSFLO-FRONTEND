@@ -469,6 +469,7 @@ export function AddLogProvider({ children }: { children: ReactNode }) {
         setCupCapacity,
         cupStyle: settings.cupStyle,
         setCupStyle,
+        dayLogs,
         isDateInPeriod,
         saveCurrentDay,
         setDayLogForDate,
