@@ -192,8 +192,8 @@ export default function PartnerDashboardScreen() {
             <Feather name="arrow-left" size={24} color="#FFFFFF" />
           </TouchableOpacity>
           <Text className="flex-1 text-center text-white text-[18px] font-medium mr-6">
-            {partnerNickname}'s Cycle
-            {partnerNickname}'s Cycle
+            {partnerNickname}
+            {"'"}s Cycle
           </Text>
           {loading && <ActivityIndicator size="small" color="#FFFFFF" />}
         </View>

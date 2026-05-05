@@ -5,7 +5,7 @@ import { PrimaryButton } from "@/components/signup/primary-button";
 import { TitleSection } from "@/components/signup/title-section";
 import { api } from "@/lib/api";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
   KeyboardAvoidingView,
@@ -67,6 +67,8 @@ export default function LoginScreen() {
   const router = useRouter();
   const { flow } = useLocalSearchParams<{ flow?: string }>();
   const isPartnerFlow = flow === "partner";
+  const { flow } = useLocalSearchParams<{ flow?: string }>();
+  const isPartnerFlow = flow === "partner";
   const insets = useSafeAreaInsets();
   const { width: screenWidth } = useWindowDimensions();
   const isDesktop = screenWidth > MAX_CONTENT_WIDTH;
@@ -104,7 +106,13 @@ export default function LoginScreen() {
           ["user", JSON.stringify(data.data.user)],
         ]);
         setStatusMessage({ text: "Login successful!", type: "success" });
-        setTimeout(() => router.replace("/(tabs)"), 800);
+        setTimeout(
+          () =>
+            isPartnerFlow
+              ? router.replace("/partner-welcome" as any)
+              : router.replace("/(tabs)"),
+          800,
+        );
       } else {
         const message = data?.message || data?.error || "Failed to sign in.";
         setStatusMessage({ text: message, type: "error" });

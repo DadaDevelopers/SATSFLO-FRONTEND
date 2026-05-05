@@ -7,7 +7,7 @@ import { TitleSection } from "@/components/signup/title-section";
 import { TermsModal } from "@/components/terms-modal";
 import { api } from "@/lib/api";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
   KeyboardAvoidingView,
@@ -99,7 +99,13 @@ export default function SignupScreen() {
           text: "Account created successfully!",
           type: "success",
         });
-        setTimeout(() => router.push("/(auth)/cycle-length"), 1200);
+        setTimeout(
+          () =>
+            isPartnerFlow
+              ? router.replace("/partner-welcome" as any)
+              : router.push("/(auth)/cycle-length"),
+          1200
+        );
       } else if (response.status === 500) {
         setStatusMessage({
           text: "Account may have been created. Please try signing in, or use a different email.",
