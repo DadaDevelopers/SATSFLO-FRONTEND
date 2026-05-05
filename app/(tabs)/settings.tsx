@@ -18,7 +18,7 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import Svg, { Defs, LinearGradient, Path, Rect, Stop } from "react-native-svg";
+import Svg, { ClipPath, Defs, G, LinearGradient, Path, Rect, Stop } from "react-native-svg";
 
 function InviteIcon() {
   return (
@@ -204,6 +204,13 @@ function DropIcon() {
 
 type TabName = "home" | "calendar" | "add" | "chat" | "settings";
 
+interface PartnerData {
+  partner: { username: string; avatar?: string } | null;
+  my_nickname: string;
+  partner_nickname: string;
+  partner_mode_enabled: boolean;
+}
+
 interface SettingRowProps {
   iconName?: keyof typeof Feather.glyphMap;
   iconColor?: string;
@@ -299,6 +306,7 @@ export default function SettingsScreen() {
     cycle_length: number;
     luteal_phase_length: number;
   } | null>(null);
+  const [partnerData, setPartnerData] = useState<PartnerData | null>(null);
 
   useFocusEffect(
     useCallback(() => {
@@ -319,6 +327,27 @@ export default function SettingsScreen() {
       };
       loadCycleProfile();
     }, []),
+  );
+
+  useFocusEffect(
+    useCallback(() => {
+      const loadPartner = async () => {
+        const token = await AsyncStorage.getItem("accessToken");
+        if (!token) return;
+        try {
+          const { response, data } = await api.get("/partner", token);
+          if (response.ok) {
+            const d = data?.data ?? data;
+            setPartnerData(d?.partner ? d : null);
+          } else {
+            setPartnerData(null);
+          }
+        } catch {
+          setPartnerData(null);
+        }
+      };
+      loadPartner();
+    }, [])
   );
 
   useFocusEffect(
@@ -441,50 +470,177 @@ export default function SettingsScreen() {
         showsVerticalScrollIndicator={false}
       >
         {/* Profile Card */}
-        <SectionCard>
-          <Pressable
-            className="flex-row items-center justify-between p-6"
-            onPress={() => router.push("/(tabs)/my-profile" as any)}
-          >
-            <View className="flex-row items-center gap-3">
-              {user?.avatar_url ? (
-                <Image
-                  source={{ uri: user.avatar_url }}
-                  className="w-10 h-10 rounded-full"
-                  resizeMode="cover"
-                />
-              ) : (
-                <View className="w-10 h-10 rounded-full bg-[#FFE6EE] items-center justify-center">
-                  <Feather name="user" size={20} color="#FF82AD" />
+        {partnerData?.partner ? (
+          /* ── Partner mode card (Figma Frame 132) ── */
+          <View className="bg-[#FFE6EE] rounded-xl mb-4 p-3">
+            {/* Row 1: overlapping avatars + names + caret */}
+            <Pressable
+              className="flex-row items-center justify-between"
+              style={{ paddingVertical: 8 }}
+              onPress={() => router.push("/partner/settings" as any)}
+            >
+              <View className="flex-row items-center gap-3">
+                {/* Overlapping 40×40 avatar circles */}
+                <View style={{ width: 68, height: 40, flexDirection: "row" }}>
+                  {/* User avatar */}
+                  <View
+                    style={{
+                      width: 40, height: 40, borderRadius: 20,
+                      borderWidth: 1.5, borderColor: "#FFDFEA",
+                      overflow: "hidden", marginRight: -12, zIndex: 1,
+                      backgroundColor: "#FFE0EE",
+                    }}
+                  >
+                    {user?.avatar_url ? (
+                      <Image source={{ uri: user.avatar_url }} style={{ width: 40, height: 40 }} resizeMode="cover" />
+                    ) : (
+                      <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
+                        <Feather name="user" size={18} color="#FF82AD" />
+                      </View>
+                    )}
+                  </View>
+                  {/* Partner avatar */}
+                  <View
+                    style={{
+                      width: 40, height: 40, borderRadius: 20,
+                      borderWidth: 1.5, borderColor: "#FFDFEA",
+                      overflow: "hidden", zIndex: 0,
+                      backgroundColor: "#FFB3CD",
+                    }}
+                  >
+                    {partnerData.partner.avatar ? (
+                      <Image source={{ uri: partnerData.partner.avatar }} style={{ width: 40, height: 40 }} resizeMode="cover" />
+                    ) : (
+                      <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
+                        <Feather name="user" size={18} color="#FF4081" />
+                      </View>
+                    )}
+                  </View>
                 </View>
-              )}
-              <View className="gap-1">
-                <Text className="text-sm font-medium text-[#1E1E1E]">
-                  {user?.name ?? ""}
-                </Text>
-                <Text className="text-xs text-[#616161]">
-                  {user?.email ?? ""}
+
+                {/* Names + email */}
+                <View style={{ gap: 4 }}>
+                  <Text
+                    style={{ fontFamily: "Inter", fontWeight: "500", fontSize: 14, lineHeight: 17, color: "#1E1E1E" }}
+                    numberOfLines={1}
+                  >
+                    {`${user?.name ?? "You"} & ${partnerData.partner_nickname || partnerData.partner.username}`}
+                  </Text>
+                  <Text
+                    style={{ fontFamily: "Inter", fontWeight: "400", fontSize: 12, lineHeight: 15, color: "#616161" }}
+                    numberOfLines={1}
+                  >
+                    {user?.email ?? ""}
+                  </Text>
+                </View>
+              </View>
+              <Feather name="chevron-right" size={16} color="#666666" />
+            </Pressable>
+
+            {/* Divider */}
+            <View style={{ height: 0.5, backgroundColor: "#FFD6E4", marginHorizontal: -12, marginVertical: 8 }} />
+
+            {/* Bottom action rows */}
+            <View style={{ gap: 8 }}>
+              {/* Switch to my partner's cycle */}
+              <Pressable
+                className="flex-row items-center justify-between"
+                style={{ paddingVertical: 8 }}
+                onPress={() => router.push("/partner" as any)}
+              >
+                <View className="flex-row items-center gap-2">
+                  <Svg width={20} height={20} viewBox="0 0 20 20" fill="none">
+                    <Defs>
+                      <ClipPath id="partner_cycle_clip">
+                        <Rect width={20} height={20} fill="white" />
+                      </ClipPath>
+                    </Defs>
+                    <G clipPath="url(#partner_cycle_clip)">
+                      <Path
+                        d="M6.56274 9.37485C6.56274 8.69497 6.76435 8.03037 7.14207 7.46508C7.51978 6.89978 8.05665 6.45919 8.68477 6.19901C9.31289 5.93884 10.0041 5.87076 10.6709 6.0034C11.3377 6.13604 11.9502 6.46343 12.4309 6.94417C12.9117 7.42491 13.2391 8.03742 13.3717 8.70423C13.5043 9.37103 13.4363 10.0622 13.1761 10.6903C12.9159 11.3184 12.4753 11.8553 11.91 12.233C11.3447 12.6107 10.6801 12.8123 10.0002 12.8123C9.08856 12.8123 8.21422 12.4502 7.56956 11.8055C6.92491 11.1609 6.56274 10.2865 6.56274 9.37485ZM16.419 13.842C16.2798 13.7612 16.1152 13.7357 15.958 13.7706C15.8008 13.8055 15.6625 13.8982 15.5706 14.0303C15.4359 14.2159 15.292 14.3945 15.1393 14.5655C14.6846 13.9055 14.1068 13.3395 13.4377 12.8983C13.3807 12.8605 13.3128 12.8424 13.2445 12.8469C13.1761 12.8514 13.1112 12.8783 13.0596 12.9233C12.2106 13.658 11.1254 14.0623 10.0026 14.0623C8.87981 14.0623 7.79459 13.658 6.94556 12.9233C6.8936 12.8772 6.82776 12.8497 6.75844 12.8451C6.68911 12.8406 6.62025 12.8593 6.56274 12.8983C5.89348 13.3386 5.31547 13.9038 4.8604 14.5631C3.88435 13.4671 3.28622 12.0865 3.15415 10.6248H4.35728C4.45844 10.6264 4.55854 10.6041 4.64939 10.5595C4.74023 10.515 4.81924 10.4495 4.87993 10.3686C4.968 10.2482 5.0101 10.1003 4.99864 9.95157C4.98718 9.80285 4.9229 9.66313 4.81743 9.55766L2.94243 7.68266C2.88439 7.62455 2.81545 7.57845 2.73958 7.547C2.66371 7.51555 2.58238 7.49936 2.50024 7.49936C2.41811 7.49936 2.33678 7.51555 2.26091 7.547C2.18503 7.57845 2.1161 7.62455 2.05806 7.68266L0.183056 9.55766C0.0775837 9.66313 0.013311 9.80285 0.0018489 9.95157C-0.00961317 10.1003 0.0324913 10.2482 0.120556 10.3686C0.181249 10.4495 0.260254 10.515 0.351099 10.5595C0.441945 10.6041 0.542048 10.6264 0.643212 10.6248H1.89868C2.02651 12.2865 2.66221 13.8686 3.7196 15.1568C4.77699 16.4449 6.20491 17.3768 7.80979 17.826C9.41466 18.2751 11.1188 18.22 12.6913 17.6679C14.2638 17.1158 15.6284 16.0935 16.6002 14.7397C16.6504 14.6699 16.6856 14.5905 16.7037 14.5065C16.7217 14.4225 16.7223 14.3356 16.7053 14.2514C16.6883 14.1671 16.6541 14.0873 16.6048 14.0169C16.5555 13.9464 16.4923 13.8869 16.419 13.842ZM19.9526 9.76079C19.9053 9.64657 19.8252 9.54895 19.7225 9.48025C19.6197 9.41155 19.4989 9.37487 19.3752 9.37485H18.1018C17.974 7.71321 17.3383 6.13106 16.2809 4.84292C15.2235 3.55477 13.7956 2.62294 12.1907 2.17374C10.5858 1.72455 8.88164 1.77974 7.30919 2.33181C5.73673 2.88389 4.37208 3.90615 3.40024 5.26C3.30348 5.39468 3.26418 5.56229 3.29099 5.72594C3.31781 5.8896 3.40853 6.0359 3.54321 6.13266C3.67789 6.22942 3.8455 6.26872 4.00915 6.24191C4.1728 6.2151 4.31911 6.12437 4.41587 5.98969C5.23351 4.85129 6.37956 3.98998 7.70045 3.52121C9.02134 3.05243 10.454 2.99857 11.8063 3.36686C13.1587 3.73514 14.3661 4.50797 15.267 5.58177C16.1678 6.65558 16.7188 7.97905 16.8463 9.37485H15.6252C15.5016 9.37475 15.3806 9.41135 15.2778 9.48002C15.1749 9.54869 15.0947 9.64634 15.0474 9.7606C15 9.87487 14.9876 10.0006 15.0118 10.1219C15.0359 10.2432 15.0955 10.3546 15.1831 10.442L17.0581 12.317C17.1161 12.3751 17.185 12.4212 17.2609 12.4527C17.3368 12.4842 17.4181 12.5003 17.5002 12.5003C17.5824 12.5003 17.6637 12.4842 17.7396 12.4527C17.8155 12.4212 17.8844 12.3751 17.9424 12.317L19.8174 10.442C19.9048 10.3546 19.9643 10.2432 19.9883 10.1219C20.0124 10.0006 20 9.87498 19.9526 9.76079Z"
+                        fill="#FF4081"
+                      />
+                    </G>
+                  </Svg>
+                  <Text style={{ fontFamily: "Inter", fontWeight: "400", fontSize: 14, lineHeight: 21, color: "#1E1E1E" }}>
+                    Switch to my partner{"'"}s cycle
+                  </Text>
+                </View>
+                <Feather name="chevron-right" size={16} color="#666666" />
+              </Pressable>
+
+              {/* Partner mode */}
+              <Pressable
+                className="flex-row items-center justify-between"
+                style={{ paddingVertical: 8 }}
+                onPress={() => router.push("/partner" as any)}
+              >
+                <View className="flex-row items-center gap-2">
+                  <Svg width={20} height={20} viewBox="0 0 16 16" fill="none">
+                    <Path
+                      d="M10.2786 12.2264C10.3278 12.3019 10.3557 12.3892 10.3594 12.4792C10.3631 12.5692 10.3423 12.6585 10.2995 12.7377C10.2566 12.8169 10.1931 12.883 10.1157 12.9291C10.0383 12.9752 9.94993 12.9996 9.85986 12.9996H0.638611C0.548546 12.9996 0.460156 12.9752 0.38278 12.9291C0.305403 12.883 0.241914 12.8169 0.19902 12.7377C0.156125 12.6585 0.135418 12.5692 0.139087 12.4792C0.142755 12.3892 0.170663 12.3019 0.219861 12.2264C0.923677 11.1431 1.95892 10.3163 3.17111 9.86957C2.50098 9.42344 1.99222 8.77349 1.72005 8.01585C1.44788 7.25821 1.42675 6.43309 1.65979 5.66251C1.89284 4.89193 2.36768 4.2168 3.01409 3.73696C3.66051 3.25712 4.44419 2.99805 5.24924 2.99805C6.05428 2.99805 6.83796 3.25712 7.48438 3.73696C8.1308 4.2168 8.60564 4.89193 8.83868 5.66251C9.07172 6.43309 9.0506 7.25821 8.77843 8.01585C8.50625 8.77349 7.99749 9.42344 7.32736 9.86957C8.53955 10.3163 9.57479 11.1431 10.2786 12.2264Z"
+                      fill="#FFB4CD"
+                    />
+                    <Path
+                      d="M15.773 12.2171C15.069 11.1383 14.0361 10.3151 12.8274 9.86957C13.6185 9.33667 14.1768 8.52232 14.3886 7.59228C14.6005 6.66225 14.45 5.68643 13.9677 4.86346C13.4855 4.04049 12.7078 3.43222 11.7928 3.16246C10.8779 2.89271 9.89458 2.98174 9.04299 3.41144C9.01042 3.42826 8.98195 3.45202 8.9596 3.48106C8.93724 3.5101 8.92154 3.5437 8.91361 3.57948C8.90568 3.61526 8.90571 3.65234 8.9137 3.68811C8.92169 3.72387 8.93745 3.75744 8.95986 3.78644C9.59309 4.57632 9.95675 5.54822 9.99758 6.55976C10.0384 7.57131 9.75425 8.56935 9.18674 9.40769C9.15005 9.46248 9.1365 9.52954 9.14903 9.59427C9.16155 9.659 9.19914 9.71617 9.25361 9.75332C9.99356 10.2697 10.627 10.924 11.1192 11.6802C11.3178 11.9842 11.3989 12.3501 11.3474 12.7096C11.3416 12.7453 11.3436 12.7819 11.3533 12.8168C11.3631 12.8517 11.3803 12.884 11.4038 12.9116C11.4273 12.9392 11.4565 12.9614 11.4893 12.9765C11.5222 12.9917 11.558 12.9996 11.5942 12.9996H15.363C15.4731 12.9996 15.5801 12.9633 15.6675 12.8963C15.7548 12.8293 15.8176 12.7353 15.8461 12.6289C15.8635 12.559 15.866 12.4862 15.8534 12.4152C15.8408 12.3443 15.8134 12.2768 15.773 12.2171Z"
+                      fill="#FFB4CD"
+                    />
+                  </Svg>
+                  <Text style={{ fontFamily: "Inter", fontWeight: "400", fontSize: 14, lineHeight: 21, color: "#1E1E1E" }}>
+                    Partner mode
+                  </Text>
+                </View>
+                <Feather name="chevron-right" size={16} color="#666666" />
+              </Pressable>
+            </View>
+          </View>
+        ) : (
+          /* ── Regular profile card (no partner yet) ── */
+          <SectionCard>
+            <Pressable
+              className="flex-row items-center justify-between p-6"
+              onPress={() => router.push("/(tabs)/my-profile" as any)}
+            >
+              <View className="flex-row items-center gap-3">
+                {user?.avatar_url ? (
+                  <Image
+                    source={{ uri: user.avatar_url }}
+                    className="w-10 h-10 rounded-full"
+                    resizeMode="cover"
+                  />
+                ) : (
+                  <View className="w-10 h-10 rounded-full bg-[#FFE6EE] items-center justify-center">
+                    <Feather name="user" size={20} color="#FF82AD" />
+                  </View>
+                )}
+                <View className="gap-1">
+                  <Text className="text-sm font-medium text-[#1E1E1E]">
+                    {user?.name ?? ""}
+                  </Text>
+                  <Text className="text-xs text-[#616161]">
+                    {user?.email ?? ""}
+                  </Text>
+                </View>
+              </View>
+              <Feather name="chevron-right" size={16} color="#666666" />
+            </Pressable>
+
+            <View className="h-px bg-[#FFD6E8] mx-3" />
+
+            <Pressable
+              className="flex-row items-center justify-between px-3 py-6"
+              onPress={() => router.push("/(tabs)/invite-partner" as any)}
+            >
+              <View className="flex-row items-center gap-1">
+                <InviteIcon />
+                <Text className="text-sm text-[#1E1E1E] leading-[21px]">
+                  Invite my partner/friend
                 </Text>
               </View>
-            </View>
-            <Feather name="chevron-right" size={16} color="#666666" />
-          </Pressable>
-
-          <View className="h-px bg-[#FFD6E8] mx-3" />
-
-          <Pressable
-            className="flex-row items-center justify-between px-3 py-6"
-            onPress={() => router.push("/(tabs)/invite-partner" as any)}
-          >
-            <View className="flex-row items-center gap-1">
-              <InviteIcon />
-              <Text className="text-sm text-[#1E1E1E] leading-[21px]">
-                Invite my partner/friend
-              </Text>
-            </View>
-            <Feather name="chevron-right" size={16} color="#666666" />
-          </Pressable>
-        </SectionCard>
+              <Feather name="chevron-right" size={16} color="#666666" />
+            </Pressable>
+          </SectionCard>
+        )}
 
         {/* Period Settings Card */}
         <SectionCard>

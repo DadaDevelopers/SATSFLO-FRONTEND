@@ -11,7 +11,7 @@ export default function HowToUseScreen() {
 
   const handleNext = () => {
     if (selected === 'cycle') router.push('/onboarding');
-    else if (selected === 'partner') router.push('/partner-welcome');
+    else if (selected === 'partner') router.push('/(auth)/signup?flow=partner' as any);
   };
 
   return (
