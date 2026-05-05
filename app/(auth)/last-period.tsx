@@ -7,7 +7,7 @@ import { api } from "@/lib/api";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useState } from "react";
-import { ScrollView, useWindowDimensions, View } from "react-native";
+import { Alert, ScrollView, Text, useWindowDimensions, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const MAX_CONTENT_WIDTH = 480;
@@ -18,44 +18,83 @@ export default function LastPeriodScreen() {
   const { width: screenWidth } = useWindowDimensions();
   const isDesktop = screenWidth > MAX_CONTENT_WIDTH;
 
-  // Default to a date like October 12 (as shown in the design)
   const { cycleLength, periodLength, isEdit } = useLocalSearchParams<{
     cycleLength: string;
     periodLength: string;
     isEdit: string;
   }>();
   const editing = isEdit === "true";
+
   const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
   const [loading, setLoading] = useState(false);
+  const [statusMessage, setStatusMessage] = useState<{
+    text: string;
+    type: "success" | "error";
+  } | null>(null);
 
   const handleFinish = async () => {
-    if (!selectedDate) return;
+    // Validation
+    if (!selectedDate) {
+      setStatusMessage({
+        text: "Please select your last period start date.",
+        type: "error",
+      });
+      return;
+    }
+
     setLoading(true);
-    const dateStr = selectedDate.toISOString().split("T")[0];
+    setStatusMessage(null);
+
+    const y = selectedDate.getFullYear();
+    const m = String(selectedDate.getMonth() + 1).padStart(2, "0");
+    const d = String(selectedDate.getDate()).padStart(2, "0");
+    const dateStr = `${y}-${m}-${d}`;
+
     try {
       const token = await AsyncStorage.getItem("accessToken");
-      if (token) {
-        if (editing) {
-          await api.put(
-            "/cycle-profile",
-            { last_period_start: dateStr },
-            token
-          );
-        } else {
-          await api.post(
-            "/cycle-profile",
-            {
-              last_period_start: dateStr,
-              cycle_length: Number(cycleLength) || 28,
-              period_length: Number(periodLength) || 5,
-              luteal_phase_length: 14,
-              ignore_irregular_cycle: false,
-            },
-            token
-          );
-        }
+      if (!token) {
+        Alert.alert("Error", "Not authenticated. Please log in again.");
+        setLoading(false);
+        return;
       }
-    } catch {}
+      if (editing) {
+        await api.put("/cycles/start", { date: dateStr }, token);
+      }
+      let response, data;
+      if (editing) {
+        ({ response, data } = await api.put(
+          "/cycle-profile",
+          { last_period_start: dateStr },
+          token,
+        ));
+      } else {
+        ({ response, data } = await api.post(
+          "/cycle-profile",
+          {
+            last_period_start: dateStr,
+            cycle_length: Number(cycleLength) || 28,
+            period_length: Number(periodLength) || 5,
+            luteal_phase_length: 14,
+            ignore_irregular_cycle: false,
+          },
+          token,
+        ));
+      }
+      if (!response.ok) {
+        const msg =
+          data?.message ?? data?.error ?? `Server error (${response.status})`;
+        Alert.alert("Save failed", msg);
+        setLoading(false);
+        return;
+      }
+    } catch (err: any) {
+      Alert.alert(
+        "Network error",
+        err?.message ?? "Could not reach the server.",
+      );
+      setLoading(false);
+      return;
+    }
     setLoading(false);
     if (editing) {
       router.back();
@@ -104,7 +143,7 @@ export default function LastPeriodScreen() {
             showsVerticalScrollIndicator={false}
             bounces={false}
           >
-            {/* Back Button - positioned at top */}
+            {/* Back Button */}
             <View className="pt-4 pb-4">
               <BackButton />
             </View>
@@ -117,7 +156,7 @@ export default function LastPeriodScreen() {
               className="mb-10"
             />
 
-            {/* Calendar Section - takes full width */}
+            {/* Calendar Section */}
             <View className="w-full">
               <CalendarPicker
                 selectedDate={selectedDate}
@@ -126,12 +165,28 @@ export default function LastPeriodScreen() {
               />
             </View>
 
-            {/* Flexible spacer */}
             <View className="flex-1 min-h-4" />
           </ScrollView>
 
-          {/* Bottom Section - Fixed at bottom */}
+          {/* Bottom Section */}
           <View className="px-5 pb-3 pt-2">
+            {/* Status message */}
+            {statusMessage && (
+              <View
+                className="w-full rounded-xl px-4 py-3 mb-3"
+                style={{
+                  backgroundColor:
+                    statusMessage.type === "success"
+                      ? "rgba(255,255,255,0.25)"
+                      : "rgba(0,0,0,0.25)",
+                }}
+              >
+                <Text className="text-sm text-center font-medium text-white">
+                  {statusMessage.text}
+                </Text>
+              </View>
+            )}
+
             <View className="items-center">
               <PrimaryButton
                 title={loading ? "Saving..." : editing ? "Save" : "Finish"}

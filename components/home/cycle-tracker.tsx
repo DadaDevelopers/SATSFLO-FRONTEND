@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { View, StyleSheet } from "react-native";
+import { View } from "react-native";
 import Svg, {
   Circle,
   Path,
@@ -19,8 +19,6 @@ import Animated, {
 } from "react-native-reanimated";
 import Colors from "@/constants/colors";
 
-const TOTAL_DAYS = 31;
-const ANGLE_PER_DAY = 360 / TOTAL_DAYS;
 const GAP_ANGLE = 3;
 
 function degToRad(deg: number): number {
@@ -35,12 +33,12 @@ function polarToXY(cx: number, cy: number, r: number, angleDeg: number) {
   };
 }
 
-function dayStartAngle(day: number): number {
-  return -90 + (day - 1) * ANGLE_PER_DAY;
+function dayStartAngle(day: number, totalDays: number): number {
+  return -90 + (day - 1) * (360 / totalDays);
 }
 
-function dayMidAngle(day: number): number {
-  return -90 + (day - 0.5) * ANGLE_PER_DAY;
+function dayMidAngle(day: number, totalDays: number): number {
+  return -90 + (day - 0.5) * (360 / totalDays);
 }
 
 function createArc(
@@ -86,7 +84,7 @@ function CurrentDayPulse({ x, y, scale }: { x: number; y: number; scale: number 
       -1,
       false
     );
-  }, []);
+  }, [scaleAnim, opacity]);
 
   const pulseStyle = useAnimatedStyle(() => ({
     transform: [{ scale: scaleAnim.value }],
@@ -114,10 +112,12 @@ function CurrentDayPulse({ x, y, scale }: { x: number; y: number; scale: number 
 export interface CycleTrackerProps {
   currentDay: number;
   cycleLength: number;
+  periodLength: number;
+  cycleStartDate?: Date;
   size?: number;
 }
 
-export function CycleTracker({ currentDay, size = 320 }: CycleTrackerProps) {
+export function CycleTracker({ currentDay, cycleLength = 28, periodLength = 5, cycleStartDate, size = 320 }: CycleTrackerProps) {
   const scale = size / 320;
   const CX = size / 2;
   const CY = size / 2;
@@ -131,24 +131,42 @@ export function CycleTracker({ currentDay, size = 320 }: CycleTrackerProps) {
   const DIVIDER_WIDTH = 3.5 * scale;
   const INNER_CIRCLE_RADIUS = PATH_RADIUS - RING_WIDTH / 2 - 12 * scale;
 
+  // Dynamic phase boundaries based on user's cycle/period data
+  const menstrualEnd = periodLength;                          // e.g. day 1-5
+  const ovulationStart = Math.round(cycleLength / 2) - 1;    // e.g. day 13
+  const ovulationEnd = ovulationStart + 2;                   // e.g. day 15
+  const lutealStart = ovulationEnd + 1;                      // e.g. day 16
+  // Divider sits between follicular+ovulation half and luteal half
+  const dividerDay = lutealStart;
+
+  // If cycleStartDate is provided, show real calendar day-of-month numbers
+  const getLabel = (cycleDay: number): number => {
+    if (!cycleStartDate) return cycleDay;
+    const d = new Date(cycleStartDate);
+    d.setDate(cycleStartDate.getDate() + (cycleDay - 1));
+    return d.getDate();
+  };
+
   const dayPositions = [];
-  for (let day = 1; day <= TOTAL_DAYS; day++) {
-    const angle = dayMidAngle(day);
+  for (let day = 1; day <= cycleLength; day++) {
+    const angle = dayMidAngle(day, cycleLength);
     const pos = polarToXY(CX, CY, PATH_RADIUS, angle);
-    dayPositions.push({ day, x: pos.x, y: pos.y });
+    dayPositions.push({ day, label: getLabel(day), x: pos.x, y: pos.y });
   }
 
   const currentPos = dayPositions.find((d) => d.day === currentDay);
 
-  const follicularBaseArc = createArc(CX, CY, PATH_RADIUS, dayStartAngle(1) + CAP_ANGLE, dayStartAngle(17) - CAP_ANGLE);
-  const menstrualArc = createArc(CX, CY, PATH_RADIUS, dayStartAngle(1) + CAP_ANGLE, dayStartAngle(6) - CAP_ANGLE);
-  const ovulationArc = createArc(CX, CY, PATH_RADIUS, dayStartAngle(10) + CAP_ANGLE, dayStartAngle(17) - CAP_ANGLE);
+  // Phase arcs — follicular base covers days 1 to ovulationEnd (pink background)
+  const follicularBaseArc = createArc(CX, CY, PATH_RADIUS, dayStartAngle(1, cycleLength) + CAP_ANGLE, dayStartAngle(dividerDay, cycleLength) - CAP_ANGLE);
+  const menstrualArc = createArc(CX, CY, PATH_RADIUS, dayStartAngle(1, cycleLength) + CAP_ANGLE, dayStartAngle(menstrualEnd + 1, cycleLength) - CAP_ANGLE);
+  const ovulationArc = createArc(CX, CY, PATH_RADIUS, dayStartAngle(ovulationStart, cycleLength) + CAP_ANGLE, dayStartAngle(dividerDay, cycleLength) - CAP_ANGLE);
 
-  const folStart = dayStartAngle(1) + GAP_ANGLE / 2;
-  const folEnd = dayStartAngle(17) - GAP_ANGLE / 2;
+  // Divider gradient lines between the two halves
+  const folStart = dayStartAngle(1, cycleLength) + GAP_ANGLE / 2;
+  const folEnd = dayStartAngle(dividerDay, cycleLength) - GAP_ANGLE / 2;
   const folMid = (folStart + folEnd) / 2;
-  const lutStart = dayStartAngle(17) + GAP_ANGLE / 2;
-  const lutEnd = dayStartAngle(1) + 360 - GAP_ANGLE / 2;
+  const lutStart = dayStartAngle(dividerDay, cycleLength) + GAP_ANGLE / 2;
+  const lutEnd = dayStartAngle(1, cycleLength) + 360 - GAP_ANGLE / 2;
   const lutMid = (lutStart + lutEnd) / 2;
 
   const dividerSegments = [
@@ -221,8 +239,11 @@ export function CycleTracker({ currentDay, size = 320 }: CycleTrackerProps) {
         ))}
 
         {/* Day numbers */}
-        {dayPositions.map(({ day, x, y }) => {
+        {dayPositions.map(({ day, label, x, y }) => {
           if (day === currentDay) return null;
+          const inMenstrual = day >= 1 && day <= menstrualEnd;
+          const inOvulation = day >= ovulationStart && day <= ovulationEnd;
+          const textColor = (inMenstrual || inOvulation) ? "#FFFFFF" : Colors.textMuted;
           return (
             <SvgText
               key={day}
@@ -231,10 +252,10 @@ export function CycleTracker({ currentDay, size = 320 }: CycleTrackerProps) {
               fontSize={11 * scale}
               fontFamily="Manrope_500Medium"
               fontWeight={getFontWeight(day, currentDay)}
-              fill={Colors.textMuted}
+              fill={textColor}
               textAnchor="middle"
             >
-              {day}
+              {label}
             </SvgText>
           );
         })}
@@ -257,7 +278,7 @@ export function CycleTracker({ currentDay, size = 320 }: CycleTrackerProps) {
               fill="#FFFFFF"
               textAnchor="middle"
             >
-              {currentDay}
+              {currentPos.label}
             </SvgText>
           </G>
         )}

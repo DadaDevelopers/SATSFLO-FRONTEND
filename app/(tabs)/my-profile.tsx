@@ -1,6 +1,7 @@
 import { api } from "@/lib/api";
 import { Feather } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import DateTimePicker, { DateTimePickerEvent } from "@react-native-community/datetimepicker";
 import * as ImagePicker from "expo-image-picker";
 import { router } from "expo-router";
 import React, { useEffect, useState } from "react";
@@ -56,6 +57,8 @@ export default function MyProfileScreen() {
   const [selectedCountry, setSelectedCountry] = useState(countries[0]);
   const [phone, setPhone] = useState("");
   const [dateOfBirth, setDateOfBirth] = useState("");
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [datePickerValue, setDatePickerValue] = useState(new Date());
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -80,6 +83,7 @@ export default function MyProfileScreen() {
           setFullName(profile.name ?? "");
           setEmail(profile.email ?? "");
           setPhone(profile.phone ?? "");
+          if (profile.avatar_url) setProfileImage(profile.avatar_url);
           if (profile.date_of_birth) {
             const parts = profile.date_of_birth.split("T")[0].split("-");
             if (parts.length === 3)
@@ -146,6 +150,27 @@ export default function MyProfileScreen() {
     setModalVisible(false);
   };
 
+  const uploadAvatar = async (base64: string) => {
+    const token = await AsyncStorage.getItem("accessToken");
+    if (!token) return;
+    try {
+      const { response, data } = await api.post(
+        "/users/profile/avatar",
+        { avatar: `data:image/jpeg;base64,${base64}` },
+        token
+      );
+      if (response.ok) {
+        const url = data?.data?.avatar_url ?? data?.avatar_url;
+        if (url) {
+          setProfileImage(url);
+          const userJson = await AsyncStorage.getItem("user");
+          const stored = userJson ? JSON.parse(userJson) : {};
+          await AsyncStorage.setItem("user", JSON.stringify({ ...stored, avatar_url: url }));
+        }
+      }
+    } catch {}
+  };
+
   const pickFromGallery = async () => {
     setAvatarModalVisible(false);
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -153,8 +178,12 @@ export default function MyProfileScreen() {
       allowsEditing: true,
       aspect: [1, 1],
       quality: 0.8,
+      base64: true,
     });
-    if (!result.canceled) setProfileImage(result.assets[0].uri);
+    if (!result.canceled && result.assets[0]) {
+      setProfileImage(result.assets[0].uri);
+      if (result.assets[0].base64) await uploadAvatar(result.assets[0].base64);
+    }
   };
 
   const takePhoto = async () => {
@@ -163,8 +192,12 @@ export default function MyProfileScreen() {
       allowsEditing: true,
       aspect: [1, 1],
       quality: 0.8,
+      base64: true,
     });
-    if (!result.canceled) setProfileImage(result.assets[0].uri);
+    if (!result.canceled && result.assets[0]) {
+      setProfileImage(result.assets[0].uri);
+      if (result.assets[0].base64) await uploadAvatar(result.assets[0].base64);
+    }
   };
 
   return (
@@ -201,14 +234,25 @@ export default function MyProfileScreen() {
           {/* AVATAR */}
           <View className="items-center mt-10 mb-10">
             <View style={{ width: 84, height: 84 }}>
-              <Image
-                source={
-                  profileImage
-                    ? { uri: profileImage }
-                    : require("@/assets/images/zuri.png")
-                }
-                style={{ width: 80, height: 80, borderRadius: 2000 }}
-              />
+              {profileImage ? (
+                <Image
+                  source={{ uri: profileImage }}
+                  style={{ width: 80, height: 80, borderRadius: 2000 }}
+                />
+              ) : (
+                <View
+                  style={{
+                    width: 80,
+                    height: 80,
+                    borderRadius: 2000,
+                    backgroundColor: "#FFE6EE",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <Feather name="user" size={36} color="#FF82AD" />
+                </View>
+              )}
               <TouchableOpacity
                 activeOpacity={0.8}
                 onPress={() => setAvatarModalVisible(true)}
@@ -287,9 +331,33 @@ export default function MyProfileScreen() {
                   onChangeText={setDateOfBirth}
                   placeholder="DD-MM-YYYY"
                   keyboardType="numeric"
+                  style={{ flex: 1 }}
                 />
-                <CalendarIcon />
+                <TouchableOpacity onPress={() => setShowDatePicker(true)}>
+                  <CalendarIcon />
+                </TouchableOpacity>
               </View>
+              {showDatePicker && (
+                <DateTimePicker
+                  value={datePickerValue}
+                  mode="date"
+                  display={Platform.OS === "ios" ? "spinner" : "default"}
+                  maximumDate={new Date()}
+                  onChange={(event: DateTimePickerEvent, date?: Date) => {
+                    setShowDatePicker(Platform.OS === "ios");
+                    if (event.type === "set" && date) {
+                      setDatePickerValue(date);
+                      const dd = String(date.getDate()).padStart(2, "0");
+                      const mm = String(date.getMonth() + 1).padStart(2, "0");
+                      const yyyy = date.getFullYear();
+                      setDateOfBirth(`${dd}-${mm}-${yyyy}`);
+                      if (Platform.OS === "ios") setShowDatePicker(false);
+                    } else {
+                      setShowDatePicker(false);
+                    }
+                  }}
+                />
+              )}
             </View>
           </View>
 

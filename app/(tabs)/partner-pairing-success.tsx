@@ -1,7 +1,7 @@
 import { Feather } from "@expo/vector-icons";
 import { router } from "expo-router";
 import React from "react";
-import { Image, Text, TouchableOpacity, View } from "react-native";
+import { Text, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Svg, { ClipPath, Defs, G, Path, Rect } from "react-native-svg";
 
@@ -69,11 +69,9 @@ function AvatarGroup() {
           overflow: "hidden",
         }}
       >
-        <Image
-          source={require("../../assets/images/hana.png")}
-          style={{ width: "100%", height: "100%" }}
-          resizeMode="cover"
-        />
+        <View style={{ width: "100%", height: "100%", backgroundColor: "#FFE6EE", alignItems: "center", justifyContent: "center" }}>
+          <Feather name="user" size={36} color="#FF82AD" />
+        </View>
       </View>
 
       {/* Right profile circle — x=76.5, y=52.5, w=83, h=83, rx=41.5 */}
@@ -90,11 +88,9 @@ function AvatarGroup() {
           overflow: "hidden",
         }}
       >
-        <Image
-          source={require("../../assets/images/janedoe.png")}
-          style={{ width: "100%", height: "100%" }}
-          resizeMode="cover"
-        />
+        <View style={{ width: "100%", height: "100%", backgroundColor: "#FFE6EE", alignItems: "center", justifyContent: "center" }}>
+          <Feather name="user" size={36} color="#FF82AD" />
+        </View>
       </View>
     </View>
   );

@@ -37,6 +37,27 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="all-entries"
+        options={{
+          title: "All Entries",
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="all-entries-journal"
+        options={{
+          title: "All Entries",
+          href: null, // Accessed via journal screen View all link
+        }}
+      />
+      <Tabs.Screen
+        name="view-entry"
+        options={{
+          title: "View Entry",
+          href: null, // Accessed via journal / all-entries entry card
+        }}
+      />
+      <Tabs.Screen
         name="gift-token"
         options={{
           title: "Gift Token",
@@ -47,13 +68,6 @@ export default function TabLayout() {
         name="gift-token-wallet"
         options={{
           title: "Gift Token Wallet",
-          href: null,
-        }}
-      />
-      <Tabs.Screen
-        name="send-gift-token"
-        options={{
-          title: "Send Gift Token",
           href: null,
         }}
       />

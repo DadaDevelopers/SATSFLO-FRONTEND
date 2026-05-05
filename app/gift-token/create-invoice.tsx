@@ -1,15 +1,19 @@
+import { api } from "@/lib/api";
 import * as Clipboard from "expo-clipboard";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import React, { useEffect, useState } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import React, { useEffect, useRef, useState } from "react";
 import {
+  Alert,
   StatusBar,
   Text,
   TouchableOpacity,
   useWindowDimensions,
   View,
 } from "react-native";
+import QRCode from "react-native-qrcode-svg";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import Svg, { Path, Rect } from "react-native-svg";
+import Svg, { Path } from "react-native-svg";
 
 const MAX_CONTENT_WIDTH = 480;
 
@@ -27,14 +31,10 @@ const BackIcon = () => (
 );
 
 const CopyIcon = () => (
-  <Svg width={20} height={20} viewBox="0 0 24 24">
+  <Svg width={20} height={20} viewBox="0 0 20 20" fill="none">
     <Path
-      d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2"
-      stroke="#FF4081"
-      strokeWidth={1.8}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      fill="none"
+      d="M16.8742 2.5H6.87475C6.70899 2.5 6.55003 2.56584 6.43283 2.68305C6.31563 2.80025 6.24978 2.95921 6.24978 3.12496V6.24978H3.12496C2.95921 6.24978 2.80025 6.31563 2.68305 6.43283C2.56584 6.55003 2.5 6.70899 2.5 6.87475V16.8742C2.5 17.0399 2.56584 17.1989 2.68305 17.3161C2.80025 17.4333 2.95921 17.4991 3.12496 17.4991H13.1244C13.2901 17.4991 13.4491 17.4333 13.5663 17.3161C13.6835 17.1989 13.7493 17.0399 13.7493 16.8742V13.7493H16.8742C17.0399 13.7493 17.1989 13.6835 17.3161 13.5663C17.4333 13.4491 17.4991 13.2901 17.4991 13.1244V3.12496C17.4991 2.95921 17.4333 2.80025 17.3161 2.68305C17.1989 2.56584 17.0399 2.5 16.8742 2.5ZM12.4994 16.2492H3.74993V7.49971H12.4994V16.2492ZM16.2492 12.4994H13.7493V6.87475C13.7493 6.70899 13.6835 6.55003 13.5663 6.43283C13.4491 6.31563 13.2901 6.24978 13.1244 6.24978H7.49971V3.74993H16.2492V12.4994Z"
+      fill="#FF4081"
     />
   </Svg>
 );
@@ -51,52 +51,6 @@ const CheckIcon = () => (
     />
   </Svg>
 );
-
-const QRPlaceholder = ({ value }: { value: string }) => {
-  const size = 200;
-  const cell = size / 21;
-  const pattern = [
-    [1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 0, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1],
-    [1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1],
-    [1, 0, 1, 1, 1, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 1, 1, 1, 0, 1],
-    [1, 0, 1, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 0, 1],
-    [1, 0, 1, 1, 1, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 1, 1, 1, 0, 1],
-    [1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1],
-    [1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1],
-    [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [1, 0, 1, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 0],
-    [0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 1],
-    [1, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 1],
-    [0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0],
-    [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1],
-    [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0],
-    [1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0],
-    [1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1],
-    [1, 0, 1, 1, 1, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 1, 1, 1, 0, 1],
-    [1, 0, 1, 1, 1, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0],
-    [1, 0, 1, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 1, 0, 1, 0, 1],
-    [1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0],
-    [1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 1],
-  ];
-  return (
-    <Svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
-      {pattern.map((row, r) =>
-        row.map((col, c) =>
-          col ? (
-            <Rect
-              key={`${r}-${c}`}
-              x={c * cell}
-              y={r * cell}
-              width={cell}
-              height={cell}
-              fill="#1E1E1E"
-            />
-          ) : null,
-        ),
-      )}
-    </Svg>
-  );
-};
 
 function formatTime(seconds: number) {
   const m = Math.floor(seconds / 60)
@@ -119,37 +73,87 @@ export default function CreateInvoiceScreen() {
     satsEquivalent?: string;
     note?: string;
     category?: string;
+    bolt11?: string;
+    payment_hash?: string;
+    expires_at?: string;
   }>();
 
   const {
     destination = "",
     amount = "10.00",
     currency = "USD",
-    satsEquivalent = "923546",
+    satsEquivalent = "0",
     note = "",
     category = "",
+    bolt11 = "",
+    payment_hash = "",
+    expires_at = "",
   } = params;
 
-  // Simulated invoice / wallet address string
-  const walletAddress = `inbc10760nyx...3sqq6s7mw`;
-  const invoiceString = `lnbc${satsEquivalent.replace(/,/g, "")}n1pjkx2ppsk5zqz0yfhszv9q`;
+  // Countdown from expires_at; fallback to 10 min if not provided
+  const initialSeconds = (() => {
+    if (expires_at) {
+      const secs = Math.floor((new Date(expires_at).getTime() - Date.now()) / 1000);
+      return Math.max(secs, 0);
+    }
+    return 600; // 10 min default
+  })();
 
   const [copied, setCopied] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(300); // 5 minutes countdown
+  const [timeLeft, setTimeLeft] = useState(initialSeconds);
+  const [confirming, setConfirming] = useState(false);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     if (timeLeft <= 0) return;
-    const timer = setInterval(() => setTimeLeft((t) => t - 1), 1000);
-    return () => clearInterval(timer);
-  }, [timeLeft]);
+    timerRef.current = setInterval(() => {
+      setTimeLeft((t) => {
+        if (t <= 1) {
+          clearInterval(timerRef.current!);
+          return 0;
+        }
+        return t - 1;
+      });
+    }, 1000);
+    return () => { if (timerRef.current) clearInterval(timerRef.current); };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleCopy = async () => {
-    await Clipboard.setStringAsync(invoiceString);
+    await Clipboard.setStringAsync(bolt11 || satsEquivalent);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const handleConfirm = () => {
+  const handleConfirm = async () => {
+    if (timeLeft === 0) {
+      Alert.alert("Invoice Expired", "This invoice has expired. Please go back and create a new one.");
+      return;
+    }
+    setConfirming(true);
+    try {
+      const token = await AsyncStorage.getItem("accessToken");
+      if (token && payment_hash) {
+        const { response } = await api.post(
+          "/payments/confirm",
+          { payment_hash },
+          token
+        );
+        if (!response.ok && response.status !== 409) {
+          // 409 = already confirmed (treat as success), 410 = expired
+          if (response.status === 410) {
+            Alert.alert("Invoice Expired", "This invoice has expired. Please go back and create a new one.");
+            setConfirming(false);
+            return;
+          }
+          // For other errors, still proceed (manual confirmation)
+        }
+      }
+    } catch {
+      // Network error — still proceed with manual confirmation flow
+    } finally {
+      setConfirming(false);
+    }
+
     router.push({
       pathname: "/gift-token/success",
       params: {
@@ -164,8 +168,19 @@ export default function CreateInvoiceScreen() {
     });
   };
 
-  // Format sats as BTC-like display
-  const btcAmount = `0.${satsEquivalent.replace(/,/g, "").padStart(9, "0")}BTC`;
+  // Display: bolt11 truncated as wallet address
+  const walletAddress = bolt11
+    ? `${bolt11.slice(0, 14)}...${bolt11.slice(-8)}`
+    : `lnbc${satsEquivalent}n1p...`;
+
+  // BTC display: sats / 100_000_000
+  const satsNum = parseInt(satsEquivalent.replace(/,/g, ""), 10) || 0;
+  const btcAmount = `${(satsNum / 100_000_000).toFixed(8)} BTC`;
+
+  // Show the original entered amount in its entered currency
+  const enteredDisplay = `${parseFloat(amount || "0").toFixed(2)}`;
+
+  const isExpired = timeLeft === 0;
 
   return (
     <View className="flex-1" style={{ backgroundColor: "#FF4081" }}>
@@ -236,9 +251,21 @@ export default function CreateInvoiceScreen() {
                   padding: 12,
                   alignItems: "center",
                   justifyContent: "center",
+                  opacity: isExpired ? 0.4 : 1,
                 }}
               >
-                <QRPlaceholder value={invoiceString} />
+                {bolt11 ? (
+                  <QRCode
+                    value={bolt11}
+                    size={200}
+                    color="#1E1E1E"
+                    backgroundColor="#FFFFFF"
+                  />
+                ) : (
+                  <View style={{ width: 200, height: 200, backgroundColor: "#F0F0F0", borderRadius: 8, alignItems: "center", justifyContent: "center" }}>
+                    <Text style={{ color: "#999", fontSize: 12 }}>No invoice</Text>
+                  </View>
+                )}
               </View>
 
               {/* Instruction text */}
@@ -304,11 +331,11 @@ export default function CreateInvoiceScreen() {
                       fontSize: 12,
                       fontWeight: "600",
                       lineHeight: 18,
-                      color: "#090909",
+                      color: isExpired ? "#FF6B6B" : "#090909",
                       textAlign: "right",
                     }}
                   >
-                    {formatTime(timeLeft)}
+                    {isExpired ? "Expired" : formatTime(timeLeft)}
                   </Text>
                 </View>
               </View>
@@ -351,7 +378,7 @@ export default function CreateInvoiceScreen() {
                       textAlign: "right",
                     }}
                   >
-                    USD equivalent
+                    {currency || "USD"} equivalent
                   </Text>
                   <Text
                     style={{
@@ -362,7 +389,7 @@ export default function CreateInvoiceScreen() {
                       textAlign: "right",
                     }}
                   >
-                    ${amount}
+                    {enteredDisplay}
                   </Text>
                 </View>
               </View>
@@ -376,15 +403,17 @@ export default function CreateInvoiceScreen() {
           <View className="items-center">
             <TouchableOpacity
               onPress={handleConfirm}
+              disabled={confirming}
               style={{
                 width: 250,
                 height: 50,
-                backgroundColor: "#FF82AD",
+                backgroundColor: isExpired ? "#FFAABB" : "#FF82AD",
                 borderWidth: 0.5,
                 borderColor: "#FF669A",
                 borderRadius: 1000,
                 alignItems: "center",
                 justifyContent: "center",
+                opacity: confirming ? 0.7 : 1,
               }}
             >
               <Text
@@ -396,7 +425,7 @@ export default function CreateInvoiceScreen() {
                   textAlign: "center",
                 }}
               >
-                I have sent the tip
+                {confirming ? "Confirming..." : "I have sent the tip"}
               </Text>
             </TouchableOpacity>
           </View>

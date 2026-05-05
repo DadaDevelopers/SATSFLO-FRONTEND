@@ -9,7 +9,10 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "associatedDomains": [
+        "applinks:satsflo.app"
+      ]
     },
     "android": {
       "adaptiveIcon": {
@@ -24,7 +27,24 @@
         "android.permission.CAMERA",
         "android.permission.CAMERA"
       ],
-      "package": "com.anonymous.SATSFLOFRONTEND"
+      "package": "com.anonymous.SATSFLOFRONTEND",
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [
+            {
+              "scheme": "https",
+              "host": "satsflo.app",
+              "pathPrefix": "/invite"
+            }
+          ],
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
+        }
+      ]
     },
     "web": {
       "output": "static",
@@ -44,7 +64,8 @@
           }
         }
       ],
-      "@react-native-community/datetimepicker"
+      "@react-native-community/datetimepicker",
+      "expo-audio"
     ],
     "experiments": {
       "typedRoutes": true,

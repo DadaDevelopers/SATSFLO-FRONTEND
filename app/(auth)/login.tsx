@@ -5,7 +5,7 @@ import { PrimaryButton } from "@/components/signup/primary-button";
 import { TitleSection } from "@/components/signup/title-section";
 import { api } from "@/lib/api";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
   KeyboardAvoidingView,
@@ -44,6 +44,8 @@ const MAX_CONTENT_WIDTH = 480;
 
 export default function LoginScreen() {
   const router = useRouter();
+  const { flow } = useLocalSearchParams<{ flow?: string }>();
+  const isPartnerFlow = flow === "partner";
   const insets = useSafeAreaInsets();
   const { width: screenWidth } = useWindowDimensions();
   const isDesktop = screenWidth > MAX_CONTENT_WIDTH;
@@ -75,7 +77,13 @@ export default function LoginScreen() {
           ["user", JSON.stringify(data.data.user)],
         ]);
         setStatusMessage({ text: "Login successful!", type: "success" });
-        setTimeout(() => router.replace("/(tabs)"), 800);
+        setTimeout(
+          () =>
+            isPartnerFlow
+              ? router.replace("/partner-welcome" as any)
+              : router.replace("/(tabs)"),
+          800
+        );
       } else {
         const message = data?.message || data?.error || "Failed to sign in.";
         setStatusMessage({ text: message, type: "error" });
@@ -95,7 +103,9 @@ export default function LoginScreen() {
   };
 
   const handleCreateAccount = () => {
-    router.push("/(auth)/signup");
+    router.push(
+      isPartnerFlow ? ("/(auth)/signup?flow=partner" as any) : "/(auth)/signup"
+    );
   };
 
   return (
@@ -145,7 +155,7 @@ export default function LoginScreen() {
             <View className="w-full pt-4 pb-8">
               {/* Back Button */}
               <TouchableOpacity
-                onPress={() => router.back()}
+                onPress={() => router.canGoBack() ? router.back() : router.replace('/how-to-use' as any)}
                 className="w-10 h-10 justify-center items-center -ml-2 mb-4"
                 hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
               >
