@@ -71,19 +71,30 @@ export default function LoginScreen() {
         password,
       });
       if (response.ok) {
+        const accessToken = data.data.accessToken;
         await AsyncStorage.multiSet([
-          ["accessToken", data.data.accessToken],
+          ["accessToken", accessToken],
           ["refreshToken", data.data.refreshToken],
           ["user", JSON.stringify(data.data.user)],
         ]);
         setStatusMessage({ text: "Login successful!", type: "success" });
-        setTimeout(
-          () =>
-            isPartnerFlow
-              ? router.replace("/partner-welcome" as any)
-              : router.replace("/(tabs)"),
-          800
-        );
+
+        // Check if user already has an active partner pairing
+        let isPaired = false;
+        try {
+          const { response: partnerRes, data: partnerData } = await api.get("/partner", accessToken);
+          isPaired = partnerRes.ok && !!partnerData?.data?.partner;
+        } catch {}
+
+        setTimeout(() => {
+          if (isPaired) {
+            router.replace("/partner" as any);
+          } else if (isPartnerFlow) {
+            router.replace("/partner-welcome" as any);
+          } else {
+            router.replace("/(tabs)");
+          }
+        }, 800);
       } else {
         const message = data?.message || data?.error || "Failed to sign in.";
         setStatusMessage({ text: message, type: "error" });
