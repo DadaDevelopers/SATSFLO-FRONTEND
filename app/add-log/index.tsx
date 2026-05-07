@@ -732,9 +732,7 @@ export default function AddLogScreen() {
         {/* Header */}
         <View className="flex-row items-center justify-between px-4 py-3">
           <TouchableOpacity
-            onPress={() =>
-              router.canGoBack() ? router.back() : router.replace("/(tabs)")
-            }
+            onPress={() => router.canGoBack() ? router.back() : router.replace("/(tabs)")}
             className="p-2"
           >
             <Text className="text-white text-2xl">×</Text>
