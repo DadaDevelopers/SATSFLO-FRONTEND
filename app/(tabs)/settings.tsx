@@ -648,7 +648,7 @@ export default function SettingsScreen() {
               <Pressable
                 className="flex-row items-center justify-between"
                 style={{ paddingVertical: 8 }}
-                onPress={() => router.push("/partner" as any)}
+                onPress={() => router.push("/partner/my-partner" as any)}
               >
                 <View className="flex-row items-center gap-2">
                   <Svg width={20} height={20} viewBox="0 0 16 16" fill="none">
