@@ -26,8 +26,18 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 type TabName = "home" | "calendar" | "add" | "chat" | "settings";
 
 const MONTHS = [
-  "January","February","March","April","May","June",
-  "July","August","September","October","November","December",
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
 ];
 
 function formatCurrentDate(date: Date): string {
@@ -37,10 +47,14 @@ function formatCurrentDate(date: Date): string {
 function getOrdinalSuffix(day: number): string {
   if (day > 3 && day < 21) return "th";
   switch (day % 10) {
-    case 1: return "st";
-    case 2: return "nd";
-    case 3: return "rd";
-    default: return "th";
+    case 1:
+      return "st";
+    case 2:
+      return "nd";
+    case 3:
+      return "rd";
+    default:
+      return "th";
   }
 }
 
@@ -65,55 +79,65 @@ export default function HomeScreen() {
     cycleStartDate: today,
   });
 
-  useFocusEffect(useCallback(() => {
-    const loadCycleData = async () => {
-      const token = await AsyncStorage.getItem("accessToken");
-      if (!token) return;
-      try {
-        // Load cycle-profile (source of truth for user settings), current cycle, and predictions in parallel
-        const [profileRes, currentRes, predictionsRes] = await Promise.all([
-          api.get("/cycle-profile", token),
-          api.get("/cycles/current", token),
-          api.get("/cycles/predictions", token),
-        ]);
+  useFocusEffect(
+    useCallback(() => {
+      const loadCycleData = async () => {
+        const token = await AsyncStorage.getItem("accessToken");
+        if (!token) return;
+        try {
+          // Load cycle-profile (source of truth for user settings), current cycle, and predictions in parallel
+          const [profileRes, currentRes, predictionsRes] = await Promise.all([
+            api.get("/cycle-profile", token),
+            api.get("/cycles/current", token),
+            api.get("/cycles/predictions", token),
+          ]);
 
-        const profile = profileRes.response.ok ? (profileRes.data?.data ?? profileRes.data) : null;
-        const cycleD = currentRes.response.ok ? (currentRes.data?.data ?? null) : null;
-        const predD = predictionsRes.response.ok ? (predictionsRes.data?.data ?? null) : null;
+          const profile = profileRes.response.ok
+            ? (profileRes.data?.data ?? profileRes.data)
+            : null;
+          const cycleD = currentRes.response.ok
+            ? (currentRes.data?.data ?? null)
+            : null;
+          const predD = predictionsRes.response.ok
+            ? (predictionsRes.data?.data ?? null)
+            : null;
 
-        // cycle_length and period_length always come from the user's saved profile
-        const cycleLength = profile?.cycle_length ?? cycleD?.cycle_length ?? 28;
-        const periodLength = profile?.period_length ?? cycleD?.period_length ?? 5;
+          // cycle_length and period_length always come from the user's saved profile
+          const cycleLength =
+            profile?.cycle_length ?? cycleD?.cycle_length ?? 28;
+          const periodLength =
+            profile?.period_length ?? cycleD?.period_length ?? 5;
 
-        // Days until next period — predictions first, then current cycle
-        const daysUntilPeriod =
-          predD?.days_until_next_period ??
-          predD?.next_period?.days_until ??
-          cycleD?.days_until_next_period ??
-          cycleD?.days_until_period ??
-          profile?.days_until_period ??
-          0;
+          // Days until next period — predictions first, then current cycle
+          const daysUntilPeriod =
+            predD?.days_until_next_period ??
+            predD?.next_period?.days_until ??
+            cycleD?.days_until_next_period ??
+            cycleD?.days_until_period ??
+            profile?.days_until_period ??
+            0;
 
-        const buildCycleStart = (currentDay: number): Date => {
-          const d = new Date(today);
-          d.setDate(today.getDate() - (currentDay - 1));
-          return d;
-        };
+          const buildCycleStart = (currentDay: number): Date => {
+            const d = new Date(today);
+            d.setDate(today.getDate() - (currentDay - 1));
+            return d;
+          };
 
-        const cd = cycleD?.current_day ?? profile?.current_day ?? 1;
-        setCycleData({
-          currentDay: cd,
-          cycleLength,
-          periodLength,
-          ovulationDay: cycleD?.ovulation_day ?? Math.round(cycleLength / 2),
-          daysUntilPeriod,
-          currentDate: formatCurrentDate(today),
-          cycleStartDate: buildCycleStart(cd),
-        });
-      } catch {}
-    };
-    loadCycleData();
-  }, []));
+          const cd = cycleD?.current_day ?? profile?.current_day ?? 1;
+          setCycleData({
+            currentDay: cd,
+            cycleLength,
+            periodLength,
+            ovulationDay: cycleD?.ovulation_day ?? Math.round(cycleLength / 2),
+            daysUntilPeriod,
+            currentDate: formatCurrentDate(today),
+            cycleStartDate: buildCycleStart(cd),
+          });
+        } catch {}
+      };
+      loadCycleData();
+    }, []),
+  );
 
   const handleTabPress = (tab: TabName) => {
     setActiveTab(tab);
@@ -158,164 +182,242 @@ export default function HomeScreen() {
 
   return (
     <ResponsiveScreen>
-    <View
-      className="flex-1"
-      style={{ paddingTop: insets.top, backgroundColor: "#FF4081" }}
-    >
-      <StatusBar barStyle="light-content" backgroundColor="#FF4081" />
-
-      {/* Header */}
-      <HomeHeader onNotificationPress={handleNotificationPress} />
-
-      {/* Main Content */}
-      <ScrollView
+      <View
         className="flex-1"
-        contentContainerStyle={{
-          paddingHorizontal: 20,
-          paddingBottom: 20,
-        }}
-        showsVerticalScrollIndicator={false}
+        style={{ paddingTop: insets.top, backgroundColor: "#FF4081" }}
       >
-        {/* Cycle Tracker */}
-        <View style={{ width: '100%', alignItems: 'center', marginTop: 16 }}>
-        <View style={{ width: trackerSize, height: trackerSize }}>
-          <CycleTracker
-            currentDay={cycleData.currentDay}
-            cycleLength={cycleData.cycleLength}
-            periodLength={cycleData.periodLength}
-            cycleStartDate={cycleData.cycleStartDate}
-            size={trackerSize}
-          />
-          {/* Center overlay: date, countdown, edit button */}
+        <StatusBar barStyle="light-content" backgroundColor="#FF4081" />
+
+        {/* Header */}
+        <HomeHeader onNotificationPress={handleNotificationPress} />
+
+        {/* Email Verification Banner */}
+        {!emailVerified && !bannerDismissed && (
           <View
             style={{
-              position: "absolute",
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              alignItems: "center",
-              justifyContent: "center",
+              marginHorizontal: 16,
+              marginBottom: 8,
+              borderRadius: 12,
+              padding: 14,
+              backgroundColor: "#FF82AD",
             }}
           >
-            <Text style={{ fontFamily: "Inter", fontSize: 12, color: "#FAFAFA", marginBottom: 6 }}>
-              Today: {cycleData.currentDate}
+            <Text style={{ color: "#FFFFFF", fontWeight: "600", fontSize: 14 }}>
+              Please verify your email
             </Text>
             <Text
               style={{
-                fontFamily: "Poppins-SemiBold",
-                fontSize: 20,
-                color: "#FFFFFF",
-                textAlign: "center",
-                lineHeight: 30,
+                color: "rgba(255,255,255,0.85)",
+                fontSize: 12,
+                marginTop: 2,
               }}
             >
-              {cycleData.daysUntilPeriod} days until your{"\n"}next period
+              {userEmail
+                ? `Check your inbox (${userEmail}) for a verification link.`
+                : "Check your inbox for a verification link."}
             </Text>
+            <View style={{ flexDirection: "row", gap: 10, marginTop: 10 }}>
+              <TouchableOpacity
+                onPress={handleResendVerification}
+                disabled={resending}
+                style={{
+                  backgroundColor: "#FF82AD",
+                  borderWidth: 1,
+                  borderColor: "rgba(255,255,255,0.5)",
+                  borderRadius: 20,
+                  paddingHorizontal: 14,
+                  paddingVertical: 7,
+                }}
+                activeOpacity={0.7}
+              >
+                <Text
+                  style={{ color: "#FFFFFF", fontSize: 12, fontWeight: "500" }}
+                >
+                  {resending ? "Sending..." : "Resend email"}
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => setBannerDismissed(true)}
+                style={{
+                  backgroundColor: "#FF82AD",
+                  borderWidth: 1,
+                  borderColor: "rgba(255,255,255,0.5)",
+                  borderRadius: 20,
+                  paddingHorizontal: 14,
+                  paddingVertical: 7,
+                }}
+                activeOpacity={0.7}
+              >
+                <Text style={{ color: "rgba(255,255,255,0.7)", fontSize: 12 }}>
+                  Dismiss
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
+
+        {/* Main Content */}
+        <ScrollView
+          className="flex-1"
+          contentContainerStyle={{
+            paddingHorizontal: 20,
+            paddingBottom: 20,
+          }}
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Cycle Tracker */}
+          <View style={{ width: "100%", alignItems: "center", marginTop: 16 }}>
+            <View style={{ width: trackerSize, height: trackerSize }}>
+              <CycleTracker
+                currentDay={cycleData.currentDay}
+                cycleLength={cycleData.cycleLength}
+                periodLength={cycleData.periodLength}
+                cycleStartDate={cycleData.cycleStartDate}
+                size={trackerSize}
+              />
+              {/* Center overlay: date, countdown, edit button */}
+              <View
+                style={{
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <Text
+                  style={{
+                    fontFamily: "Inter",
+                    fontSize: 12,
+                    color: "#FAFAFA",
+                    marginBottom: 6,
+                  }}
+                >
+                  Today: {cycleData.currentDate}
+                </Text>
+                <Text
+                  style={{
+                    fontFamily: "Poppins-SemiBold",
+                    fontSize: 20,
+                    color: "#FFFFFF",
+                    textAlign: "center",
+                    lineHeight: 30,
+                  }}
+                >
+                  {cycleData.daysUntilPeriod} days until your{"\n"}next period
+                </Text>
+                <TouchableOpacity
+                  onPress={handleEditPeriod}
+                  activeOpacity={0.8}
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    paddingHorizontal: 12,
+                    paddingVertical: 10,
+                    borderRadius: 20,
+                    borderWidth: 1,
+                    borderColor: "#FAFAFA",
+                    gap: 5,
+                    marginTop: 12,
+                  }}
+                >
+                  <Feather name="edit-2" size={10} color="#FFFFFF" />
+                  <Text
+                    style={{
+                      fontFamily: "Inter",
+                      fontSize: 12,
+                      color: "#FFFFFF",
+                    }}
+                  >
+                    Edit Period
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+
+          {/* Phase Legend */}
+          <PhaseLegend
+            onMenstrualPhasePress={() => setShowMenstrualModal(true)}
+            onFollicularPhasePress={() => setShowFollicularModal(true)}
+            onLutealPhasePress={() => setShowLutealModal(true)}
+            onOvulationPhasePress={() => setShowOvulationModal(true)}
+          />
+
+          {/* Gift Token Button */}
+          <View className="items-center pt-20 pb-10">
             <TouchableOpacity
-              onPress={handleEditPeriod}
-              activeOpacity={0.8}
+              onPress={handleGiftTokenPress}
+              className="flex-row items-center justify-center px-4 py-3 rounded-full"
               style={{
-                flexDirection: "row",
-                alignItems: "center",
-                paddingHorizontal: 12,
-                paddingVertical: 10,
-                borderRadius: 20,
+                backgroundColor: "#FF4081",
                 borderWidth: 1,
-                borderColor: "#FAFAFA",
-                gap: 5,
-                marginTop: 12,
+                borderColor: "#FFB4CD",
               }}
+              activeOpacity={0.8}
             >
-              <Feather name="edit-2" size={10} color="#FFFFFF" />
-              <Text style={{ fontFamily: "Inter", fontSize: 12, color: "#FFFFFF" }}>
-                Edit Period
-              </Text>
+              <Feather name="gift" size={24} color="#FFFFFF" />
+              <Text className="text-white text-md ml-2">Gift Token</Text>
             </TouchableOpacity>
           </View>
-        </View>
-        </View>
 
-        {/* Phase Legend */}
-        <PhaseLegend
-          onMenstrualPhasePress={() => setShowMenstrualModal(true)}
-          onFollicularPhasePress={() => setShowFollicularModal(true)}
-          onLutealPhasePress={() => setShowLutealModal(true)}
-          onOvulationPhasePress={() => setShowOvulationModal(true)}
+          {/* Divider */}
+          <View className="h-[1.5px] bg-home-card-border my-6" />
+
+          {/* My SatsFlow Journal Section */}
+          <View className="items-center mt-10">
+            <Image
+              source={require("@/assets/images/Group 48.png")}
+              className="w-64 h-64"
+              resizeMode="contain"
+            />
+            <TouchableOpacity
+              onPress={handleJournalPress}
+              className="mt-4 px-5 py-4 rounded-full"
+              style={{
+                backgroundColor: "#FF4081",
+                borderWidth: 1,
+                borderColor: "#FFB4CD",
+              }}
+              activeOpacity={0.8}
+            >
+              <Text className="text-white text-sm">My SatsFlow Journal</Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Extra spacing for scroll */}
+          <View className="h-20" />
+        </ScrollView>
+
+        {/* Bottom Navigation */}
+        <BottomNavigation activeTab={activeTab} onTabPress={handleTabPress} />
+
+        {/* Menstrual Phase Modal */}
+        <MenstrualPhaseModal
+          visible={showMenstrualModal}
+          onClose={() => setShowMenstrualModal(false)}
         />
 
-        {/* Gift Token Button */}
-        <View className="items-center pt-20 pb-10">
-          <TouchableOpacity
-            onPress={handleGiftTokenPress}
-            className="flex-row items-center justify-center px-4 py-3 rounded-full"
-            style={{
-              backgroundColor: "#FF4081",
-              borderWidth: 1,
-              borderColor: "#FFB4CD",
-            }}
-            activeOpacity={0.8}
-          >
-            <Feather name="gift" size={24} color="#FFFFFF" />
-            <Text className="text-white text-md ml-2">Gift Token</Text>
-          </TouchableOpacity>
-        </View>
+        {/* Follicular Phase Modal */}
+        <FollicularPhaseModal
+          visible={showFollicularModal}
+          onClose={() => setShowFollicularModal(false)}
+        />
 
-        {/* Divider */}
-        <View className="h-[1.5px] bg-home-card-border my-6" />
+        {/* Luteal Phase Modal */}
+        <LutealPhaseModal
+          visible={showLutealModal}
+          onClose={() => setShowLutealModal(false)}
+        />
 
-        {/* My SatsFlow Journal Section */}
-        <View className="items-center mt-10">
-          <Image
-            source={require("@/assets/images/Group 48.png")}
-            className="w-64 h-64"
-            resizeMode="contain"
-          />
-          <TouchableOpacity
-            onPress={handleJournalPress}
-            className="mt-4 px-5 py-4 rounded-full"
-            style={{
-              backgroundColor: "#FF4081",
-              borderWidth: 1,
-              borderColor: "#FFB4CD",
-            }}
-            activeOpacity={0.8}
-          >
-            <Text className="text-white text-sm">My SatsFlow Journal</Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Extra spacing for scroll */}
-        <View className="h-20" />
-      </ScrollView>
-
-      {/* Bottom Navigation */}
-      <BottomNavigation activeTab={activeTab} onTabPress={handleTabPress} />
-
-      {/* Menstrual Phase Modal */}
-      <MenstrualPhaseModal
-        visible={showMenstrualModal}
-        onClose={() => setShowMenstrualModal(false)}
-      />
-
-      {/* Follicular Phase Modal */}
-      <FollicularPhaseModal
-        visible={showFollicularModal}
-        onClose={() => setShowFollicularModal(false)}
-      />
-
-      {/* Luteal Phase Modal */}
-      <LutealPhaseModal
-        visible={showLutealModal}
-        onClose={() => setShowLutealModal(false)}
-      />
-
-      {/* Ovulation Phase Modal */}
-      <OvulationPhaseModal
-        visible={showOvulationModal}
-        onClose={() => setShowOvulationModal(false)}
-      />
-    </View>
+        {/* Ovulation Phase Modal */}
+        <OvulationPhaseModal
+          visible={showOvulationModal}
+          onClose={() => setShowOvulationModal(false)}
+        />
+      </View>
     </ResponsiveScreen>
   );
 }
