@@ -196,7 +196,7 @@ export default function HomeScreen() {
             marginBottom: 8,
             borderRadius: 12,
             padding: 14,
-            backgroundColor: "#CC6600",
+            backgroundColor: "#FF82AD",
           }}
         >
           <Text style={{ color: "#FFFFFF", fontWeight: "600", fontSize: 14 }}>
@@ -212,7 +212,9 @@ export default function HomeScreen() {
               onPress={handleResendVerification}
               disabled={resending}
               style={{
-                backgroundColor: "rgba(255,255,255,0.2)",
+                backgroundColor: "#FF82AD",
+                borderWidth: 1,
+                borderColor: "rgba(255,255,255,0.5)",
                 borderRadius: 20,
                 paddingHorizontal: 14,
                 paddingVertical: 7,
@@ -225,7 +227,7 @@ export default function HomeScreen() {
             </TouchableOpacity>
             <TouchableOpacity
               onPress={() => setBannerDismissed(true)}
-              style={{ borderRadius: 20, paddingHorizontal: 14, paddingVertical: 7 }}
+              style={{ backgroundColor: "#FF82AD", borderWidth: 1, borderColor: "rgba(255,255,255,0.5)", borderRadius: 20, paddingHorizontal: 14, paddingVertical: 7 }}
               activeOpacity={0.7}
             >
               <Text style={{ color: "rgba(255,255,255,0.7)", fontSize: 12 }}>
