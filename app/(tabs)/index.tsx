@@ -49,6 +49,10 @@ export default function HomeScreen() {
   const { width: windowWidth } = useWindowDimensions();
   const trackerSize = Math.min(windowWidth - 40, 320);
   const [activeTab, setActiveTab] = useState<TabName>("home");
+  const [emailVerified, setEmailVerified] = useState(true);
+  const [userEmail, setUserEmail] = useState("");
+  const [bannerDismissed, setBannerDismissed] = useState(false);
+  const [resending, setResending] = useState(false);
   const [showMenstrualModal, setShowMenstrualModal] = useState(false);
   const [showFollicularModal, setShowFollicularModal] = useState(false);
   const [showLutealModal, setShowLutealModal] = useState(false);
@@ -71,11 +75,18 @@ export default function HomeScreen() {
       if (!token) return;
       try {
         // Load cycle-profile (source of truth for user settings), current cycle, and predictions in parallel
-        const [profileRes, currentRes, predictionsRes] = await Promise.all([
+        const [profileRes, currentRes, predictionsRes, meRes] = await Promise.all([
           api.get("/cycle-profile", token),
           api.get("/cycles/current", token),
           api.get("/cycles/predictions", token),
+          api.get("/auth/me", token),
         ]);
+
+        if (meRes.response.ok) {
+          const me = meRes.data?.data ?? meRes.data;
+          setEmailVerified(me?.emailVerified ?? true);
+          setUserEmail(me?.email ?? "");
+        }
 
         const profile = profileRes.response.ok ? (profileRes.data?.data ?? profileRes.data) : null;
         const cycleD = currentRes.response.ok ? (currentRes.data?.data ?? null) : null;
@@ -114,6 +125,16 @@ export default function HomeScreen() {
     };
     loadCycleData();
   }, []));
+
+  const handleResendVerification = async () => {
+    setResending(true);
+    try {
+      const token = await AsyncStorage.getItem("accessToken");
+      if (!token) return;
+      await api.post("/auth/resend-verification", {}, token);
+    } catch {}
+    setResending(false);
+  };
 
   const handleTabPress = (tab: TabName) => {
     setActiveTab(tab);
@@ -166,6 +187,54 @@ export default function HomeScreen() {
 
       {/* Header */}
       <HomeHeader onNotificationPress={handleNotificationPress} />
+
+      {/* Email Verification Banner */}
+      {!emailVerified && !bannerDismissed && (
+        <View
+          style={{
+            marginHorizontal: 16,
+            marginBottom: 8,
+            borderRadius: 12,
+            padding: 14,
+            backgroundColor: "#CC6600",
+          }}
+        >
+          <Text style={{ color: "#FFFFFF", fontWeight: "600", fontSize: 14 }}>
+            Please verify your email
+          </Text>
+          <Text style={{ color: "rgba(255,255,255,0.85)", fontSize: 12, marginTop: 2 }}>
+            {userEmail
+              ? `Check your inbox (${userEmail}) for a verification link.`
+              : "Check your inbox for a verification link."}
+          </Text>
+          <View style={{ flexDirection: "row", gap: 10, marginTop: 10 }}>
+            <TouchableOpacity
+              onPress={handleResendVerification}
+              disabled={resending}
+              style={{
+                backgroundColor: "rgba(255,255,255,0.2)",
+                borderRadius: 20,
+                paddingHorizontal: 14,
+                paddingVertical: 7,
+              }}
+              activeOpacity={0.7}
+            >
+              <Text style={{ color: "#FFFFFF", fontSize: 12, fontWeight: "500" }}>
+                {resending ? "Sending..." : "Resend email"}
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => setBannerDismissed(true)}
+              style={{ borderRadius: 20, paddingHorizontal: 14, paddingVertical: 7 }}
+              activeOpacity={0.7}
+            >
+              <Text style={{ color: "rgba(255,255,255,0.7)", fontSize: 12 }}>
+                Dismiss
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      )}
 
       {/* Main Content */}
       <ScrollView
