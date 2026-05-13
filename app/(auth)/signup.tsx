@@ -178,7 +178,7 @@ export default function SignupScreen() {
             {/* Content */}
             <View className="w-full pt-12 pb-8">
               {/* Back Arrow */}
-              <BackButton onPress={() => router.replace('/how-to-use' as any)} />
+<BackButton onPress={() => router.replace('/how-to-use' as any)} />
 
               {/* Title Section */}
               <TitleSection

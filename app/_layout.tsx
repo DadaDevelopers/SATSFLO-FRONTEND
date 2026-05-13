@@ -12,7 +12,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import "../global.css";
 
 export const unstable_settings = {
-  anchor: "(auth)",
+  initialRouteName: "splash",
 };
 
 export default function RootLayout() {
@@ -55,6 +55,8 @@ export default function RootLayout() {
         <Stack screenOptions={{ headerShown: false }}>
           <Stack.Screen name="splash" />
           <Stack.Screen name="how-to-use" />
+          <Stack.Screen name="onboarding" />
+          <Stack.Screen name="(auth)" />
           <Stack.Screen name="partner-welcome" />
           <Stack.Screen name="enter-partner-code" />
           <Stack.Screen name="(tabs)" />
