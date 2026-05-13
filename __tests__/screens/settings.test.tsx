@@ -9,7 +9,7 @@ import { api } from '@/lib/api';
 jest.mock('expo-router', () => ({
   useRouter: () => ({ push: jest.fn(), replace: jest.fn() }),
   router: { push: jest.fn(), replace: jest.fn(), back: jest.fn() },
-  useFocusEffect: (cb: () => void) => { cb(); },
+  useFocusEffect: jest.fn(),
 }));
 
 const mockUser = JSON.stringify({ name: 'Test User', email: 'test@example.com' });
