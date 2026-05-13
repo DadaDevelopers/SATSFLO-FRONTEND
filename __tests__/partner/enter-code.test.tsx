@@ -132,7 +132,7 @@ describe("EnterCodeScreen", () => {
 
   it("shows fallback error when API has no message", async () => {
     mockedApi.post.mockResolvedValue({
-      response: { ok: false } as any,
+      response: { ok: false, status: 400 } as any,
       data: {},
     });
 

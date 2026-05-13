@@ -94,6 +94,11 @@ describe("LoginScreen", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     jest.useFakeTimers();
+    // Default: no existing partner pairing
+    mockedApi.get.mockResolvedValue({
+      response: { ok: false } as any,
+      data: {},
+    });
   });
 
   afterEach(() => {

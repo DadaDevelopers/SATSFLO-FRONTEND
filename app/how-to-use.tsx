@@ -134,8 +134,8 @@ export default function HowToUseScreen() {
         </Pressable>
       </View>
 
-      {/* Next button */}
-      <View style={{ alignItems: "center", paddingBottom: 28 }}>
+      {/* Next button + sign-in link */}
+      <View style={{ alignItems: "center", paddingBottom: 28, gap: 16 }}>
         <TouchableOpacity
           onPress={handleNext}
           disabled={!selected}
@@ -157,6 +157,22 @@ export default function HowToUseScreen() {
             style={{ fontSize: 15 }}
           >
             Next
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          onPress={() => router.push("/(auth)/login" as any)}
+          activeOpacity={0.7}
+        >
+          <Text
+            style={{
+              fontSize: 14,
+              color: "rgba(255,255,255,0.85)",
+              fontFamily: "Inter",
+            }}
+          >
+            Already have an account?{" "}
+            <Text style={{ fontWeight: "600", color: "#FFFFFF" }}>Sign in</Text>
           </Text>
         </TouchableOpacity>
       </View>
