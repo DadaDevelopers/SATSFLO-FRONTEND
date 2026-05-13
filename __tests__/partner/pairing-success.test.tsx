@@ -30,10 +30,6 @@ jest.mock("react-native-svg", () => {
 
 jest.mock("@expo/vector-icons", () => ({ Feather: () => null }));
 
-// Mock local image assets
-jest.mock("../../assets/images/hana.png", () => 1);
-jest.mock("../../assets/images/janedoe.png", () => 1);
-
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
 import { router } from "expo-router";
