@@ -41,6 +41,11 @@ export default function MyPartnerScreen() {
   const [activeTab, setActiveTab] = useState<TabName>("settings");
 
   // Data state
+  const [user, setUser] = useState<{
+    name: string;
+    email: string;
+    avatar_url?: string;
+  } | null>(null);
   const [partnerInfo, setPartnerInfo] = useState<PartnerInfo | null>(null);
   const [settings, setSettings] = useState<PartnerSettings>({
     share_period_dates: true,
@@ -66,6 +71,16 @@ export default function MyPartnerScreen() {
         setErrorMessage("Session expired. Please log in again.");
         setLoading(false);
         return;
+      }
+
+      const userJson = await AsyncStorage.getItem("user");
+      if (userJson) {
+        const stored = JSON.parse(userJson);
+        setUser({
+          name: stored.name ?? "",
+          email: stored.email ?? "",
+          avatar_url: stored.avatar_url ?? undefined,
+        });
       }
 
       const [partnerRes, settingsRes] = await Promise.all([
@@ -266,17 +281,27 @@ export default function MyPartnerScreen() {
           <View className="bg-white rounded-[24px] p-6 items-center mt-6 shadow-sm">
             {/* Overlapping Avatars */}
             <View className="flex-row items-center justify-center mb-4 relative h-16 w-32">
-              <View className="w-[60px] h-[60px] rounded-full bg-gray-200 border-[3px] border-white absolute left-5 z-10 overflow-hidden shadow-sm">
-                <Image
-                  source={{ uri: "https://i.pravatar.cc/150?img=5" }}
-                  className="w-full h-full"
-                />
+              <View className="w-[60px] h-[60px] rounded-full bg-[#FFE0EE] border-[3px] border-white absolute left-5 z-10 overflow-hidden shadow-sm items-center justify-center">
+                {user?.avatar_url ? (
+                  <Image
+                    source={{ uri: user.avatar_url }}
+                    className="w-full h-full"
+                    resizeMode="cover"
+                  />
+                ) : (
+                  <Feather name="user" size={24} color="#FF82AD" />
+                )}
               </View>
-              <View className="w-[60px] h-[60px] rounded-full bg-gray-300 border-[3px] border-white absolute right-5 z-0 overflow-hidden shadow-sm">
-                <Image
-                  source={{ uri: "https://i.pravatar.cc/150?img=11" }}
-                  className="w-full h-full"
-                />
+              <View className="w-[60px] h-[60px] rounded-full bg-[#FFB3CD] border-[3px] border-white absolute right-5 z-0 overflow-hidden shadow-sm items-center justify-center">
+                {partnerInfo?.partner?.avatar ? (
+                  <Image
+                    source={{ uri: partnerInfo.partner.avatar }}
+                    className="w-full h-full"
+                    resizeMode="cover"
+                  />
+                ) : (
+                  <Feather name="user" size={24} color="#FF4081" />
+                )}
               </View>
               <View className="absolute -top-1 right-8 bg-white rounded-full p-1 shadow-sm z-20 border border-gray-100">
                 <Feather name="heart" size={14} color="#FF4081" />

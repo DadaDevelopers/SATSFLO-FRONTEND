@@ -33,6 +33,11 @@ export default function PartnerSettingsScreen() {
   const [activeTab, setActiveTab] = useState<TabName>("settings");
 
   // Data state
+  const [user, setUser] = useState<{
+    name: string;
+    email: string;
+    avatar_url?: string;
+  } | null>(null);
   const [partnerInfo, setPartnerInfo] = useState<PartnerInfo | null>(null);
 
   // UI state
@@ -51,6 +56,16 @@ export default function PartnerSettingsScreen() {
         setErrorMessage("Session expired. Please log in again.");
         setLoading(false);
         return;
+      }
+
+      const userJson = await AsyncStorage.getItem("user");
+      if (userJson) {
+        const stored = JSON.parse(userJson);
+        setUser({
+          name: stored.name ?? "",
+          email: stored.email ?? "",
+          avatar_url: stored.avatar_url ?? undefined,
+        });
       }
 
       const { response, data } = await api.get("/partner", token);
@@ -216,17 +231,27 @@ export default function PartnerSettingsScreen() {
 
             {/* Avatars */}
             <View className="flex-row items-center justify-center mb-4 relative h-[100px] w-48 mt-4">
-              <View className="w-[85px] h-[85px] rounded-full bg-gray-200 border-[3px] border-[#FFF0F5] absolute left-6 z-10 overflow-hidden shadow-sm">
-                <Image
-                  source={{ uri: "https://i.pravatar.cc/150?img=5" }}
-                  className="w-full h-full"
-                />
+              <View className="w-[85px] h-[85px] rounded-full bg-[#FFE0EE] border-[3px] border-[#FFF0F5] absolute left-6 z-10 overflow-hidden shadow-sm items-center justify-center">
+                {user?.avatar_url ? (
+                  <Image
+                    source={{ uri: user.avatar_url }}
+                    className="w-full h-full"
+                    resizeMode="cover"
+                  />
+                ) : (
+                  <Feather name="user" size={32} color="#FF82AD" />
+                )}
               </View>
-              <View className="w-[85px] h-[85px] rounded-full bg-gray-300 border-[3px] border-[#FFF0F5] absolute right-6 top-8 z-0 overflow-hidden shadow-sm">
-                <Image
-                  source={{ uri: "https://i.pravatar.cc/150?img=11" }}
-                  className="w-full h-full"
-                />
+              <View className="w-[85px] h-[85px] rounded-full bg-[#FFB3CD] border-[3px] border-[#FFF0F5] absolute right-6 top-8 z-0 overflow-hidden shadow-sm items-center justify-center">
+                {partnerInfo?.partner?.avatar ? (
+                  <Image
+                    source={{ uri: partnerInfo.partner.avatar }}
+                    className="w-full h-full"
+                    resizeMode="cover"
+                  />
+                ) : (
+                  <Feather name="user" size={32} color="#FF4081" />
+                )}
               </View>
             </View>
 
