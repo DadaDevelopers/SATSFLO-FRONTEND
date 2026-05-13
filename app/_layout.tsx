@@ -11,10 +11,6 @@ import { useEffect } from "react";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import "../global.css";
 
-export const unstable_settings = {
-  anchor: "(auth)",
-};
-
 export default function RootLayout() {
   const [poppinsLoaded] = usePoppins({
     Poppins: Poppins_400Regular,

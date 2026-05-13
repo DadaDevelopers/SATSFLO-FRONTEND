@@ -12,15 +12,18 @@ export default function SplashScreen() {
         router.replace("/how-to-use" as Href);
         return;
       }
-      // Route paired users directly to the partner dashboard
+      // Validate session and route accordingly
       try {
         const { response, data } = await api.get("/partner", token);
         if (response.ok && data?.data?.partner) {
           router.replace("/partner" as Href);
-          return;
+        } else {
+          router.replace("/(tabs)" as Href);
         }
-      } catch {}
-      router.replace("/(tabs)" as Href);
+      } catch {
+        // Token fully expired (refresh also failed) — treat as logged-out
+        router.replace("/how-to-use" as Href);
+      }
     };
     const timer = setTimeout(navigate, 2000);
     return () => clearTimeout(timer);

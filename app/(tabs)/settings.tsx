@@ -397,7 +397,7 @@ export default function SettingsScreen() {
       }
     } catch {}
     await clearAuthStorage();
-    router.replace("/(auth)/login" as any);
+    router.replace("/how-to-use" as any);
   };
 
   const handleDeleteAccount = async () => {
@@ -411,7 +411,7 @@ export default function SettingsScreen() {
     setDeletePassword("");
     setDeleteModalVisible(false);
     await clearAuthStorage();
-    router.replace("/(auth)/login" as any);
+    router.replace("/how-to-use" as any);
   };
 
   const handleTabPress = (tab: TabName) => {
