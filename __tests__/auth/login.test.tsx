@@ -12,6 +12,7 @@ const mockBack = jest.fn();
 
 jest.mock("expo-router", () => ({
   useRouter: () => ({ push: mockPush, replace: mockReplace, back: mockBack }),
+  useLocalSearchParams: jest.fn(() => ({})),
 }));
 
 jest.mock("@react-native-async-storage/async-storage", () => ({
@@ -20,7 +21,7 @@ jest.mock("@react-native-async-storage/async-storage", () => ({
   setItem: jest.fn().mockResolvedValue(undefined),
 }));
 
-jest.mock("@/lib/api", () => ({ api: { post: jest.fn() } }));
+jest.mock("@/lib/api", () => ({ api: { post: jest.fn(), get: jest.fn() } }));
 
 jest.mock("react-native-safe-area-context", () => ({
   useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }),
