@@ -126,7 +126,7 @@ describe("EnterCodeScreen", () => {
     fireEvent.press(getByText("Connect"));
 
     await waitFor(() => {
-      expect(getByText("Invalid or expired code")).toBeTruthy();
+      expect(getByText("Code not found. Double-check the code and try again.")).toBeTruthy();
     });
   });
 
@@ -141,9 +141,7 @@ describe("EnterCodeScreen", () => {
     fireEvent.press(getByText("Connect"));
 
     await waitFor(() => {
-      expect(
-        getByText(/Invalid or expired code. Please check and try again/),
-      ).toBeTruthy();
+      expect(getByText("Could not connect. Please try again.")).toBeTruthy();
     });
   });
 

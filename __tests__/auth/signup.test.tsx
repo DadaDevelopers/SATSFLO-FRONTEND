@@ -10,6 +10,7 @@ const mockPush = jest.fn();
 
 jest.mock("expo-router", () => ({
   useRouter: () => ({ push: mockPush, replace: jest.fn(), back: jest.fn() }),
+  useLocalSearchParams: jest.fn(() => ({})),
 }));
 
 jest.mock("@react-native-async-storage/async-storage", () => ({
