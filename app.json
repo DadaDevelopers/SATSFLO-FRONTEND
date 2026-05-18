@@ -1,15 +1,16 @@
 {
   "expo": {
-    "name": "SATSFLO-FRONTEND",
-    "slug": "SATSFLO-FRONTEND",
+    "name": "SatsFlo",
+    "slug": "satsflo",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/logo-icon.png",
-    "scheme": "satsflofrontend",
+    "scheme": "satsflo",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
+      "bundleIdentifier": "com.dadadevelopers.satsflo",
       "associatedDomains": [
         "applinks:satsflo.app"
       ]
@@ -25,9 +26,12 @@
       "predictiveBackGestureEnabled": false,
       "permissions": [
         "android.permission.CAMERA",
-        "android.permission.CAMERA"
+        "android.permission.RECEIVE_BOOT_COMPLETED",
+        "android.permission.VIBRATE",
+        "android.permission.POST_NOTIFICATIONS"
       ],
-      "package": "com.anonymous.SATSFLOFRONTEND",
+      "package": "com.dadadevelopers.satsflo",
+      "googleServicesFile": "./google-services.json",
       "intentFilters": [
         {
           "action": "VIEW",
@@ -52,6 +56,8 @@
     },
     "plugins": [
       "expo-router",
+      "@react-native-firebase/app",
+      "@react-native-firebase/messaging",
       [
         "expo-splash-screen",
         {
@@ -62,6 +68,13 @@
           "dark": {
             "backgroundColor": "#000000"
           }
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/logo-icon.png",
+          "color": "#FF4081"
         }
       ],
       "@react-native-community/datetimepicker",
