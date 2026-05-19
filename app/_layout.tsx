@@ -1,11 +1,12 @@
 import { AddLogProvider } from "@/context/add-log-context";
 import { ThemeProvider } from "@/context/theme-context";
+import { checkInitialNotification, setupNotificationListeners } from "@/lib/notifications";
 import { Inter_400Regular, useFonts as useInter } from "@expo-google-fonts/inter";
 import { Manrope_500Medium, Manrope_700Bold, useFonts as useManrope } from "@expo-google-fonts/manrope";
 import { Poppins_400Regular, Poppins_600SemiBold, useFonts as usePoppins } from "@expo-google-fonts/poppins";
 import { Feather, Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useFonts } from "expo-font";
-import { Stack } from "expo-router";
+import { router, Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
 import { SafeAreaProvider } from "react-native-safe-area-context";
@@ -43,6 +44,20 @@ export default function RootLayout() {
       SplashScreen.hideAsync();
     }
   }, [fontsLoaded]);
+
+  useEffect(() => {
+    const goToNotifications = () => router.push("/(tabs)/notifications" as any);
+
+    // Handle notification tap while app was in background/foreground
+    const cleanup = setupNotificationListeners(goToNotifications);
+
+    // Handle notification tap when app was fully killed
+    checkInitialNotification().then((opened) => {
+      if (opened) goToNotifications();
+    });
+
+    return cleanup;
+  }, []);
 
   if (!fontsLoaded) {
     return null;

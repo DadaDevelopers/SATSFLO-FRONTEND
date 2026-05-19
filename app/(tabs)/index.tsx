@@ -8,10 +8,11 @@ import { OvulationPhaseModal } from "@/components/home/ovulation-phase-modal";
 import { PhaseLegend } from "@/components/home/phase-legend";
 import { ResponsiveScreen } from "@/components/ui/responsive-container";
 import { api } from "@/lib/api";
+import { registerForPushNotifications } from "@/lib/notifications";
 import { Feather } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router, useFocusEffect } from "expo-router";
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useRef, useState } from "react";
 import {
   Image,
   ScrollView,
@@ -53,6 +54,7 @@ export default function HomeScreen() {
   const [userEmail, setUserEmail] = useState("");
   const [bannerDismissed, setBannerDismissed] = useState(false);
   const [resending, setResending] = useState(false);
+  const pushRegistered = useRef(false);
   const [showMenstrualModal, setShowMenstrualModal] = useState(false);
   const [showFollicularModal, setShowFollicularModal] = useState(false);
   const [showLutealModal, setShowLutealModal] = useState(false);
@@ -73,6 +75,13 @@ export default function HomeScreen() {
     const loadCycleData = async () => {
       const token = await AsyncStorage.getItem("accessToken");
       if (!token) return;
+
+      // Register FCM device token once per session
+      if (!pushRegistered.current) {
+        pushRegistered.current = true;
+        registerForPushNotifications(token).catch(() => {});
+      }
+
       try {
         // Load cycle-profile (source of truth for user settings), current cycle, and predictions in parallel
         const [profileRes, currentRes, predictionsRes, meRes] = await Promise.all([
