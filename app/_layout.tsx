@@ -9,6 +9,7 @@ import { useFonts } from "expo-font";
 import { router, Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
+import { Alert } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import "../global.css";
 
@@ -49,7 +50,10 @@ export default function RootLayout() {
     const goToNotifications = () => router.push("/(tabs)/notifications" as any);
 
     // Handle notification tap while app was in background/foreground
-    const cleanup = setupNotificationListeners(goToNotifications);
+    const cleanup = setupNotificationListeners(
+      (title, body) => Alert.alert(title, body),
+      goToNotifications
+    );
 
     // Handle notification tap when app was fully killed
     checkInitialNotification().then((opened) => {

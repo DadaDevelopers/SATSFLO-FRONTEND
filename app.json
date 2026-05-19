@@ -29,7 +29,9 @@
         "android.permission.CAMERA",
         "android.permission.RECEIVE_BOOT_COMPLETED",
         "android.permission.VIBRATE",
-        "android.permission.POST_NOTIFICATIONS"
+        "android.permission.POST_NOTIFICATIONS",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.MODIFY_AUDIO_SETTINGS"
       ],
       "package": "com.dadadevelopers.satsflo",
       "googleServicesFile": "./google-services.json",
@@ -57,8 +59,6 @@
     },
     "plugins": [
       "expo-router",
-      "@react-native-firebase/app",
-      "@react-native-firebase/messaging",
       [
         "expo-splash-screen",
         {
@@ -71,21 +71,20 @@
           }
         }
       ],
-      [
-        "expo-notifications",
-        {
-          "icon": "./assets/images/logo-icon.png",
-          "color": "#FF4081"
-        }
-      ],
       "@react-native-community/datetimepicker",
       "expo-audio",
-      "@react-native-firebase/auth",
-      "@react-native-google-signin/google-signin"
+      "expo-asset",
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "53d8d698-98b5-4f29-bd65-a353d1de0e5d"
+      }
     }
   }
 }
