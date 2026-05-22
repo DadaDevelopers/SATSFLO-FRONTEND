@@ -10,7 +10,6 @@
       "android": {
         "buildType": "apk"
       },
-      "preInstall": "./eas-build-pre-install.sh",
       "env": {
         "GOOGLE_SERVICES_JSON": "@GOOGLE_SERVICES_JSON"
       }
@@ -20,7 +19,6 @@
       "android": {
         "buildType": "apk"
       },
-      "preInstall": "./eas-build-pre-install.sh",
       "env": {
         "GOOGLE_SERVICES_JSON": "@GOOGLE_SERVICES_JSON"
       }
@@ -30,7 +28,6 @@
       "android": {
         "buildType": "app-bundle"
       },
-      "preInstall": "./eas-build-pre-install.sh",
       "env": {
         "GOOGLE_SERVICES_JSON": "@GOOGLE_SERVICES_JSON"
       }
