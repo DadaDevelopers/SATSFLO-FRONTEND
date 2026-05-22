@@ -1,7 +1,8 @@
-import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import { api } from '@/lib/api';
+import logger from '@/lib/logger';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router } from 'expo-router';
-import { api } from '@/lib/api';
+import React, { createContext, ReactNode, useContext, useEffect, useState } from 'react';
 
 type FlowLevel = 'light' | 'medium' | 'heavy' | 'veryHeavy' | null;
 type Symptom = 'cramps' | 'fatigue' | 'bloating' | 'headache' | 'bellyAches' | 'acne' | 'soreBreasts' | 'cravings';
@@ -138,7 +139,7 @@ export function AddLogProvider({ children }: { children: ReactNode }) {
         if (savedLogs) setDayLogs(JSON.parse(savedLogs));
         if (savedSettings) setSettings(JSON.parse(savedSettings));
       } catch (err) {
-        console.error('Failed to load logs from storage', err);
+        logger.error('Failed to load logs from storage', err);
       } finally {
         setIsLoaded(true);
       }
@@ -182,7 +183,7 @@ export function AddLogProvider({ children }: { children: ReactNode }) {
         }
       }
     } catch (err) {
-      console.error('Failed to fetch logs from server', err);
+      logger.error('Failed to fetch logs from server', err);
     }
   };
 
@@ -399,19 +400,19 @@ export function AddLogProvider({ children }: { children: ReactNode }) {
         // 2. Start period cycle if marked
         if (dayData.periodStart) {
           const { response: cycleRes } = await api.post('/cycles/start', { start_date: dateStr }, token);
-          if (!cycleRes.ok) console.warn('Failed to start cycle on server');
+          if (!cycleRes.ok) logger.warn('Failed to start cycle on server');
         }
         
         // 3. End period cycle if marked
         if (dayData.periodEnd) {
           const { response: cycleRes } = await api.post('/cycles/end', { end_date: dateStr }, token);
-          if (!cycleRes.ok) console.warn('Failed to end cycle on server');
+          if (!cycleRes.ok) logger.warn('Failed to end cycle on server');
         }
         
-        console.log('Successfully synced all data with server for', dateStr);
+        logger.log('Successfully synced all data with server for', dateStr);
       }
     } catch (err) {
-      console.error('Failed to sync with server', err);
+      logger.error('Failed to sync with server', err);
       throw err; // Propagate to caller for UI feedback
     }
   };

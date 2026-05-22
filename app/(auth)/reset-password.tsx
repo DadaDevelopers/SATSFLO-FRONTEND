@@ -4,14 +4,15 @@ import { InputField } from "@/components/signup/input-field";
 import { PrimaryButton } from "@/components/signup/primary-button";
 import { TitleSection } from "@/components/signup/title-section";
 import { api } from "@/lib/api";
+import logger from "@/lib/logger";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  Text,
-  View,
+    KeyboardAvoidingView,
+    Platform,
+    ScrollView,
+    Text,
+    View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -44,7 +45,7 @@ export default function ResetPasswordScreen() {
           confirm_password: confirmPassword,
         }
       );
-      console.log("Reset password response:", data);
+      logger.log("Reset password response:", data);
       if (response.ok) {
         setStatusMessage({
           text: "Password reset successfully!",

@@ -4,16 +4,17 @@ import { OtpInput } from "@/components/signup/otp-input";
 import { PrimaryButton } from "@/components/signup/primary-button";
 import { TitleSection } from "@/components/signup/title-section";
 import { api } from "@/lib/api";
+import logger from "@/lib/logger";
 import { cn } from "@/lib/utils";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  Text,
-  TouchableOpacity,
-  View,
+    KeyboardAvoidingView,
+    Platform,
+    ScrollView,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -50,7 +51,7 @@ export default function OtpVerificationScreen() {
         email,
         otp,
       });
-      console.log("Verify OTP response:", data);
+      logger.log("Verify OTP response:", data);
       if (response.ok) {
         const token =
           data?.data?.reset_token ??
@@ -89,7 +90,7 @@ export default function OtpVerificationScreen() {
       const { response, data } = await api.post("/auth/forgot-password", {
         email,
       });
-      console.log("Resend OTP response:", data);
+      logger.log("Resend OTP response:", data);
       if (response.ok) {
         setStatusMessage({
           text: "OTP resent! Check your email.",
