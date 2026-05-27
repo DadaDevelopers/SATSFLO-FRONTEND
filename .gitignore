@@ -53,3 +53,12 @@ CLAUDE.md
 /documents_claude
 
 API_CONTRACT.md.idea/
+GoogleService-Info.plist
+GoogleService-Info.plist
+
+# Google Services (Firebase config — contains API keys)
+GoogleService-Info.plist
+
+# Service account key (gives full Play Store upload access)
+google-service-account.json
+*.serviceaccount.json

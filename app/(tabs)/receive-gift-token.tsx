@@ -1,3 +1,4 @@
+import logger from '@/lib/logger';
 import { Feather } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
@@ -32,10 +33,10 @@ export default function ReceiveGiftTokenScreen() {
 
   const handleProceed = () => {
     if (!selectedToken) {
-      console.log('Please select a gift token');
+      logger.log('Please select a gift token');
       return;
     }
-    console.log('Selected token:', selectedToken);
+    logger.log('Selected token:', selectedToken);
     router.push('/(tabs)/receive-wallet');
   };
 

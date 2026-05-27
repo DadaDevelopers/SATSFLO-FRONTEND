@@ -1,15 +1,17 @@
 {
   "expo": {
-    "name": "SATSFLO-FRONTEND",
-    "slug": "SATSFLO-FRONTEND",
+    "name": "SatsFlo",
+    "slug": "satsflo",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/logo-icon.png",
-    "scheme": "satsflofrontend",
+    "scheme": "satsflo",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
+      "bundleIdentifier": "com.dadadevelopers.satsflo",
+      "googleServicesFile": "./GoogleService-Info.plist",
       "associatedDomains": [
         "applinks:satsflo.app"
       ]
@@ -23,11 +25,18 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
+      "enableProguardInReleaseBuilds": true,
+      "enableShrinkResourcesInReleaseBuilds": true,
       "permissions": [
         "android.permission.CAMERA",
-        "android.permission.CAMERA"
+        "android.permission.RECEIVE_BOOT_COMPLETED",
+        "android.permission.VIBRATE",
+        "android.permission.POST_NOTIFICATIONS",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.MODIFY_AUDIO_SETTINGS"
       ],
-      "package": "com.anonymous.SATSFLOFRONTEND",
+      "package": "com.dadadevelopers.satsflo",
+      "googleServicesFile": "./google-services.json",
       "intentFilters": [
         {
           "action": "VIEW",
@@ -65,11 +74,20 @@
         }
       ],
       "@react-native-community/datetimepicker",
-      "expo-audio"
+      "expo-audio",
+      "expo-asset",
+      "expo-web-browser",
+      "expo-notifications",
     ],
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "53d8d698-98b5-4f29-bd65-a353d1de0e5d"
+      }
     }
   }
 }

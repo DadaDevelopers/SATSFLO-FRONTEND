@@ -224,7 +224,7 @@ export default function SignupScreen() {
 
                     {/* Password Requirements */}
                     {password.length > 0 && (
-                      <View className="flex-col gap-[6px]">
+                      <View className="flex-col gap-[6px]" style={{ marginBottom: 8 }}>
                         <Text className="text-xs font-normal leading-[18px] text-white">
                           Password should contain at least:
                         </Text>
