@@ -20,8 +20,7 @@
         "backgroundColor": "#FF4081"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.Satsflow",
-      "enableProguardInReleaseBuilds": true
+      "package": "com.Satsflow"
     },
     "web": {
       "output": "static",
@@ -47,6 +46,7 @@
         {
           "android": {
             "enableShrinkResourcesInReleaseBuilds": true,
+            "enableMinifyInReleaseBuilds": true,
             "buildArchs": ["arm64-v8a", "armeabi-v7a"]
           }
         }
