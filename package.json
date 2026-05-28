@@ -24,7 +24,7 @@
     "@react-native-firebase/messaging": "^24.0.0",
     "@react-native-google-signin/google-signin": "^16.1.2",
     "@react-navigation/bottom-tabs": "^7.4.0",
-    "@react-navigation/elements": "^2.6.3",
+    "@react-navigation/elements": "^2.9.19",
     "@react-navigation/native": "^7.1.8",
     "ansi-escapes": "^7.2.0",
     "clsx": "^2.1.1",
