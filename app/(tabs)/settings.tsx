@@ -5,7 +5,7 @@ import { Feather } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { BlurView } from "expo-blur";
 import { router, useFocusEffect } from "expo-router";
-import { default as React, default as React, useCallback, useState } from "react";
+import React, { useCallback, useState } from "react";
 import {
   Image,
   Modal,
