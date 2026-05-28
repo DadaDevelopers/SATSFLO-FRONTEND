@@ -3,8 +3,9 @@ import ParallaxScrollView from '@/components/parallax-scroll-view';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Collapsible } from '@/components/ui/collapsible';
-import { Image } from 'expo-image';
 import { Platform } from 'react-native';
+import { SvgXml } from 'react-native-svg';
+import { LOGO_SVG } from '@/assets/images/logo-svg';
 
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Fonts } from '@/constants/theme';
@@ -58,10 +59,7 @@ export default function TabTwoScreen() {
           <ThemedText type="defaultSemiBold">@3x</ThemedText> suffixes to provide files for
           different screen densities
         </ThemedText>
-        <Image
-          source={require('@/assets/images/logo-icon.png')}
-          className="w-[100px] h-[100px] self-center"
-        />
+        <SvgXml xml={LOGO_SVG} width={100} height={100} style={{ alignSelf: 'center' }} />
         <ExternalLink href="https://reactnative.dev/docs/images">
           <ThemedText type="link">Learn more</ThemedText>
         </ExternalLink>

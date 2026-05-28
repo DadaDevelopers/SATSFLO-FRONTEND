@@ -18,7 +18,15 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import Svg, { ClipPath, Defs, G, LinearGradient, Path, Rect, Stop } from "react-native-svg";
+import Svg, {
+  ClipPath,
+  Defs,
+  G,
+  LinearGradient,
+  Path,
+  Rect,
+  Stop,
+} from "react-native-svg";
 
 function InviteIcon() {
   return (
@@ -347,7 +355,7 @@ export default function SettingsScreen() {
         }
       };
       loadPartner();
-    }, [])
+    }, []),
   );
 
   useFocusEffect(
@@ -378,7 +386,7 @@ export default function SettingsScreen() {
         } catch {}
       };
       loadUser();
-    }, [])
+    }, []),
   );
 
   const handleLogout = async () => {
@@ -397,7 +405,7 @@ export default function SettingsScreen() {
       }
     } catch {}
     await clearAuthStorage();
-    router.replace("/(auth)/login" as any);
+    router.replace("/how-to-use" as any);
   };
 
   const handleDeleteAccount = async () => {
@@ -411,7 +419,7 @@ export default function SettingsScreen() {
     setDeletePassword("");
     setDeleteModalVisible(false);
     await clearAuthStorage();
-    router.replace("/(auth)/login" as any);
+    router.replace("/how-to-use" as any);
   };
 
   const handleTabPress = (tab: TabName) => {
@@ -485,16 +493,31 @@ export default function SettingsScreen() {
                   {/* User avatar */}
                   <View
                     style={{
-                      width: 40, height: 40, borderRadius: 20,
-                      borderWidth: 1.5, borderColor: "#FFDFEA",
-                      overflow: "hidden", marginRight: -12, zIndex: 1,
+                      width: 40,
+                      height: 40,
+                      borderRadius: 20,
+                      borderWidth: 1.5,
+                      borderColor: "#FFDFEA",
+                      overflow: "hidden",
+                      marginRight: -12,
+                      zIndex: 1,
                       backgroundColor: "#FFE0EE",
                     }}
                   >
                     {user?.avatar_url ? (
-                      <Image source={{ uri: user.avatar_url }} style={{ width: 40, height: 40 }} resizeMode="cover" />
+                      <Image
+                        source={{ uri: user.avatar_url }}
+                        style={{ width: 40, height: 40 }}
+                        resizeMode="cover"
+                      />
                     ) : (
-                      <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
+                      <View
+                        style={{
+                          flex: 1,
+                          alignItems: "center",
+                          justifyContent: "center",
+                        }}
+                      >
                         <Feather name="user" size={18} color="#FF82AD" />
                       </View>
                     )}
@@ -502,16 +525,30 @@ export default function SettingsScreen() {
                   {/* Partner avatar */}
                   <View
                     style={{
-                      width: 40, height: 40, borderRadius: 20,
-                      borderWidth: 1.5, borderColor: "#FFDFEA",
-                      overflow: "hidden", zIndex: 0,
+                      width: 40,
+                      height: 40,
+                      borderRadius: 20,
+                      borderWidth: 1.5,
+                      borderColor: "#FFDFEA",
+                      overflow: "hidden",
+                      zIndex: 0,
                       backgroundColor: "#FFB3CD",
                     }}
                   >
                     {partnerData.partner.avatar ? (
-                      <Image source={{ uri: partnerData.partner.avatar }} style={{ width: 40, height: 40 }} resizeMode="cover" />
+                      <Image
+                        source={{ uri: partnerData.partner.avatar }}
+                        style={{ width: 40, height: 40 }}
+                        resizeMode="cover"
+                      />
                     ) : (
-                      <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
+                      <View
+                        style={{
+                          flex: 1,
+                          alignItems: "center",
+                          justifyContent: "center",
+                        }}
+                      >
                         <Feather name="user" size={18} color="#FF4081" />
                       </View>
                     )}
@@ -521,13 +558,25 @@ export default function SettingsScreen() {
                 {/* Names + email */}
                 <View style={{ gap: 4 }}>
                   <Text
-                    style={{ fontFamily: "Inter", fontWeight: "500", fontSize: 14, lineHeight: 17, color: "#1E1E1E" }}
+                    style={{
+                      fontFamily: "Inter",
+                      fontWeight: "500",
+                      fontSize: 14,
+                      lineHeight: 17,
+                      color: "#1E1E1E",
+                    }}
                     numberOfLines={1}
                   >
                     {`${user?.name ?? "You"} & ${partnerData.partner_nickname || partnerData.partner.username}`}
                   </Text>
                   <Text
-                    style={{ fontFamily: "Inter", fontWeight: "400", fontSize: 12, lineHeight: 15, color: "#616161" }}
+                    style={{
+                      fontFamily: "Inter",
+                      fontWeight: "400",
+                      fontSize: 12,
+                      lineHeight: 15,
+                      color: "#616161",
+                    }}
                     numberOfLines={1}
                   >
                     {user?.email ?? ""}
@@ -538,7 +587,14 @@ export default function SettingsScreen() {
             </Pressable>
 
             {/* Divider */}
-            <View style={{ height: 0.5, backgroundColor: "#FFD6E4", marginHorizontal: -12, marginVertical: 8 }} />
+            <View
+              style={{
+                height: 0.5,
+                backgroundColor: "#FFD6E4",
+                marginHorizontal: -12,
+                marginVertical: 8,
+              }}
+            />
 
             {/* Bottom action rows */}
             <View style={{ gap: 8 }}>
@@ -562,7 +618,15 @@ export default function SettingsScreen() {
                       />
                     </G>
                   </Svg>
-                  <Text style={{ fontFamily: "Inter", fontWeight: "400", fontSize: 14, lineHeight: 21, color: "#1E1E1E" }}>
+                  <Text
+                    style={{
+                      fontFamily: "Inter",
+                      fontWeight: "400",
+                      fontSize: 14,
+                      lineHeight: 21,
+                      color: "#1E1E1E",
+                    }}
+                  >
                     Switch to my partner{"'"}s cycle
                   </Text>
                 </View>
@@ -586,7 +650,15 @@ export default function SettingsScreen() {
                       fill="#FFB4CD"
                     />
                   </Svg>
-                  <Text style={{ fontFamily: "Inter", fontWeight: "400", fontSize: 14, lineHeight: 21, color: "#1E1E1E" }}>
+                  <Text
+                    style={{
+                      fontFamily: "Inter",
+                      fontWeight: "400",
+                      fontSize: 14,
+                      lineHeight: 21,
+                      color: "#1E1E1E",
+                    }}
+                  >
                     Partner mode
                   </Text>
                 </View>

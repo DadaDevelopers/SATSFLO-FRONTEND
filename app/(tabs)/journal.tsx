@@ -4,6 +4,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router, useFocusEffect } from "expo-router";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
+  Alert,
   ScrollView,
   StatusBar,
   Text,
@@ -67,6 +68,8 @@ export default function JournalScreen() {
   );
   const [entries, setEntries] = useState<JournalEntry[]>([]);
   const [searchResults, setSearchResults] = useState<JournalEntry[]>([]);
+  const [totalCount, setTotalCount] = useState(0);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const loadEntries = useCallback(async () => {
@@ -74,16 +77,44 @@ export default function JournalScreen() {
     if (!token) return;
     const mm = String(currentMonth + 1).padStart(2, "0");
     try {
-      const { response, data } = await api.get(
-        `/journal?month=${currentYear}-${mm}`,
-        token,
-      );
-      if (response.ok) {
-        const list = data?.data ?? data ?? [];
+      const [monthRes, totalRes] = await Promise.all([
+        api.get(`/journal?month=${currentYear}-${mm}`, token),
+        api.get("/journal", token),
+      ]);
+      if (monthRes.response.ok) {
+        const list = monthRes.data?.data ?? monthRes.data ?? [];
         setEntries(Array.isArray(list) ? list : []);
+      }
+      if (totalRes.response.ok) {
+        const all = totalRes.data?.data ?? totalRes.data ?? [];
+        setTotalCount(Array.isArray(all) ? all.length : 0);
       }
     } catch {}
   }, [currentMonth, currentYear]);
+
+  const handleDelete = (id: string) => {
+    Alert.alert("Delete Entry", "Are you sure you want to delete this entry?", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Delete",
+        style: "destructive",
+        onPress: async () => {
+          setDeletingId(id);
+          try {
+            const token = await AsyncStorage.getItem("accessToken");
+            if (!token) return;
+            const { response } = await api.delete(`/journal/${id}`, {}, token);
+            if (response.ok) {
+              setEntries((prev) => prev.filter((e) => e.id !== id));
+              setSearchResults((prev) => prev.filter((e) => e.id !== id));
+              setTotalCount((prev) => Math.max(0, prev - 1));
+            }
+          } catch {}
+          setDeletingId(null);
+        },
+      },
+    ]);
+  };
 
   // Reload when screen comes back into focus (e.g. after add-entry)
   useFocusEffect(
@@ -305,17 +336,29 @@ export default function JournalScreen() {
         >
           {/* Recent Entries header */}
           <View className="flex-row items-center justify-between mb-4">
-            <Text
-              style={{
-                fontFamily: "Inter",
-                fontWeight: "500",
-                fontSize: 16,
-                lineHeight: 24,
-                color: "#FFFFFF",
-              }}
-            >
-              Recent Entries
-            </Text>
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+              <Text
+                style={{
+                  fontFamily: "Inter",
+                  fontWeight: "500",
+                  fontSize: 16,
+                  lineHeight: 24,
+                  color: "#FFFFFF",
+                }}
+              >
+                Recent Entries
+              </Text>
+              <Text
+                style={{
+                  fontFamily: "Inter",
+                  fontWeight: "400",
+                  fontSize: 13,
+                  color: "rgba(255,255,255,0.75)",
+                }}
+              >
+                {filteredEntries.length}/{totalCount}
+              </Text>
+            </View>
             <TouchableOpacity activeOpacity={0.7} onPress={() => router.push('/(tabs)/all-entries-journal' as any)}>
               <Text
                 style={{
@@ -513,6 +556,39 @@ export default function JournalScreen() {
                         </Text>
                       </View>
                     ) : null}
+                  </View>
+
+                  {/* Delete row */}
+                  <View
+                    style={{
+                      borderTopWidth: 0.5,
+                      borderTopColor: "#FFB3CC",
+                      marginTop: 4,
+                      paddingTop: 10,
+                      alignItems: "flex-end",
+                    }}
+                  >
+                    <TouchableOpacity
+                      onPress={() => handleDelete(entry.id)}
+                      disabled={deletingId === entry.id}
+                      hitSlop={{ top: 6, bottom: 6, left: 12, right: 6 }}
+                      style={{ flexDirection: "row", alignItems: "center", gap: 5 }}
+                    >
+                      <Feather
+                        name="trash-2"
+                        size={14}
+                        color={deletingId === entry.id ? "#cccccc" : "#F43B3B"}
+                      />
+                      <Text
+                        style={{
+                          fontSize: 12,
+                          fontWeight: "500",
+                          color: deletingId === entry.id ? "#cccccc" : "#F43B3B",
+                        }}
+                      >
+                        {deletingId === entry.id ? "Deleting…" : "Delete"}
+                      </Text>
+                    </TouchableOpacity>
                   </View>
                 </View>
               </TouchableOpacity>

@@ -1,15 +1,12 @@
 {
   "cli": {
-    "version": ">= 18.13.1",
+    "version": ">= 18.3.0",
     "appVersionSource": "remote"
   },
   "build": {
     "development": {
       "developmentClient": true,
-      "distribution": "internal",
-      "android": {
-        "buildType": "apk"
-      }
+      "distribution": "internal"
     },
     "preview": {
       "distribution": "internal",
@@ -25,10 +22,6 @@
     }
   },
   "submit": {
-    "production": {
-      "android": {
-        "track": "internal"
-      }
-    }
+    "production": {}
   }
 }
