@@ -49,6 +49,10 @@ jest.mock('@/context/add-log-context', () => ({
   useAddLog: () => ({ dayLogs: {}, getCurrentDayData: () => ({}) }),
 }));
 
+jest.mock('@/lib/notifications', () => ({
+  registerForPushNotifications: jest.fn().mockResolvedValue(undefined),
+}));
+
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
 const mockedApi = api as jest.Mocked<typeof api>;
