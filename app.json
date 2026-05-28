@@ -16,10 +16,8 @@
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/Logo.png",
-        "backgroundImage": "./assets/images/Logo.png",
-        "monochromeImage": "./assets/images/Logo.png"
+        "backgroundColor": "#FF4081"
       },
       "predictiveBackGestureEnabled": false,
       "package": "com.Satsflow",
@@ -64,6 +62,6 @@
         "projectId": "24260913-f716-4eae-9380-9cfd3bfa93f8"
       }
     },
-    "owner": "mercymbao"
+    "owner": "satsflo"
   }
 }
