@@ -128,22 +128,23 @@ export default function CalendarScreen() {
   // Memoize current day logs to ensure reactivity when allDayLogs updates
   const dayLogs = React.useMemo(() => {
     const key = `${currentYear}-${String(currentMonthNum + 1).padStart(2, "0")}-${String(selectedDate).padStart(2, "0")}`;
-    return (
-      allDayLogs[key] || {
-        flowLevel: null,
-        periodStart: false,
-        periodEnd: false,
-        symptoms: [],
-        moods: [],
-        medicine: [],
-        note: "",
-        weight: "",
-        weightUnit: "kg",
-        temperature: "",
-        temperatureUnit: "C",
-        waterIntake: 0,
-      }
-    );
+    // Merge defaults first so partial/old-format cached entries never leave
+    // symptoms/moods/medicine undefined — accessing .length on undefined crashes the render.
+    const defaults = {
+      flowLevel: null as null,
+      periodStart: false,
+      periodEnd: false,
+      symptoms: [] as string[],
+      moods: [] as string[],
+      medicine: [] as string[],
+      note: "",
+      weight: "",
+      weightUnit: "kg" as "kg" | "lb",
+      temperature: "",
+      temperatureUnit: "C" as "C" | "F",
+      waterIntake: 0,
+    };
+    return { ...defaults, ...(allDayLogs[key] || {}) };
   }, [allDayLogs, selectedDate, currentMonthNum, currentYear]);
 
   const [cycleData, setCycleData] = useState({
@@ -283,7 +284,8 @@ export default function CalendarScreen() {
       cycleData.lastPeriodDate.getDate(),
     );
     const diffDays = Math.floor((utc1 - utc2) / (1000 * 60 * 60 * 24));
-    const cycleDay = (diffDays % cycleData.cycleLength) + 1;
+    // Use positive modulo so dates before lastPeriodDate wrap correctly instead of going negative.
+    const cycleDay = ((diffDays % cycleData.cycleLength) + cycleData.cycleLength) % cycleData.cycleLength + 1;
 
     // Use context's isDateInPeriod for real-time reflection of changes
     const isPeriod = isDateInPeriod(cellDate);
