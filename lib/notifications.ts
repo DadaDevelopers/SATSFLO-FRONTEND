@@ -1,83 +1,99 @@
-import messaging from "@react-native-firebase/messaging";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Device from "expo-device";
 import { Platform } from "react-native";
 import { api } from "./api";
+// Type-only import — erased at compile time, zero runtime cost
+import type * as NotificationsType from "expo-notifications";
 
-/**
- * Request notification permission and register the FCM device token with the backend.
- * Uses @react-native-firebase/messaging directly — no expo-notifications needed.
- */
-export async function registerForPushNotifications(authToken: string): Promise<void> {
-  if (!Device.isDevice) return; // Push not supported on simulators/emulators
+const EAS_PROJECT_ID = "53d8d698-98b5-4f29-bd65-a353d1de0e5d";
 
-  const authStatus = await messaging().requestPermission();
-  const allowed =
-    authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
-    authStatus === messaging.AuthorizationStatus.PROVISIONAL;
-  if (!allowed) return;
-
-  const fcmToken = await messaging().getToken();
-  if (!fcmToken) return;
-
+// expo-notifications requires a custom dev build in SDK 54+ and won't load in
+// Expo Go. Use require() inside a guard so a missing native module never
+// crashes the app at startup — all functions fall back to no-ops.
+function loadN(): typeof NotificationsType | null {
   try {
-    await api.post(
-      "/users/device-token",
-      { token: fcmToken, platform: Platform.OS },
-      authToken
-    );
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    return require("expo-notifications");
   } catch {
-    // Best-effort — silently fail
+    return null;
   }
 }
 
-/**
- * Set up listeners for:
- * - Foreground FCM messages → calls onForegroundMessage (app shows its own UI)
- * - Background/quit notification tap → calls onTap
- * - FCM token refresh → re-registers with backend
- *
- * Returns a cleanup function. Call it on unmount.
- */
+const N = loadN();
+
+try {
+  N?.setNotificationHandler?.({
+    handleNotification: async () => ({
+      shouldShowAlert: true,
+      shouldShowBanner: true,
+      shouldShowList: true,
+      shouldPlaySound: false,
+      shouldSetBadge: false,
+    }),
+  });
+} catch {}
+
+export async function registerForPushNotifications(authToken: string): Promise<void> {
+  if (!N || !Device.isDevice) return;
+
+  try {
+    const { status: existingStatus } = await N.getPermissionsAsync();
+    let finalStatus = existingStatus;
+    if (existingStatus !== "granted") {
+      const { status } = await N.requestPermissionsAsync();
+      finalStatus = status;
+    }
+    if (finalStatus !== "granted") return;
+
+    if (Platform.OS === "android") {
+      await N.setNotificationChannelAsync("default", {
+        name: "default",
+        importance: N.AndroidImportance.MAX,
+        vibrationPattern: [0, 250, 250, 250],
+      });
+    }
+
+    const token = await N.getExpoPushTokenAsync({ projectId: EAS_PROJECT_ID });
+    await api.post(
+      "/users/device-token",
+      { token: token.data, platform: Platform.OS },
+      authToken
+    );
+  } catch {
+    // Silently fail — push not available in this environment
+  }
+}
+
 export function setupNotificationListeners(
   onForegroundMessage: (title: string, body: string) => void,
   onTap: () => void
 ): () => void {
-  // Foreground: FCM message received — Firebase does NOT auto-display these
-  const unsubForeground = messaging().onMessage(async (msg) => {
-    const title = msg.notification?.title ?? "SatsFlo";
-    const body = msg.notification?.body ?? "";
-    onForegroundMessage(title, body);
-  });
+  if (!N) return () => {};
 
-  // Background: user tapped a notification → app comes to foreground
-  const unsubTap = messaging().onNotificationOpenedApp(() => onTap());
+  try {
+    const foregroundSub = N.addNotificationReceivedListener((notification) => {
+      const title = notification.request.content.title ?? "SatsFlo";
+      const body = notification.request.content.body ?? "";
+      onForegroundMessage(title, body);
+    });
 
-  // Token rotated by FCM → re-register with backend
-  const unsubRefresh = messaging().onTokenRefresh(async (newToken) => {
-    const token = await AsyncStorage.getItem("accessToken");
-    if (!token) return;
-    try {
-      await api.post(
-        "/users/device-token",
-        { token: newToken, platform: Platform.OS },
-        token
-      );
-    } catch {}
-  });
+    const tapSub = N.addNotificationResponseReceivedListener(() => onTap());
 
-  return () => {
-    unsubForeground();
-    unsubTap();
-    unsubRefresh();
-  };
+    return () => {
+      foregroundSub.remove();
+      tapSub.remove();
+    };
+  } catch {
+    return () => {};
+  }
 }
 
-/**
- * Check if the app was opened by tapping a notification (killed state).
- * Returns true if so.
- */
 export async function checkInitialNotification(): Promise<boolean> {
-  const msg = await messaging().getInitialNotification();
-  return !!msg;
+  if (!N) return false;
+  try {
+    // @ts-ignore — no-arg overload deprecated in SDK 54; still functional
+    const response = await N.getLastNotificationResponseAsync();
+    return !!response;
+  } catch {
+    return false;
+  }
 }

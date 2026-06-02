@@ -9,10 +9,8 @@
     "userInterfaceStyle": "automatic",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.anonymous.SATSFLOFRONTEND",
-      "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
-      }
+      "bundleIdentifier": "com.dadadevelopers.satsflo",
+      "associatedDomains": ["applinks:satsflo.app"]
     },
     "android": {
       "adaptiveIcon": {
