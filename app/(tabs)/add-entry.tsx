@@ -1,10 +1,12 @@
 import { api } from '@/lib/api';
+import { uploadJournalImages } from '@/services/upload.service';
 import { Feather } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as ImagePicker from 'expo-image-picker';
 import { router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
+  ActivityIndicator,
   Alert,
   Image,
   Modal,
@@ -55,7 +57,8 @@ export default function AddEntryScreen() {
   const [selectedMood, setSelectedMood] = useState<string | null>(null);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [notes, setNotes] = useState('');
-  const [selectedImages, setSelectedImages] = useState<string[]>([]);
+  const [selectedImages, setSelectedImages] = useState<{ localUri: string; cloudUrl: string }[]>([]);
+  const [uploadingImages, setUploadingImages] = useState(false);
   const [showMediaPicker, setShowMediaPicker] = useState(false);
   const [lastPeriodStart, setLastPeriodStart] = useState('');
   const [cycleLength, setCycleLength] = useState(28);
@@ -250,7 +253,7 @@ export default function AddEntryScreen() {
           content: notes || undefined,
           mood: selectedMood || undefined,
           symptoms: symptoms.length > 0 ? symptoms : undefined,
-          images: selectedImages.length > 0 ? selectedImages : undefined,
+          images: selectedImages.length > 0 ? selectedImages.map(i => i.cloudUrl) : undefined,
           date: dateStr,
         },
         token
@@ -279,18 +282,33 @@ export default function AddEntryScreen() {
       return;
     }
 
+    const remaining = 5 - selectedImages.length;
+    if (remaining <= 0) {
+      Alert.alert('Limit reached', 'You can attach up to 5 images per entry.');
+      return;
+    }
+
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['images'],
       allowsMultipleSelection: true,
+      selectionLimit: remaining,
       quality: 0.8,
-      base64: true,
     });
 
-    if (!result.canceled && result.assets) {
-      const newImages = result.assets
-        .filter(a => a.base64)
-        .map(a => `data:image/jpeg;base64,${a.base64}`);
-      setSelectedImages([...selectedImages, ...newImages]);
+    if (!result.canceled && result.assets.length > 0) {
+      const uris = result.assets.map(a => a.uri);
+      setUploadingImages(true);
+      try {
+        const token = await AsyncStorage.getItem('accessToken');
+        const cloudUrls = token ? await uploadJournalImages(uris, token) : [];
+        const newImages = uris.map((localUri, i) => ({
+          localUri,
+          cloudUrl: cloudUrls[i] ?? '',
+        })).filter(img => img.cloudUrl);
+        setSelectedImages(prev => [...prev, ...newImages]);
+      } finally {
+        setUploadingImages(false);
+      }
     }
   };
 
@@ -303,13 +321,25 @@ export default function AddEntryScreen() {
       return;
     }
 
-    const result = await ImagePicker.launchCameraAsync({
-      quality: 0.8,
-      base64: true,
-    });
+    if (selectedImages.length >= 5) {
+      Alert.alert('Limit reached', 'You can attach up to 5 images per entry.');
+      return;
+    }
 
-    if (!result.canceled && result.assets?.[0]?.base64) {
-      setSelectedImages([...selectedImages, `data:image/jpeg;base64,${result.assets[0].base64}`]);
+    const result = await ImagePicker.launchCameraAsync({ quality: 0.8 });
+
+    if (!result.canceled && result.assets?.[0]) {
+      const uri = result.assets[0].uri;
+      setUploadingImages(true);
+      try {
+        const token = await AsyncStorage.getItem('accessToken');
+        const cloudUrls = token ? await uploadJournalImages([uri], token) : [];
+        if (cloudUrls[0]) {
+          setSelectedImages(prev => [...prev, { localUri: uri, cloudUrl: cloudUrls[0] }]);
+        }
+      } finally {
+        setUploadingImages(false);
+      }
     }
   };
 
@@ -581,10 +611,10 @@ export default function AddEntryScreen() {
               className="mb-3"
               contentContainerStyle={{ gap: 8 }}
             >
-              {selectedImages.map((uri, index) => (
+              {selectedImages.map((img, index) => (
                 <View key={index} className="relative">
                   <Image
-                    source={{ uri }}
+                    source={{ uri: img.localUri }}
                     className="w-20 h-20 rounded-lg"
                     resizeMode="cover"
                   />
@@ -600,13 +630,19 @@ export default function AddEntryScreen() {
           )}
 
           <TouchableOpacity
-            onPress={handleAttachMedia}
+            onPress={uploadingImages ? undefined : handleAttachMedia}
             className="flex-row items-center justify-center py-4 bg-[#FFE4ED] border border-dashed border-[#FF4081] rounded-lg"
           >
-            <Feather name="plus" size={12} color="#FF4081" />
-            <Text className="text-[#FF4081] text-xs font-medium ml-1">
-              Attach Images/Videos
-            </Text>
+            {uploadingImages ? (
+              <ActivityIndicator size="small" color="#FF4081" />
+            ) : (
+              <>
+                <Feather name="plus" size={12} color="#FF4081" />
+                <Text className="text-[#FF4081] text-xs font-medium ml-1">
+                  Attach Images/Videos
+                </Text>
+              </>
+            )}
           </TouchableOpacity>
         </View>
       </ScrollView>
