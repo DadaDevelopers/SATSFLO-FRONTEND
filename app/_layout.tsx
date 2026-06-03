@@ -1,3 +1,4 @@
+import { AddLogProvider } from "@/context/add-log-context";
 import { ThemeProvider } from "@/context/theme-context";
 import {
   checkInitialNotification,
@@ -80,17 +81,19 @@ export default function RootLayout() {
   return (
     <SafeAreaProvider>
       <ThemeProvider>
-        <Stack screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="splash" />
-          <Stack.Screen name="how-to-use" />
-          <Stack.Screen name="partner-welcome" />
-          <Stack.Screen name="enter-partner-code" />
-          <Stack.Screen name="(tabs)" />
-          <Stack.Screen name="add-log" />
-          <Stack.Screen name="gift-token" />
-          <Stack.Screen name="chat" />
-          <Stack.Screen name="modal" options={{ presentation: "modal" }} />
-        </Stack>
+        <AddLogProvider>
+          <Stack screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="splash" />
+            <Stack.Screen name="how-to-use" />
+            <Stack.Screen name="partner-welcome" />
+            <Stack.Screen name="enter-partner-code" />
+            <Stack.Screen name="(tabs)" />
+            <Stack.Screen name="add-log" />
+            <Stack.Screen name="gift-token" />
+            <Stack.Screen name="chat" />
+            <Stack.Screen name="modal" options={{ presentation: "modal" }} />
+          </Stack>
+        </AddLogProvider>
       </ThemeProvider>
     </SafeAreaProvider>
   );

@@ -1,15 +1,16 @@
 import * as Device from "expo-device";
+import { isRunningInExpoGo } from "expo";
 import { Platform } from "react-native";
 import { api } from "./api";
-// Type-only import — erased at compile time, zero runtime cost
 import type * as NotificationsType from "expo-notifications";
 
 const EAS_PROJECT_ID = "53d8d698-98b5-4f29-bd65-a353d1de0e5d";
 
-// expo-notifications requires a custom dev build in SDK 54+ and won't load in
-// Expo Go. Use require() inside a guard so a missing native module never
-// crashes the app at startup — all functions fall back to no-ops.
+// expo-notifications requires a custom dev build in SDK 53+.
+// Skip entirely in Expo Go — loading it throws a console.error even inside
+// try/catch because the module calls console.error before throwing.
 function loadN(): typeof NotificationsType | null {
+  if (isRunningInExpoGo()) return null;
   try {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     return require("expo-notifications");

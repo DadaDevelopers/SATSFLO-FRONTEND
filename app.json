@@ -5,29 +5,51 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/Logo-square.png",
-    "icon": "./assets/images/Logo-square.png",
     "scheme": "satsflofrontend",
     "userInterfaceStyle": "automatic",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.anonymous.SATSFLOFRONTEND",
-      "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
-      }
+      "bundleIdentifier": "com.dadadevelopers.satsflo",
+      "associatedDomains": ["applinks:satsflo.app"]
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/Logo-square.png",
-        "backgroundColor": "#E6F4FE"
+        "backgroundColor": "#E6F4FE",
+        "foregroundImage": "./assets/images/Logo.png",
+        "backgroundImage": "./assets/images/Logo.png",
+        "monochromeImage": "./assets/images/Logo.png"
       },
+      "edgeToEdgeEnabled": true,
+      "predictiveBackGestureEnabled": false,
+      "enableProguardInReleaseBuilds": true,
+      "enableShrinkResourcesInReleaseBuilds": true,
       "permissions": [
-        "android.permission.CAMERA"
+        "android.permission.CAMERA",
+        "android.permission.RECEIVE_BOOT_COMPLETED",
+        "android.permission.VIBRATE",
+        "android.permission.POST_NOTIFICATIONS",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.MODIFY_AUDIO_SETTINGS"
       ],
-      "package": "com.anonymous.SATSFLOFRONTEND"
+      "package": "com.dadadevelopers.satsflo",
+      "googleServicesFile": "./google-services.json",
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [
+            {
+              "scheme": "https",
+              "host": "satsflo.app",
+              "pathPrefix": "/invite"
+            }
+          ],
+          "category": ["BROWSABLE", "DEFAULT"]
+        }
+      ]
     },
     "web": {
       "output": "static",
-      "favicon": "./assets/images/Logo-square.png"
       "favicon": "./assets/images/Logo-square.png"
     },
     "plugins": [
@@ -36,14 +58,16 @@
         "expo-splash-screen",
         {
           "image": "./assets/images/Logo-square.png",
-          "image": "./assets/images/Logo-square.png",
           "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
-          "backgroundColor": "#ffffff"
         }
       ],
-      "@react-native-community/datetimepicker"
+      "@react-native-community/datetimepicker",
+      "expo-audio",
+      "expo-asset",
+      "expo-web-browser",
+      "expo-notifications"
     ],
     "experiments": {
       "typedRoutes": true,
@@ -52,7 +76,7 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "24260913-f716-4eae-9380-9cfd3bfa93f8"
+        "projectId": "53d8d698-98b5-4f29-bd65-a353d1de0e5d"
       }
     },
     "owner": "mercymbao"
