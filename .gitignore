@@ -2,12 +2,18 @@
 
 # dependencies
 node_modules/
+
+# test coverage
+coverage/
 # Ignore Windows reserved device file
 nul
 
 .idea/
+<<<<<<< HEAD
 coverage/
 
+=======
+>>>>>>> b79ca63 (test:Added test for auth and partner screen)
 # Expo
 .expo/
 dist/

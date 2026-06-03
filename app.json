@@ -4,24 +4,32 @@
     "slug": "satsflo",
     "version": "1.0.0",
     "orientation": "portrait",
+<<<<<<< HEAD
     "icon": "./assets/images/logo-icon.png",
     "scheme": "satsflo",
+=======
+    "icon": "./assets/images/Logo-square.png",
+    "scheme": "satsflofrontend",
+>>>>>>> origin/devbranch
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.dadadevelopers.satsflo",
+<<<<<<< HEAD
       "googleServicesFile": "./GoogleService-Info.plist",
       "associatedDomains": [
         "applinks:satsflo.app"
       ]
+=======
+      "associatedDomains": ["applinks:satsflo.app"]
+>>>>>>> origin/devbranch
     },
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/images/logo-icon.png",
-        "backgroundImage": "./assets/images/logo-icon.png",
-        "monochromeImage": "./assets/images/logo-icon.png"
+        "foregroundImage": "./assets/images/Logo.png",
+        "backgroundImage": "./assets/images/Logo.png",
+        "monochromeImage": "./assets/images/Logo.png"
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
@@ -48,36 +56,34 @@
               "pathPrefix": "/invite"
             }
           ],
-          "category": [
-            "BROWSABLE",
-            "DEFAULT"
-          ]
+          "category": ["BROWSABLE", "DEFAULT"]
         }
       ]
     },
     "web": {
       "output": "static",
-      "favicon": "./assets/images/logo-icon.png"
+      "favicon": "./assets/images/Logo-square.png"
     },
     "plugins": [
       "expo-router",
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/logo-icon.png",
+          "image": "./assets/images/Logo-square.png",
           "imageWidth": 200,
           "resizeMode": "contain",
-          "backgroundColor": "#ffffff",
-          "dark": {
-            "backgroundColor": "#000000"
-          }
+          "backgroundColor": "#ffffff"
         }
       ],
       "@react-native-community/datetimepicker",
       "expo-audio",
       "expo-asset",
       "expo-web-browser",
+<<<<<<< HEAD
       "expo-notifications",
+=======
+      "expo-notifications"
+>>>>>>> origin/devbranch
     ],
     "experiments": {
       "typedRoutes": true,
@@ -88,6 +94,11 @@
       "eas": {
         "projectId": "53d8d698-98b5-4f29-bd65-a353d1de0e5d"
       }
+<<<<<<< HEAD
     }
+=======
+    },
+    "owner": "mercymbao"
+>>>>>>> origin/devbranch
   }
 }
