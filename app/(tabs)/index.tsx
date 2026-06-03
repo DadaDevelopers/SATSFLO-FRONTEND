@@ -55,6 +55,7 @@ export default function HomeScreen() {
   const [bannerDismissed, setBannerDismissed] = useState(false);
   const [resending, setResending] = useState(false);
   const pushRegistered = useRef(false);
+  const [unreadCount, setUnreadCount] = useState(0);
   const [showMenstrualModal, setShowMenstrualModal] = useState(false);
   const [showFollicularModal, setShowFollicularModal] = useState(false);
   const [showLutealModal, setShowLutealModal] = useState(false);
@@ -84,12 +85,18 @@ export default function HomeScreen() {
 
       try {
         // Load cycle-profile (source of truth for user settings), current cycle, and predictions in parallel
-        const [profileRes, currentRes, predictionsRes, meRes] = await Promise.all([
+        const [profileRes, currentRes, predictionsRes, meRes, notifRes] = await Promise.all([
           api.get("/cycle-profile", token),
           api.get("/cycles/current", token),
           api.get("/cycles/predictions", token),
           api.get("/auth/me", token),
+          api.get("/notifications", token),
         ]);
+
+        if (notifRes.response.ok) {
+          const list: Array<{ is_read?: boolean }> = notifRes.data?.data ?? notifRes.data ?? [];
+          setUnreadCount(Array.isArray(list) ? list.filter((n) => !n.is_read).length : 0);
+        }
 
         if (meRes.response.ok) {
           const me = meRes.data?.data ?? meRes.data;
@@ -174,7 +181,7 @@ export default function HomeScreen() {
   };
 
   const handleNotificationPress = () => {
-    // Navigate to notifications
+    setUnreadCount(0);
     router.push("/(tabs)/notifications");
   };
 
@@ -195,7 +202,7 @@ export default function HomeScreen() {
       <StatusBar barStyle="light-content" backgroundColor="#FF4081" />
 
       {/* Header */}
-      <HomeHeader onNotificationPress={handleNotificationPress} />
+      <HomeHeader onNotificationPress={handleNotificationPress} unreadCount={unreadCount} />
 
       {/* Email Verification Banner */}
       {!emailVerified && !bannerDismissed && (

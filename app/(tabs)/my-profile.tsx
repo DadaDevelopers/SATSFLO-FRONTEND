@@ -1,4 +1,5 @@
 import { api } from "@/lib/api";
+import { uploadAvatar } from "@/services/upload.service";
 import { Feather } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import DateTimePicker, { DateTimePickerEvent } from "@react-native-community/datetimepicker";
@@ -6,6 +7,7 @@ import * as ImagePicker from "expo-image-picker";
 import { router } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
+  ActivityIndicator,
   Alert,
   FlatList,
   Image,
@@ -98,6 +100,7 @@ export default function MyProfileScreen() {
   const [modalVisible, setModalVisible] = useState(false);
   const [avatarModalVisible, setAvatarModalVisible] = useState(false);
   const [profileImage, setProfileImage] = useState<string | null>(null);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
   const handleSave = async () => {
     if (!fullName.trim()) {
@@ -150,25 +153,21 @@ export default function MyProfileScreen() {
     setModalVisible(false);
   };
 
-  const uploadAvatar = async (base64: string) => {
+  const handleAvatarUpload = async (uri: string) => {
     const token = await AsyncStorage.getItem("accessToken");
     if (!token) return;
+    setUploadingAvatar(true);
     try {
-      const { response, data } = await api.post(
-        "/users/profile/avatar",
-        { avatar: `data:image/jpeg;base64,${base64}` },
-        token
-      );
-      if (response.ok) {
-        const url = data?.data?.avatar_url ?? data?.avatar_url;
-        if (url) {
-          setProfileImage(url);
-          const userJson = await AsyncStorage.getItem("user");
-          const stored = userJson ? JSON.parse(userJson) : {};
-          await AsyncStorage.setItem("user", JSON.stringify({ ...stored, avatar_url: url }));
-        }
+      const url = await uploadAvatar(uri, token);
+      if (url) {
+        setProfileImage(url);
+        const userJson = await AsyncStorage.getItem("user");
+        const stored = userJson ? JSON.parse(userJson) : {};
+        await AsyncStorage.setItem("user", JSON.stringify({ ...stored, avatar_url: url }));
       }
-    } catch {}
+    } finally {
+      setUploadingAvatar(false);
+    }
   };
 
   const pickFromGallery = async () => {
@@ -178,11 +177,10 @@ export default function MyProfileScreen() {
       allowsEditing: true,
       aspect: [1, 1],
       quality: 0.8,
-      base64: true,
     });
     if (!result.canceled && result.assets[0]) {
       setProfileImage(result.assets[0].uri);
-      if (result.assets[0].base64) await uploadAvatar(result.assets[0].base64);
+      await handleAvatarUpload(result.assets[0].uri);
     }
   };
 
@@ -192,11 +190,10 @@ export default function MyProfileScreen() {
       allowsEditing: true,
       aspect: [1, 1],
       quality: 0.8,
-      base64: true,
     });
     if (!result.canceled && result.assets[0]) {
       setProfileImage(result.assets[0].uri);
-      if (result.assets[0].base64) await uploadAvatar(result.assets[0].base64);
+      await handleAvatarUpload(result.assets[0].uri);
     }
   };
 
@@ -253,9 +250,18 @@ export default function MyProfileScreen() {
                   <Feather name="user" size={36} color="#FF82AD" />
                 </View>
               )}
+              {uploadingAvatar && (
+                <View style={{
+                  position: "absolute", top: 0, left: 0, width: 80, height: 80,
+                  borderRadius: 2000, backgroundColor: "rgba(0,0,0,0.4)",
+                  alignItems: "center", justifyContent: "center",
+                }}>
+                  <ActivityIndicator color="#FFFFFF" />
+                </View>
+              )}
               <TouchableOpacity
                 activeOpacity={0.8}
-                onPress={() => setAvatarModalVisible(true)}
+                onPress={() => !uploadingAvatar && setAvatarModalVisible(true)}
                 style={{
                   position: "absolute",
                   left: 59,
@@ -281,7 +287,7 @@ export default function MyProfileScreen() {
                 Full Name
               </Text>
               <View className="bg-[#FFD6E4] rounded-lg px-3 h-12 justify-center">
-                <TextInput value={fullName} onChangeText={setFullName} />
+                <TextInput value={fullName} editable={false} />
               </View>
             </View>
 
@@ -291,7 +297,7 @@ export default function MyProfileScreen() {
               <View className="bg-[#FFD6E4] rounded-lg px-3 h-12 justify-center">
                 <TextInput
                   value={email}
-                  onChangeText={setEmail}
+                  editable={false}
                   keyboardType="email-address"
                 />
               </View>

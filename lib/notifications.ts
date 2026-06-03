@@ -1,8 +1,8 @@
-import * as Device from "expo-device";
 import { isRunningInExpoGo } from "expo";
+import * as Device from "expo-device";
+import type * as NotificationsType from "expo-notifications";
 import { Platform } from "react-native";
 import { api } from "./api";
-import type * as NotificationsType from "expo-notifications";
 
 const EAS_PROJECT_ID = "53d8d698-98b5-4f29-bd65-a353d1de0e5d";
 

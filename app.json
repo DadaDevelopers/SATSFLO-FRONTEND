@@ -7,10 +7,19 @@
     "icon": "./assets/images/Logo-square.png",
     "scheme": "satsflofrontend",
     "userInterfaceStyle": "automatic",
+    "splash": {
+      "image": "./assets/images/Logo-square.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#FF4081"
+    },
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.dadadevelopers.satsflo",
-      "associatedDomains": ["applinks:satsflo.app"]
+      "associatedDomains": ["applinks:satsflo.app"],
+      "infoPlist": {
+        "NSPhotoLibraryUsageDescription": "SatsFlo needs access to your photos to upload images.",
+        "NSCameraUsageDescription": "SatsFlo needs camera access to take photos."
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -29,7 +38,8 @@
         "android.permission.VIBRATE",
         "android.permission.POST_NOTIFICATIONS",
         "android.permission.RECORD_AUDIO",
-        "android.permission.MODIFY_AUDIO_SETTINGS"
+        "android.permission.MODIFY_AUDIO_SETTINGS",
+        "android.permission.READ_MEDIA_IMAGES"
       ],
       "package": "com.dadadevelopers.satsflo",
       "googleServicesFile": "./google-services.json",
@@ -60,7 +70,7 @@
           "image": "./assets/images/Logo-square.png",
           "imageWidth": 200,
           "resizeMode": "contain",
-          "backgroundColor": "#ffffff"
+          "backgroundColor": "#FF4081"
         }
       ],
       "@react-native-community/datetimepicker",

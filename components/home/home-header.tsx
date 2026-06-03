@@ -1,37 +1,15 @@
-import { api } from '@/lib/api';
 import { Feather } from '@expo/vector-icons';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 import Svg, { Path, Rect } from 'react-native-svg';
 
 interface HomeHeaderProps {
   onNotificationPress?: () => void;
   onLogoPress?: () => void;
+  unreadCount?: number;
 }
 
-export function HomeHeader({ onNotificationPress, onLogoPress }: HomeHeaderProps) {
-  const [unreadCount, setUnreadCount] = useState(0);
-
-  useEffect(() => {
-    const fetchUnread = async () => {
-      const token = await AsyncStorage.getItem('accessToken');
-      if (!token) return;
-      try {
-        const { response, data } = await api.get('/notifications', token);
-        if (response.ok) {
-          const list: Array<{ is_read?: boolean }> = data?.data ?? data ?? [];
-          const count = Array.isArray(list)
-            ? list.filter((n) => !n.is_read).length
-            : 0;
-          setUnreadCount(count);
-        }
-      } catch {
-        // ignore — badge is non-critical
-      }
-    };
-    fetchUnread();
-  }, []);
+export function HomeHeader({ onNotificationPress, onLogoPress, unreadCount = 0 }: HomeHeaderProps) {
 
   return (
     <View className="flex-row justify-between items-center px-5 py-4 pt-8">
