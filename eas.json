@@ -1,23 +1,12 @@
 {
   "cli": {
-<<<<<<< HEAD
-    "version": ">= 18.13.1",
-=======
     "version": ">= 18.3.0",
->>>>>>> origin/devbranch
     "appVersionSource": "remote"
   },
   "build": {
     "development": {
       "developmentClient": true,
-<<<<<<< HEAD
-      "distribution": "internal",
-      "android": {
-        "buildType": "apk"
-      }
-=======
       "distribution": "internal"
->>>>>>> origin/devbranch
     },
     "preview": {
       "distribution": "internal",
@@ -33,16 +22,6 @@
     }
   },
   "submit": {
-<<<<<<< HEAD
-    "production": {
-      "android": {
-        "track": "internal"
-      }
-    }
-  }
-}
-=======
     "production": {}
   }
 }
->>>>>>> origin/devbranch

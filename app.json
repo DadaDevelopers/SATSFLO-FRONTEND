@@ -4,25 +4,13 @@
     "slug": "satsflo",
     "version": "1.0.0",
     "orientation": "portrait",
-<<<<<<< HEAD
-    "icon": "./assets/images/logo-icon.png",
-    "scheme": "satsflo",
-=======
     "icon": "./assets/images/Logo-square.png",
     "scheme": "satsflofrontend",
->>>>>>> origin/devbranch
     "userInterfaceStyle": "automatic",
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.dadadevelopers.satsflo",
-<<<<<<< HEAD
-      "googleServicesFile": "./GoogleService-Info.plist",
-      "associatedDomains": [
-        "applinks:satsflo.app"
-      ]
-=======
       "associatedDomains": ["applinks:satsflo.app"]
->>>>>>> origin/devbranch
     },
     "android": {
       "adaptiveIcon": {
@@ -79,11 +67,7 @@
       "expo-audio",
       "expo-asset",
       "expo-web-browser",
-<<<<<<< HEAD
-      "expo-notifications",
-=======
       "expo-notifications"
->>>>>>> origin/devbranch
     ],
     "experiments": {
       "typedRoutes": true,
@@ -94,11 +78,7 @@
       "eas": {
         "projectId": "53d8d698-98b5-4f29-bd65-a353d1de0e5d"
       }
-<<<<<<< HEAD
-    }
-=======
     },
     "owner": "mercymbao"
->>>>>>> origin/devbranch
   }
 }
