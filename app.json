@@ -7,6 +7,11 @@
     "icon": "./assets/images/Logo-square.png",
     "scheme": "satsflofrontend",
     "userInterfaceStyle": "automatic",
+    "splash": {
+      "image": "./assets/images/Logo-square.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#FF4081"
+    },
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.dadadevelopers.satsflo",
@@ -65,7 +70,7 @@
           "image": "./assets/images/Logo-square.png",
           "imageWidth": 200,
           "resizeMode": "contain",
-          "backgroundColor": "#ffffff"
+          "backgroundColor": "#FF4081"
         }
       ],
       "@react-native-community/datetimepicker",

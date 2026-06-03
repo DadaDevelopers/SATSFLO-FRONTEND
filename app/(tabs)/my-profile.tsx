@@ -287,7 +287,7 @@ export default function MyProfileScreen() {
                 Full Name
               </Text>
               <View className="bg-[#FFD6E4] rounded-lg px-3 h-12 justify-center">
-                <TextInput value={fullName} onChangeText={setFullName} />
+                <TextInput value={fullName} editable={false} />
               </View>
             </View>
 
@@ -297,7 +297,7 @@ export default function MyProfileScreen() {
               <View className="bg-[#FFD6E4] rounded-lg px-3 h-12 justify-center">
                 <TextInput
                   value={email}
-                  onChangeText={setEmail}
+                  editable={false}
                   keyboardType="email-address"
                 />
               </View>
