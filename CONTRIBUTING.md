@@ -1,4 +1,4 @@
-# Contributing to SatsFlo Frontend
+# Contributing to SatsFlo
 
 Thank you for contributing. This document explains how to set up the project, the branching strategy, code standards, and how to write and run tests.
 
@@ -17,11 +17,11 @@ Thank you for contributing. This document explains how to set up the project, th
 
 ## Branch Strategy
 
-| Branch | Purpose |
-|---|---|
+| Branch      | Purpose                                                           |
+| ----------- | ----------------------------------------------------------------- |
 | `devbranch` | Main integration branch. All feature and fix branches merge here. |
-| `test` | QA and testing. Merged into after `devbranch` is stable. |
-| `build` | Production builds and deployment only. |
+| `test`      | QA and testing. Merged into after `devbranch` is stable.          |
+| `build`     | Production builds and deployment only.                            |
 
 **Never push directly to `build`.** All code goes through `devbranch` first.
 
@@ -160,96 +160,6 @@ __tests__/
     journal.test.tsx
     settings.test.tsx
 ```
-
-### Writing a new test
-
-Each test file follows the same pattern:
-
-**1. Mock external dependencies at the top**
-
-Always mock `expo-router`, `AsyncStorage`, `api`, `react-native-safe-area-context`, and `react-native-svg`. These never have real implementations in the test environment.
-
-```tsx
-jest.mock("expo-router", () => ({
-  useRouter: () => ({ push: jest.fn(), replace: jest.fn(), back: jest.fn() }),
-  router: { push: jest.fn(), replace: jest.fn() },
-  useFocusEffect: (cb: () => void) => { cb(); },
-  useLocalSearchParams: jest.fn(() => ({})),
-}));
-
-jest.mock("@react-native-async-storage/async-storage", () => ({
-  getItem: jest.fn().mockResolvedValue("mock-token"),
-  setItem: jest.fn().mockResolvedValue(undefined),
-  multiSet: jest.fn().mockResolvedValue(undefined),
-  multiGet: jest.fn().mockResolvedValue([]),
-  removeItem: jest.fn().mockResolvedValue(undefined),
-  multiRemove: jest.fn().mockResolvedValue(undefined),
-}));
-
-jest.mock("@/lib/api", () => ({ api: { post: jest.fn(), get: jest.fn() } }));
-
-jest.mock("react-native-safe-area-context", () => ({
-  useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }),
-}));
-```
-
-**2. Mock child components that are not under test**
-
-If a screen imports heavy native components (e.g. `CycleTracker`, `BottomNavigation`), mock them to return `null`:
-
-```tsx
-jest.mock("@/components/home/cycle-tracker", () => ({ CycleTracker: () => null }));
-jest.mock("@/components/home/bottom-navigation", () => ({ BottomNavigation: () => null }));
-```
-
-**3. Write focused, descriptive test cases**
-
-```tsx
-describe("LoginScreen", () => {
-  beforeEach(() => jest.clearAllMocks());
-
-  it("renders email and password inputs", () => {
-    const { getByPlaceholderText } = render(<LoginScreen />);
-    expect(getByPlaceholderText("Email")).toBeTruthy();
-    expect(getByPlaceholderText("Password")).toBeTruthy();
-  });
-
-  it("calls api.post with credentials on submit", async () => {
-    mockedApi.post.mockResolvedValue({
-      response: { ok: true } as any,
-      data: { data: { accessToken: "abc", refreshToken: "xyz", user: { id: 1 } } },
-    });
-    const { getByPlaceholderText, getByText } = render(<LoginScreen />);
-    fireEvent.changeText(getByPlaceholderText("Email"), "user@example.com");
-    fireEvent.changeText(getByPlaceholderText("Password"), "Password1!");
-    fireEvent.press(getByText("Sign In"));
-    await waitFor(() => {
-      expect(mockedApi.post).toHaveBeenCalledWith("/auth/login", {
-        email: "user@example.com",
-        password: "Password1!",
-      });
-    });
-  });
-});
-```
-
-**4. What to test**
-
-Every screen or component contribution should cover at minimum:
-
-- Renders the expected UI elements
-- Validates inputs and blocks submission when fields are empty or invalid
-- Calls the correct API endpoint with the correct payload on a successful action
-- Displays the error message returned by the API on failure
-- Navigates to the correct route on success
-
-### What not to test
-
-- Internal implementation details (private functions, internal state)
-- Third-party library behaviour (expo-router, AsyncStorage)
-- Snapshot tests — they are brittle and add little value
-
----
 
 ## Submitting a Pull Request
 

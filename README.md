@@ -1,4 +1,4 @@
-# SatsFlo Frontend
+# SatsFlo
 
 Mobile application for menstrual cycle tracking, health logging, and cycle insights. Built with React Native and Expo.
 
@@ -9,58 +9,67 @@ Mobile application for menstrual cycle tracking, health logging, and cycle insig
 
 ## Tech Stack
 
-| Layer | Technology |
-|---|---|
-| Framework | React Native 0.81 + Expo SDK 54 |
-| Navigation | Expo Router 6 (file-based) |
-| Styling | NativeWind 4 (Tailwind CSS for React Native) |
-| Language | TypeScript 5.9 |
-| State | React Context API |
-| Storage | AsyncStorage + REST API |
-| Build | EAS Build |
+| Layer      | Technology                                   |
+| ---------- | -------------------------------------------- |
+| Framework  | React Native 0.81 + Expo SDK 54              |
+| Navigation | Expo Router 6 (file-based)                   |
+| Styling    | NativeWind 4 (Tailwind CSS for React Native) |
+| Language   | TypeScript 5.9                               |
+| State      | React Context API                            |
+| Storage    | AsyncStorage + REST API                      |
+| Build      | EAS Build                                    |
 
 ---
 
 ## Key Features
 
 **Cycle Tracking**
+
 - Circular cycle wheel displaying all days of the current cycle period
 - Phase visualization: menstrual, follicular, ovulation, and luteal
 - Cycle day counter with days-until-next-period countdown
 - Real-time period start and end logging
 
 **Health Logging**
+
 - Daily logs for flow level, symptoms, moods, and medicine
 - Notes, weight, temperature, and water intake tracking
 - Date-browsable log history synced with the calendar screen
 
 **Calendar**
+
 - Monthly calendar view with period and fertility window highlights
 - Day-by-day log summary (flow, symptoms, moods, weight, temperature, water)
 - Cycle day labels on each date cell
 
 **Partner Mode**
+
 - Invite a partner or friend to view cycle data
 - Switch between personal and partner cycle views
 - Dedicated partner dashboard
 
 **Journal**
+
 - Personal health journal with text entries
 - All-entries view with filtering
 
 **Community Thread**
+
 - Post and view community threads
 - Comment on posts
 
 **Gift Token**
+
 - Send and receive gift tokens between users
 - Wallet management for token transactions
 
 **Notifications**
+
 - Push notification support via Expo Notifications
 - In-app notification centre with unread count
 
 **Settings**
+
 - Period length, cycle length, and luteal phase length configuration
 - Reminder management
 - Theme selection (light, dark, system)
@@ -69,6 +78,7 @@ Mobile application for menstrual cycle tracking, health logging, and cycle insig
 - Account deletion
 
 **Authentication**
+
 - Email and password signup and login
 - OTP email verification
 - Forgot password and reset password flow
@@ -140,6 +150,10 @@ eas build --platform android --profile production
 
 ---
 
+## Design
+
+[Figma file](https://www.figma.com/design/A9TfZ0WjUz7P82qRMDoyu3/Sats-Flow-Project?node-id=2120-2751&t=rujN1cyUsDviAF6C-1)
+
 ## Environment Notes
 
 - The app communicates with a REST backend. The base URL is configured in `lib/api.ts`.
@@ -150,11 +164,11 @@ eas build --platform android --profile production
 
 ## Branch Structure
 
-| Branch | Purpose |
-|---|---|
+| Branch      | Purpose                                                   |
+| ----------- | --------------------------------------------------------- |
 | `devbranch` | Main integration branch — all feature branches merge here |
-| `test` | QA and testing |
-| `build` | Production builds and deployment |
+| `test`      | QA and testing                                            |
+| `build`     | Production builds and deployment                          |
 
 ---
 
