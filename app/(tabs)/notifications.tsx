@@ -195,6 +195,7 @@ export default function NotificationsScreen() {
         <ScrollView
           className="flex-1 px-5"
           showsVerticalScrollIndicator={false}
+          directionalLockEnabled={true}
           refreshControl={
             <RefreshControl
               refreshing={refreshing}
@@ -208,8 +209,10 @@ export default function NotificationsScreen() {
             {notifications.map((notification) => (
               <Swipeable
                 key={notification.id}
-                renderRightActions={() => renderRightActions(notification.id)}
-                overshootRight={false}
+                renderLeftActions={() => renderRightActions(notification.id)}
+                overshootLeft={false}
+                friction={2}
+                leftThreshold={40}
               >
                 <View className="flex-row items-center rounded-2xl bg-white px-4 py-4 gap-3">
                   {/* Avatar */}
