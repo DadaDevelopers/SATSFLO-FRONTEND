@@ -11,9 +11,13 @@ import {
   ScrollView,
   StatusBar,
   Text,
+  TouchableOpacity,
   View,
 } from "react-native";
+import { Swipeable } from "react-native-gesture-handler";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+
+const BASE_URL = "https://satsflo-backend.onrender.com/api/v1";
 
 interface Notification {
   id: string;
@@ -95,6 +99,35 @@ export default function NotificationsScreen() {
     fetchNotifications();
   };
 
+  const deleteNotification = async (id: string) => {
+    try {
+      const token = await AsyncStorage.getItem("accessToken");
+      await fetch(`${BASE_URL}/notifications/${id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setNotifications((prev) => prev.filter((n) => n.id !== id));
+    } catch (err) {
+      console.error("Delete failed:", err);
+    }
+  };
+
+  const renderRightActions = (id: string) => (
+    <TouchableOpacity
+      style={{
+        backgroundColor: "#FF4081",
+        justifyContent: "center",
+        alignItems: "center",
+        width: 80,
+        borderRadius: 12,
+        marginVertical: 4,
+      }}
+      onPress={() => deleteNotification(id)}
+    >
+      <Text style={{ color: "white", fontWeight: "bold" }}>Delete</Text>
+    </TouchableOpacity>
+  );
+
   const todayCount = notifications.filter((n) => isToday(n.created_at)).length;
 
   return (
@@ -162,6 +195,7 @@ export default function NotificationsScreen() {
         <ScrollView
           className="flex-1 px-5"
           showsVerticalScrollIndicator={false}
+          directionalLockEnabled={true}
           refreshControl={
             <RefreshControl
               refreshing={refreshing}
@@ -173,47 +207,52 @@ export default function NotificationsScreen() {
         >
           <View className="flex flex-col gap-3 pb-8">
             {notifications.map((notification) => (
-              <View
+              <Swipeable
                 key={notification.id}
-                className="flex-row items-center rounded-2xl bg-white px-4 py-4 gap-3"
+                renderLeftActions={() => renderRightActions(notification.id)}
+                overshootLeft={false}
+                friction={2}
+                leftThreshold={40}
               >
-                {/* Avatar */}
-                {notification.avatar_url ? (
-                  <Image
-                    source={{ uri: notification.avatar_url }}
-                    style={{ width: 52, height: 52, borderRadius: 26 }}
-                    resizeMode="cover"
-                  />
-                ) : (
-                  <View
-                    style={{
-                      width: 52,
-                      height: 52,
-                      borderRadius: 26,
-                      backgroundColor: "#FF4081",
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                  >
-                    <Feather name="bell" size={22} color="#FFFFFF" />
-                  </View>
-                )}
+                <View className="flex-row items-center rounded-2xl bg-white px-4 py-4 gap-3">
+                  {/* Avatar */}
+                  {notification.avatar_url ? (
+                    <Image
+                      source={{ uri: notification.avatar_url }}
+                      style={{ width: 52, height: 52, borderRadius: 26 }}
+                      resizeMode="cover"
+                    />
+                  ) : (
+                    <View
+                      style={{
+                        width: 52,
+                        height: 52,
+                        borderRadius: 26,
+                        backgroundColor: "#FF4081",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      <Feather name="bell" size={22} color="#FFFFFF" />
+                    </View>
+                  )}
 
-                {/* Message */}
-                <View className="flex-1">
-                  <Text
-                    className="text-sm font-inter text-[#090909]"
-                    numberOfLines={2}
-                  >
-                    {notification.message}
-                  </Text>
-                  {notification.created_at ? (
-                    <Text className="text-xs text-[#888] mt-0.5">
-                      {formatTime(notification.created_at)}
+                  {/* Message */}
+                  <View className="flex-1">
+                    <Text
+                      className="text-sm font-inter text-[#090909]"
+                      numberOfLines={2}
+                    >
+                      {notification.message}
                     </Text>
-                  ) : null}
+                    {notification.created_at ? (
+                      <Text className="text-xs text-[#888] mt-0.5">
+                        {formatTime(notification.created_at)}
+                      </Text>
+                    ) : null}
+                  </View>
                 </View>
-              </View>
+              </Swipeable>
             ))}
           </View>
         </ScrollView>

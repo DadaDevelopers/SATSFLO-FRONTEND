@@ -24,6 +24,7 @@ import { router, Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
 import { Alert } from "react-native";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import "../global.css";
 
@@ -79,22 +80,24 @@ export default function RootLayout() {
   }
 
   return (
-    <SafeAreaProvider>
-      <ThemeProvider>
-        <AddLogProvider>
-          <Stack screenOptions={{ headerShown: false }}>
-            <Stack.Screen name="splash" />
-            <Stack.Screen name="how-to-use" />
-            <Stack.Screen name="partner-welcome" />
-            <Stack.Screen name="enter-partner-code" />
-            <Stack.Screen name="(tabs)" />
-            <Stack.Screen name="add-log" />
-            <Stack.Screen name="gift-token" />
-            <Stack.Screen name="chat" />
-            <Stack.Screen name="modal" options={{ presentation: "modal" }} />
-          </Stack>
-        </AddLogProvider>
-      </ThemeProvider>
-    </SafeAreaProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <SafeAreaProvider>
+        <ThemeProvider>
+          <AddLogProvider>
+            <Stack screenOptions={{ headerShown: false }}>
+              <Stack.Screen name="splash" />
+              <Stack.Screen name="how-to-use" />
+              <Stack.Screen name="partner-welcome" />
+              <Stack.Screen name="enter-partner-code" />
+              <Stack.Screen name="(tabs)" />
+              <Stack.Screen name="add-log" />
+              <Stack.Screen name="gift-token" />
+              <Stack.Screen name="chat" />
+              <Stack.Screen name="modal" options={{ presentation: "modal" }} />
+            </Stack>
+          </AddLogProvider>
+        </ThemeProvider>
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
   );
 }
