@@ -4,18 +4,15 @@
     "slug": "satsflo",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/Logo-square.png",
+    "icon": "./assets/images/app-icon.png",
     "scheme": "satsflofrontend",
     "userInterfaceStyle": "automatic",
-    "splash": {
-      "image": "./assets/images/Logo-square.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#FF4081"
-    },
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.dadadevelopers.satsflo",
-      "associatedDomains": ["applinks:satsflo.app"],
+      "associatedDomains": [
+        "applinks:satsflo.app"
+      ],
       "infoPlist": {
         "NSPhotoLibraryUsageDescription": "SatsFlo needs access to your photos to upload images.",
         "NSCameraUsageDescription": "SatsFlo needs camera access to take photos."
@@ -23,15 +20,11 @@
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/images/Logo.png",
-        "backgroundImage": "./assets/images/Logo.png",
-        "monochromeImage": "./assets/images/Logo.png"
+        "backgroundColor": "#FF4081",
+        "foregroundImage": "./assets/images/adaptive-icon-fg.png",
+        "monochromeImage": "./assets/images/app-icon.png"
       },
-      "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "enableProguardInReleaseBuilds": true,
-      "enableShrinkResourcesInReleaseBuilds": true,
       "permissions": [
         "android.permission.CAMERA",
         "android.permission.RECEIVE_BOOT_COMPLETED",
@@ -54,23 +47,40 @@
               "pathPrefix": "/invite"
             }
           ],
-          "category": ["BROWSABLE", "DEFAULT"]
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
         }
       ]
     },
     "web": {
       "output": "static",
-      "favicon": "./assets/images/Logo-square.png"
+      "favicon": "./assets/images/app-icon.png"
     },
     "plugins": [
       "expo-router",
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/Logo-square.png",
+          "image": "./assets/images/app-icon.png",
           "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#FF4081"
+        }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "enableProguardInReleaseBuilds": true,
+            "enableShrinkResourcesInReleaseBuilds": true,
+            "buildArchs": [
+              "arm64-v8a",
+              "armeabi-v7a"
+            ],
+            "enableMinifyInReleaseBuilds": true
+          }
         }
       ],
       "@react-native-community/datetimepicker",
@@ -86,7 +96,7 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "53d8d698-98b5-4f29-bd65-a353d1de0e5d"
+        "projectId": "b46fccf7-7ce9-4a63-b33e-3521fa3ebab4"
       }
     },
     "owner": "mercymbao"
