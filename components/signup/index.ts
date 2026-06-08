@@ -1,3 +1,4 @@
+export { GoogleButton } from './google-button';
 export { InputField } from './input-field';
 export { PrimaryButton } from './primary-button';
 export { Checkbox } from './checkbox';
