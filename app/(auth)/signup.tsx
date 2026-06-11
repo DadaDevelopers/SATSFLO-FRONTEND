@@ -138,10 +138,6 @@ export default function SignupScreen() {
     setStatusMessage(null);
     try {
       const { GoogleSignin } = require("@react-native-google-signin/google-signin");
-      GoogleSignin.configure({
-        webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID ?? "",
-        offlineAccess: true,
-      });
       await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
       const result = await GoogleSignin.signIn();
       if (result.type === "cancelled") return;
@@ -149,15 +145,14 @@ export default function SignupScreen() {
       if (!idToken) throw new Error("No ID token");
 
       const { response, data } = await api.post("/auth/google", { idToken });
+
       if (response.ok) {
-        const accessToken = data?.data?.accessToken ?? data?.accessToken;
-        const refreshToken = data?.data?.refreshToken ?? data?.refreshToken;
-        const user = data?.data?.user ?? data?.user;
-        const pairs: [string, string][] = [];
-        if (accessToken) pairs.push(["accessToken", accessToken]);
-        if (refreshToken) pairs.push(["refreshToken", refreshToken]);
-        if (user) pairs.push(["user", JSON.stringify(user)]);
-        if (pairs.length > 0) await AsyncStorage.multiSet(pairs);
+        const { accessToken, refreshToken, user } = data.data;
+        await AsyncStorage.multiSet([
+          ["accessToken", accessToken],
+          ["refreshToken", refreshToken],
+          ["user", JSON.stringify(user)],
+        ]);
         setStatusMessage({ text: "Signed in with Google!", type: "success" });
         setTimeout(
           () =>
@@ -166,6 +161,10 @@ export default function SignupScreen() {
               : router.push("/(auth)/cycle-length"),
           800
         );
+      } else if (response.status === 401) {
+        setStatusMessage({ text: "Google session expired. Please try again.", type: "error" });
+      } else if (response.status === 403) {
+        setStatusMessage({ text: "This account has been suspended.", type: "error" });
       } else {
         setStatusMessage({ text: data?.message ?? "Google sign-in failed.", type: "error" });
       }

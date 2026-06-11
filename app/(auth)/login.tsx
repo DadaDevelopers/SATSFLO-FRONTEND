@@ -131,10 +131,6 @@ export default function LoginScreen() {
     setStatusMessage(null);
     try {
       const { GoogleSignin } = require("@react-native-google-signin/google-signin");
-      GoogleSignin.configure({
-        webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID ?? "",
-        offlineAccess: true,
-      });
       await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
       const result = await GoogleSignin.signIn();
       if (result.type === "cancelled") return;
@@ -142,12 +138,13 @@ export default function LoginScreen() {
       if (!idToken) throw new Error("No ID token");
 
       const { response, data } = await api.post("/auth/google", { idToken });
+
       if (response.ok) {
-        const accessToken = data?.data?.accessToken ?? data?.accessToken;
+        const { accessToken, refreshToken, user } = data.data;
         await AsyncStorage.multiSet([
           ["accessToken", accessToken],
-          ["refreshToken", data?.data?.refreshToken ?? data?.refreshToken ?? ""],
-          ["user", JSON.stringify(data?.data?.user ?? data?.user ?? {})],
+          ["refreshToken", refreshToken],
+          ["user", JSON.stringify(user)],
         ]);
         setStatusMessage({ text: "Signed in with Google!", type: "success" });
 
@@ -162,6 +159,10 @@ export default function LoginScreen() {
           else if (isPartnerFlow) router.replace("/partner-welcome" as any);
           else router.replace("/(tabs)");
         }, 800);
+      } else if (response.status === 401) {
+        setStatusMessage({ text: "Google session expired. Please try again.", type: "error" });
+      } else if (response.status === 403) {
+        setStatusMessage({ text: "This account has been suspended.", type: "error" });
       } else {
         setStatusMessage({ text: data?.message ?? "Google sign-in failed.", type: "error" });
       }
