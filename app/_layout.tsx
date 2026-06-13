@@ -28,6 +28,19 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import "../global.css";
 
+// Configure Google Sign-In once at app startup (no-op in Expo Go)
+try {
+  const { isRunningInExpoGo } = require("expo");
+  if (!isRunningInExpoGo()) {
+    const { GoogleSignin } = require("@react-native-google-signin/google-signin");
+    GoogleSignin.configure({
+      webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID ?? "",
+      iosClientId: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID,
+      offlineAccess: true,
+    });
+  }
+} catch {}
+
 export default function RootLayout() {
   const [poppinsLoaded] = usePoppins({
     Poppins: Poppins_400Regular,

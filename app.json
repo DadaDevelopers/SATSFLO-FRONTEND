@@ -15,7 +15,9 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.dadadevelopers.satsflo",
-      "associatedDomains": ["applinks:satsflo.app"],
+      "associatedDomains": [
+        "applinks:satsflo.app"
+      ],
       "infoPlist": {
         "NSPhotoLibraryUsageDescription": "SatsFlo needs access to your photos to upload images.",
         "NSCameraUsageDescription": "SatsFlo needs camera access to take photos."
@@ -54,7 +56,10 @@
               "pathPrefix": "/invite"
             }
           ],
-          "category": ["BROWSABLE", "DEFAULT"]
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
         }
       ]
     },
@@ -86,9 +91,9 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "53d8d698-98b5-4f29-bd65-a353d1de0e5d"
+        "projectId": "ec5b0398-1735-4be6-a07f-512f332a68e8"
       }
     },
-    "owner": "mercymbao"
+    "owner": "satsflo"
   }
 }

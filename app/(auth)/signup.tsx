@@ -1,5 +1,6 @@
 import { BackButton } from "@/components/signup/back-button";
 import { Checkbox } from "@/components/signup/checkbox";
+import { GoogleButton } from "@/components/signup/google-button";
 import { HomeIndicatorArea } from "@/components/signup/home-indicator-area";
 import { InputField } from "@/components/signup/input-field";
 import { PrimaryButton } from "@/components/signup/primary-button";
@@ -10,6 +11,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
+  Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -121,6 +123,55 @@ export default function SignupScreen() {
         text: "Error creating an account. Please try again.",
         type: "error",
       });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    const { isRunningInExpoGo } = require("expo");
+    if (isRunningInExpoGo()) {
+      Alert.alert("Not available in Expo Go", "Google sign-in requires a development build.");
+      return;
+    }
+    setLoading(true);
+    setStatusMessage(null);
+    try {
+      const { GoogleSignin } = require("@react-native-google-signin/google-signin");
+      await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
+      const result = await GoogleSignin.signIn();
+      if (result.type === "cancelled") return;
+      const idToken = result.data?.idToken;
+      if (!idToken) throw new Error("No ID token");
+
+      const { response, data } = await api.post("/auth/google", { idToken });
+
+      if (response.ok) {
+        const { accessToken, refreshToken, user } = data.data;
+        await AsyncStorage.multiSet([
+          ["accessToken", accessToken],
+          ["refreshToken", refreshToken],
+          ["user", JSON.stringify(user)],
+        ]);
+        setStatusMessage({ text: "Signed in with Google!", type: "success" });
+        setTimeout(
+          () =>
+            isPartnerFlow
+              ? router.replace("/partner-welcome" as any)
+              : router.push("/(auth)/cycle-length"),
+          800
+        );
+      } else if (response.status === 401) {
+        setStatusMessage({ text: "Google session expired. Please try again.", type: "error" });
+      } else if (response.status === 403) {
+        setStatusMessage({ text: "This account has been suspended.", type: "error" });
+      } else {
+        setStatusMessage({ text: data?.message ?? "Google sign-in failed.", type: "error" });
+      }
+    } catch (err: any) {
+      if (err.code !== "SIGN_IN_CANCELLED") {
+        setStatusMessage({ text: "Google sign-in failed. Please try again.", type: "error" });
+      }
     } finally {
       setLoading(false);
     }
@@ -283,8 +334,8 @@ export default function SignupScreen() {
           </ScrollView>
 
           {/* Bottom Section - Fixed at bottom */}
-          <View className="px-6 pb-4 pt-4">
-            <View className="items-center gap-4">
+          <View className="px-6 pb-4 pt-2">
+            <View className="items-center gap-5">
               {statusMessage && (
                 <View
                   className="w-full rounded-xl px-4 py-3"
@@ -300,15 +351,40 @@ export default function SignupScreen() {
                   </Text>
                 </View>
               )}
+
+              {/* OR divider — Frame 114 */}
+              <View className="flex-row items-center w-full">
+                <View className="flex-1" style={{ height: 2, backgroundColor: "#FF669A" }} />
+                <Text
+                  style={{
+                    fontFamily: "Inter",
+                    fontWeight: "500",
+                    fontSize: 14,
+                    lineHeight: 22,
+                    color: "#4E001B",
+                    paddingHorizontal: 10,
+                    letterSpacing: -0.56,
+                  }}
+                >
+                  or
+                </Text>
+                <View className="flex-1" style={{ height: 2, backgroundColor: "#FF669A" }} />
+              </View>
+
+              {/* Google button */}
+              <GoogleButton onPress={handleGoogleSignIn} disabled={loading} />
+
+              {/* Primary CTA */}
               <PrimaryButton
                 title={loading ? "Signing up..." : "Sign up"}
                 onPress={handleNext}
                 disabled={loading || !isFormValid}
               />
+
               <TouchableOpacity
                 onPress={handleSignIn}
                 activeOpacity={0.7}
-                className="py-3"
+                className="py-1"
               >
                 <Text className="text-sm font-normal leading-[17px] text-center text-signup-link">
                   Already have an account?{" "}
