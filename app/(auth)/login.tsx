@@ -92,7 +92,7 @@ export default function LoginScreen() {
           if (isPaired) {
             router.replace("/partner" as any);
           } else if (isPartnerFlow) {
-            router.replace("/partner-welcome" as any);
+            router.replace("/enter-partner-code" as any);
           } else {
             router.replace("/(tabs)");
           }
@@ -156,7 +156,7 @@ export default function LoginScreen() {
 
         setTimeout(() => {
           if (isPaired) router.replace("/partner" as any);
-          else if (isPartnerFlow) router.replace("/partner-welcome" as any);
+          else if (isPartnerFlow) router.replace("/enter-partner-code" as any);
           else router.replace("/(tabs)");
         }, 800);
       } else if (response.status === 401) {

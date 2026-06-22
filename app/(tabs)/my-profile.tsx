@@ -84,7 +84,17 @@ export default function MyProfileScreen() {
           const profile = data?.data ?? data;
           setFullName(profile.name ?? "");
           setEmail(profile.email ?? "");
-          setPhone(profile.phone ?? "");
+          // Strip country code prefix so the input only shows the local number
+          const rawPhone: string = profile.phone ?? "";
+          let localPhone = rawPhone;
+          for (const country of countries) {
+            if (rawPhone.startsWith(country.code)) {
+              localPhone = rawPhone.slice(country.code.length);
+              setSelectedCountry(country);
+              break;
+            }
+          }
+          setPhone(localPhone);
           if (profile.avatar_url) setProfileImage(profile.avatar_url);
           if (profile.date_of_birth) {
             const parts = profile.date_of_birth.split("T")[0].split("-");
@@ -103,43 +113,35 @@ export default function MyProfileScreen() {
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
   const handleSave = async () => {
-    if (!fullName.trim()) {
-      Alert.alert("Validation Error", "Full name is required.");
-      return;
-    }
-    if (!email.trim()) {
-      Alert.alert("Validation Error", "Email is required.");
-      return;
-    }
     const token = await AsyncStorage.getItem("accessToken");
     if (!token) {
       Alert.alert("Error", "Session expired. Please log in again.");
       return;
     }
-    // Convert DD-MM-YYYY display format to YYYY-MM-DD for API
-    let dateForApi = dateOfBirth;
-    if (dateOfBirth.includes("-")) {
+
+    // Only send the fields that are actually editable on this screen
+    const payload: Record<string, string> = {};
+
+    if (phone.trim()) {
+      payload.phone = `${selectedCountry.code}${phone.trim()}`;
+    }
+
+    if (dateOfBirth.trim()) {
       const parts = dateOfBirth.split("-");
+      // Convert DD-MM-YYYY display format → YYYY-MM-DD for API
       if (parts.length === 3 && parts[2].length === 4) {
-        dateForApi = `${parts[2]}-${parts[1]}-${parts[0]}`;
+        payload.date_of_birth = `${parts[2]}-${parts[1]}-${parts[0]}`;
+      } else {
+        payload.date_of_birth = dateOfBirth;
       }
     }
+
     try {
-      const { response, data } = await api.put(
-        "/users/profile",
-        {
-          name: fullName,
-          phone: `${selectedCountry.code}${phone}`,
-          date_of_birth: dateForApi,
-        },
-        token
-      );
+      const { response, data } = await api.put("/users/profile", payload, token);
       if (response.ok) {
         const updated = data?.data ?? data;
         await AsyncStorage.setItem("user", JSON.stringify(updated));
-        Alert.alert("Success", "Profile saved successfully.", [
-          { text: "OK", onPress: () => router.push("/(tabs)/settings" as any) },
-        ]);
+        router.replace("/(tabs)/settings" as any);
       } else {
         Alert.alert("Error", data?.message || "Failed to save profile.");
       }

@@ -1,4 +1,5 @@
 import { BottomNavigation } from "@/components/home/bottom-navigation";
+import { TermsModal } from "@/components/terms-modal";
 import { useTheme } from "@/context/theme-context";
 import { api, clearAuthStorage } from "@/lib/api";
 import { Feather } from "@expo/vector-icons";
@@ -128,17 +129,6 @@ function ContactSupportIcon() {
       <Path
         d="M14.5 7.99979V12.9998C14.5 13.6628 14.2366 14.2987 13.7678 14.7676C13.2989 15.2364 12.663 15.4998 12 15.4998H8.5C8.36739 15.4998 8.24022 15.4471 8.14645 15.3533C8.05268 15.2596 8 15.1324 8 14.9998C8 14.8672 8.05268 14.74 8.14645 14.6462C8.24022 14.5525 8.36739 14.4998 8.5 14.4998H12C12.3978 14.4998 12.7794 14.3418 13.0607 14.0605C13.342 13.7791 13.5 13.3976 13.5 12.9998H12C11.6022 12.9998 11.2206 12.8418 10.9393 12.5605C10.658 12.2791 10.5 11.8976 10.5 11.4998V8.99979C10.5 8.60197 10.658 8.22044 10.9393 7.93913C11.2206 7.65783 11.6022 7.49979 12 7.49979H13.4781C13.3835 6.46038 12.9951 5.46935 12.3582 4.64245C11.7214 3.81555 10.8624 3.18692 9.88164 2.83C8.90085 2.47308 7.83875 2.40259 6.8194 2.62677C5.80005 2.85096 4.86553 3.36056 4.125 4.09604C3.20416 5.00474 2.6362 6.2111 2.5225 7.49979H4C4.39783 7.49979 4.77936 7.65783 5.06066 7.93913C5.34197 8.22044 5.5 8.60197 5.5 8.99979V11.4998C5.5 11.8976 5.34197 12.2791 5.06066 12.5605C4.77936 12.8418 4.39783 12.9998 4 12.9998H3C2.60218 12.9998 2.22064 12.8418 1.93934 12.5605C1.65804 12.2791 1.5 11.8976 1.5 11.4998V7.99979C1.5014 6.71223 1.88476 5.45403 2.60156 4.38444C3.31836 3.31485 4.33638 2.48196 5.52674 1.9912C6.71711 1.50044 8.02632 1.37386 9.28866 1.6275C10.551 1.88114 11.7097 2.50358 12.6181 3.41604C13.2179 4.01873 13.6929 4.73385 14.0158 5.52041C14.3387 6.30697 14.5033 7.14953 14.5 7.99979Z"
         fill="#0134E4"
-      />
-    </Svg>
-  );
-}
-
-function WalletIcon() {
-  return (
-    <Svg width={16} height={16} viewBox="0 0 16 16" fill="none">
-      <Path
-        d="M13.5 4H3.5C3.36739 4 3.24021 3.94732 3.14645 3.85355C3.05268 3.75979 3 3.63261 3 3.5C3 3.36739 3.05268 3.24021 3.14645 3.14645C3.24021 3.05268 3.36739 3 3.5 3H12C12.1326 3 12.2598 2.94732 12.3536 2.85355C12.4473 2.75979 12.5 2.63261 12.5 2.5C12.5 2.36739 12.4473 2.24021 12.3536 2.14645C12.2598 2.05268 12.1326 2 12 2H3.5C3.10218 2 2.72064 2.15804 2.43934 2.43934C2.15804 2.72064 2 3.10218 2 3.5V11.5C2 11.8978 2.15804 12.2794 2.43934 12.5607C2.72064 12.842 3.10218 13 3.5 13H13.5C13.7652 13 14.0196 12.8946 14.2071 12.7071C14.3946 12.5196 14.5 12.2652 14.5 12V5C14.5 4.73478 14.3946 4.48043 14.2071 4.29289C14.0196 4.10536 13.7652 4 13.5 4ZM11.25 9C11.1017 9 10.9567 8.95601 10.8333 8.8736C10.71 8.79119 10.6139 8.67406 10.5571 8.53701C10.5003 8.39997 10.4855 8.24917 10.5144 8.10368C10.5434 7.9582 10.6148 7.82456 10.7197 7.71967C10.8246 7.61478 10.9582 7.54335 11.1037 7.51441C11.2492 7.48547 11.4 7.50032 11.537 7.55709C11.6741 7.61386 11.7912 7.70999 11.8736 7.83332C11.956 7.95666 12 8.10166 12 8.25C12 8.44891 11.921 8.63968 11.7803 8.78033C11.6397 8.92098 11.4489 9 11.25 9Z"
-        fill="#896024"
       />
     </Svg>
   );
@@ -301,6 +291,7 @@ export default function SettingsScreen() {
   const [rateAppModalVisible, setRateAppModalVisible] = useState(false);
   const [rating, setRating] = useState(3);
   const [logoutModalVisible, setLogoutModalVisible] = useState(false);
+  const [privacyModalVisible, setPrivacyModalVisible] = useState(false);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [deletePassword, setDeletePassword] = useState("");
   const { selectedTheme, setSelectedTheme } = useTheme();
@@ -773,21 +764,15 @@ export default function SettingsScreen() {
           />
         </SectionCard>
 
-        {/* Wallet Card */}
-        <SectionCard>
-          <SettingRow
-            icon={<WalletIcon />}
-            label="Connect wallet"
-            onPress={() => router.push("/(tabs)/connect-wallet" as any)}
-            isLast
-          />
-        </SectionCard>
-
         {/* Support & Legal Card */}
         <SectionCard>
           <SettingRow iconName="help-circle" iconColor="#C62828" label="FAQ" />
           <SettingRow icon={<ContactSupportIcon />} label="Contact support" />
-          <SettingRow icon={<PrivacyIcon />} label="Privacy policy" />
+          <SettingRow
+            icon={<PrivacyIcon />}
+            label="Privacy policy"
+            onPress={() => setPrivacyModalVisible(true)}
+          />
           <SettingRow
             icon={<RateAppIcon />}
             label="Rate app"
@@ -1114,6 +1099,13 @@ export default function SettingsScreen() {
           </View>
         </View>
       </Modal>
+
+      <TermsModal
+        visible={privacyModalVisible}
+        initialTab="privacy"
+        onAgree={() => setPrivacyModalVisible(false)}
+        onDismiss={() => setPrivacyModalVisible(false)}
+      />
     </View>
   );
 }

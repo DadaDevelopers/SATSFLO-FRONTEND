@@ -12,7 +12,7 @@ export default function HowToUseScreen() {
 
   const handleNext = () => {
     if (selected === "cycle") router.push("/onboarding");
-    else if (selected === "partner") router.push("/partner-welcome");
+    else if (selected === "partner") router.push("/(auth)/signup?flow=partner" as any);
   };
 
   return (
@@ -161,7 +161,13 @@ export default function HowToUseScreen() {
         </TouchableOpacity>
 
         <TouchableOpacity
-          onPress={() => router.push("/(auth)/login" as any)}
+          onPress={() =>
+            router.push(
+              selected === "partner"
+                ? ("/(auth)/login?flow=partner" as any)
+                : ("/(auth)/login" as any)
+            )
+          }
           activeOpacity={0.7}
         >
           <Text
