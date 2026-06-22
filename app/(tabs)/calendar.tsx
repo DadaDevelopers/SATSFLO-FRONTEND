@@ -89,7 +89,6 @@ export default function CalendarScreen() {
   const insets = useSafeAreaInsets();
   const { date: paramDate } = useLocalSearchParams<{ date: string }>();
   const {
-    isDateInPeriod,
     setSelectedDate: setContextSelectedDate,
     dayLogs: allDayLogs,
     selectedDate: contextSelectedDate,
@@ -149,9 +148,10 @@ export default function CalendarScreen() {
   const [cycleData, setCycleData] = useState({
     cycleLength: 28,
     periodLength: 5,
-    ovulationDay: 14,
+    ovulationDay: 13,
+    ovulationEnd: 15,
     fertilityStart: 9,
-    fertilityEnd: 15,
+    fertilityEnd: 12,
     currentCycleDay: 1,
     lastPeriodDate: todayDate,
   });
@@ -206,14 +206,18 @@ export default function CalendarScreen() {
             }
           }
 
-          const ovulation = cLength - 14;
-          const fertStart = ovulation - 5;
-          const fertEnd = ovulation + 1;
+          // Match wheel formula: ovulation is a 3-day window centred on mid-cycle
+          const ovulationStart = Math.round(cLength / 2) - 1;
+          const ovulationEnd = ovulationStart + 2;
+          // Fertility window: the 4 days leading up to ovulation
+          const fertStart = ovulationStart - 4;
+          const fertEnd = ovulationStart - 1;
 
           setCycleData({
             cycleLength: cLength,
             periodLength: pLength,
-            ovulationDay: ovulation,
+            ovulationDay: ovulationStart,
+            ovulationEnd,
             fertilityStart: fertStart,
             fertilityEnd: fertEnd,
             currentCycleDay: cDay,
@@ -270,28 +274,46 @@ export default function CalendarScreen() {
         isOvulation: false,
       };
 
-    // Calculate cycle day based on difference from last period start
     const cellDate = new Date(currentYear, currentMonthNum, day);
-    const utc1 = Date.UTC(
-      cellDate.getFullYear(),
-      cellDate.getMonth(),
-      cellDate.getDate(),
-    );
+    const utc1 = Date.UTC(cellDate.getFullYear(), cellDate.getMonth(), cellDate.getDate());
     const utc2 = Date.UTC(
       cycleData.lastPeriodDate.getFullYear(),
       cycleData.lastPeriodDate.getMonth(),
       cycleData.lastPeriodDate.getDate(),
     );
     const diffDays = Math.floor((utc1 - utc2) / (1000 * 60 * 60 * 24));
-    const cycleDay = (diffDays % cycleData.cycleLength) + 1;
 
-    // Use context's isDateInPeriod for real-time reflection of changes
-    const isPeriod = isDateInPeriod(cellDate);
+    // Proper modulo — handles dates before lastPeriodDate (JS % can return negative)
+    const rawMod = diffDays % cycleData.cycleLength;
+    const cycleDay = (rawMod >= 0 ? rawMod : rawMod + cycleData.cycleLength) + 1;
+
+    // Profile-based period prediction: cycle days 1 → periodLength.
+    // Matches the wheel and avoids the 14-day bleed from the log-based check.
+    let isPeriod = cycleDay >= 1 && cycleDay <= cycleData.periodLength;
+
+    // If user logged an explicit periodEnd earlier in this period, stop there.
+    if (isPeriod && cycleDay > 1) {
+      const cycleOffset = Math.floor(diffDays / cycleData.cycleLength);
+      const periodStart = new Date(cycleData.lastPeriodDate);
+      periodStart.setDate(periodStart.getDate() + cycleOffset * cycleData.cycleLength);
+      for (let d = 0; d < cycleDay - 1; d++) {
+        const checkDate = new Date(periodStart);
+        checkDate.setDate(periodStart.getDate() + d);
+        const checkKey = `${checkDate.getFullYear()}-${String(checkDate.getMonth() + 1).padStart(2, "0")}-${String(checkDate.getDate()).padStart(2, "0")}`;
+        if (allDayLogs[checkKey]?.periodEnd) {
+          isPeriod = false;
+          break;
+        }
+      }
+    }
+
+    const isOvulation =
+      cycleDay >= cycleData.ovulationDay && cycleDay <= cycleData.ovulationEnd;
     const isFertility =
       cycleDay >= cycleData.fertilityStart &&
       cycleDay <= cycleData.fertilityEnd &&
-      !isPeriod;
-    const isOvulation = cycleDay === cycleData.ovulationDay;
+      !isPeriod &&
+      !isOvulation;
 
     return { day, cycleDay, isPeriod, isFertility, isOvulation };
   };
