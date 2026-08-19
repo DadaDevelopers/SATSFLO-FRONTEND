@@ -124,19 +124,21 @@ export default function CreateInvoiceScreen() {
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const checkStatus = async () => {
-    if (!payment_hash) return;
+  const checkStatus = async (): Promise<"pending" | "completed" | "failed" | null> => {
+    if (!payment_hash) return null;
     try {
       const token = await AsyncStorage.getItem("accessToken");
-      if (!token) return;
+      if (!token) return null;
       const { response, data } = await api.get(`/payments/status/${payment_hash}`, token);
-      if (!response.ok) return;
+      if (!response.ok) return null;
       const status = data?.data?.status ?? data?.status;
       if (status === "completed" || status === "failed") {
         setPaymentStatus(status);
       }
+      return status ?? null;
     } catch {
       // network error — the next poll will retry
+      return null;
     }
   };
 
@@ -172,13 +174,24 @@ export default function CreateInvoiceScreen() {
       Alert.alert("Invoice Expired", "This invoice has expired. Please go back and create a new one.");
       return;
     }
-    if (!payment_hash) {
-      Alert.alert("Can't verify payment", "This invoice is missing a payment reference. Please go back and create a new one.");
-      return;
-    }
     setCheckingNow(true);
-    await checkStatus();
+    const status = await checkStatus();
     setCheckingNow(false);
+
+    // If the backend has confirmed it, the effect watching paymentStatus
+    // handles navigation. Otherwise, we have no way to independently verify
+    // payment right now (no webhook/LUD-21 wired up on the backend yet), so
+    // fall back to trusting the user's own "I've paid" claim rather than
+    // blocking them entirely.
+    if (status !== "completed" && status !== "failed" && !navigatedRef.current) {
+      navigatedRef.current = true;
+      if (pollRef.current) clearInterval(pollRef.current);
+      if (timerRef.current) clearInterval(timerRef.current);
+      router.push({
+        pathname: "/gift-token/success",
+        params: { action: "send", category, destination, amount, currency, satsEquivalent, note },
+      });
+    }
   };
 
   // Display: bolt11 truncated as wallet address
@@ -431,7 +444,7 @@ export default function CreateInvoiceScreen() {
           >
             {isExpired
               ? "This invoice is no longer valid."
-              : "Waiting for payment to be received..."}
+              : "Once you've paid, tap below to confirm."}
           </Text>
 
           {/* Button row */}
@@ -463,8 +476,8 @@ export default function CreateInvoiceScreen() {
                 {isExpired
                   ? "Invoice expired"
                   : checkingNow
-                  ? "Checking..."
-                  : "I've paid — check now"}
+                  ? "Confirming..."
+                  : "I have sent the tip"}
               </Text>
             </TouchableOpacity>
           </View>
