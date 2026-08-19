@@ -238,7 +238,7 @@ export default function SendGiftAmountScreen() {
               className="flex-1 text-sm font-inter text-white"
               style={{ fontWeight: "500" }}
               placeholder="Sarahabraham@blink.sv"
-              placeholderTextColor="#FAFAFA"
+              placeholderTextColor="rgba(255,255,255,0.55)"
               value={destination}
               onChangeText={(t) => { setDestination(t); setValidated(false); setDestError(null); prevDestRef.current = ""; }}
               onBlur={handleDestinationBlur}
@@ -287,7 +287,7 @@ export default function SendGiftAmountScreen() {
               className="flex-1 text-sm font-inter text-white"
               style={{ fontWeight: "500" }}
               placeholder="10.00"
-              placeholderTextColor="#FAFAFA"
+              placeholderTextColor="rgba(255,255,255,0.55)"
               value={amount}
               onChangeText={setAmount}
               keyboardType="decimal-pad"
@@ -395,7 +395,7 @@ export default function SendGiftAmountScreen() {
               className="flex-1 text-sm font-inter text-[#FAFAFA]"
               style={{ fontWeight: "500" }}
               placeholder="For flowers"
-              placeholderTextColor="#FAFAFA"
+              placeholderTextColor="rgba(255,255,255,0.55)"
               value={note}
               onChangeText={setNote}
             />
