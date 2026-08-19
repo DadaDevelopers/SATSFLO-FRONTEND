@@ -108,9 +108,21 @@ export default function HomeScreen() {
         const cycleD = currentRes.response.ok ? (currentRes.data?.data ?? null) : null;
         const predD = predictionsRes.response.ok ? (predictionsRes.data?.data ?? null) : null;
 
-        // cycle_length and period_length always come from the user's saved profile
-        const cycleLength = profile?.cycle_length ?? cycleD?.cycle_length ?? 28;
-        const periodLength = profile?.period_length ?? cycleD?.period_length ?? 5;
+        // cycle_length and period_length always come from the user's saved profile.
+        // Guard against 0/negative/non-numeric values (e.g. an unfinished profile) —
+        // `??` only falls back on null/undefined, so an explicit 0 from the API would
+        // otherwise reach CycleTracker and divide-by-zero into NaN SVG path data,
+        // which crashes on Android.
+        const toPositiveNumber = (n: unknown, fallback: number): number =>
+          typeof n === "number" && Number.isFinite(n) && n > 0 ? n : fallback;
+        const cycleLength = toPositiveNumber(
+          profile?.cycle_length,
+          toPositiveNumber(cycleD?.cycle_length, 28)
+        );
+        const periodLength = toPositiveNumber(
+          profile?.period_length,
+          toPositiveNumber(cycleD?.period_length, 5)
+        );
 
         // Days until next period — predictions first, then current cycle
         const daysUntilPeriod =

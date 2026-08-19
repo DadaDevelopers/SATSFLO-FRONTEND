@@ -1,3 +1,4 @@
+import { ErrorBoundary } from "@/components/ui/error-boundary";
 import { AddLogProvider } from "@/context/add-log-context";
 import { ThemeProvider } from "@/context/theme-context";
 import {
@@ -111,17 +112,19 @@ export default function RootLayout() {
       <SafeAreaProvider>
         <ThemeProvider>
           <AddLogProvider>
-            <Stack screenOptions={{ headerShown: false }}>
-              <Stack.Screen name="splash" />
-              <Stack.Screen name="how-to-use" />
-              <Stack.Screen name="partner-welcome" />
-              <Stack.Screen name="enter-partner-code" />
-              <Stack.Screen name="(tabs)" />
-              <Stack.Screen name="add-log" />
-              <Stack.Screen name="gift-token" />
-              <Stack.Screen name="chat" />
-              <Stack.Screen name="modal" options={{ presentation: "modal" }} />
-            </Stack>
+            <ErrorBoundary>
+              <Stack screenOptions={{ headerShown: false }}>
+                <Stack.Screen name="splash" />
+                <Stack.Screen name="how-to-use" />
+                <Stack.Screen name="partner-welcome" />
+                <Stack.Screen name="enter-partner-code" />
+                <Stack.Screen name="(tabs)" />
+                <Stack.Screen name="add-log" />
+                <Stack.Screen name="gift-token" />
+                <Stack.Screen name="chat" />
+                <Stack.Screen name="modal" options={{ presentation: "modal" }} />
+              </Stack>
+            </ErrorBoundary>
           </AddLogProvider>
         </ThemeProvider>
       </SafeAreaProvider>
