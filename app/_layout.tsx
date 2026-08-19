@@ -28,18 +28,11 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import "../global.css";
 
-// Configure Google Sign-In once at app startup (no-op in Expo Go)
-try {
-  const { isRunningInExpoGo } = require("expo");
-  if (!isRunningInExpoGo()) {
-    const { GoogleSignin } = require("@react-native-google-signin/google-signin");
-    GoogleSignin.configure({
-      webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID ?? "",
-      iosClientId: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID,
-      offlineAccess: true,
-    });
-  }
-} catch {}
+// Keep the native splash screen up until we explicitly hide it below —
+// without this, hideAsync() has nothing to do and the timing of the
+// default auto-hide varies by device/OS, which is what made the splash
+// behave inconsistently across Android devices.
+SplashScreen.preventAutoHideAsync().catch(() => {});
 
 export default function RootLayout() {
   const [poppinsLoaded] = usePoppins({
@@ -67,9 +60,30 @@ export default function RootLayout() {
 
   useEffect(() => {
     if (fontsLoaded) {
-      SplashScreen.hideAsync();
+      SplashScreen.hideAsync().catch(() => {});
     }
   }, [fontsLoaded]);
+
+  // Configure Google Sign-In after the app has already mounted and the splash
+  // screen has been dismissed (no-op in Expo Go). This used to run
+  // synchronously at module scope, before fonts loaded and before the splash
+  // was ever hidden — a native hang or slow Play Services check in there
+  // (which varies a lot by Android device/OS) could block the app from ever
+  // getting past the splash screen. Running it here means the worst case is
+  // Google Sign-In failing quietly, not the whole app freezing.
+  useEffect(() => {
+    try {
+      const { isRunningInExpoGo } = require("expo");
+      if (!isRunningInExpoGo()) {
+        const { GoogleSignin } = require("@react-native-google-signin/google-signin");
+        GoogleSignin.configure({
+          webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID ?? "",
+          iosClientId: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID,
+          offlineAccess: true,
+        });
+      }
+    } catch {}
+  }, []);
 
   useEffect(() => {
     const goToNotifications = () => router.push("/(tabs)/notifications" as any);

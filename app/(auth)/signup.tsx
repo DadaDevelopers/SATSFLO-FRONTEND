@@ -128,7 +128,11 @@ export default function SignupScreen() {
     }
   };
 
-  const handleGoogleSignIn = async () => {
+  const handleGoogleSignIn = () => {
+    Alert.alert("Coming Soon", "Google sign-in will be available in a future update.");
+  };
+
+  const _handleGoogleSignIn_disabled = async () => {
     const { isRunningInExpoGo } = require("expo");
     if (isRunningInExpoGo()) {
       Alert.alert("Not available in Expo Go", "Google sign-in requires a development build.");
