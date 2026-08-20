@@ -85,7 +85,7 @@ const generateDates = () => {
   const dates = [];
   const today = new Date();
 
-  for (let i = -30; i <= 30; i++) {
+  for (let i = -60; i <= 60; i++) {
     const date = new Date(today);
     date.setDate(today.getDate() + i);
     dates.push({
@@ -125,14 +125,13 @@ export default function AddLogScreen() {
     saveCurrentDay,
     dayLogs,
   } = useAddLog();
-  const setContextSelectedDate = setSelectedDate;
 
   const dayData = getCurrentDayData();
 
   // Calendar state (local)
   const [calendarExpanded, setCalendarExpanded] = useState(false);
-  const [viewingMonth, setViewingMonth] = useState(today.getMonth());
-  const [viewingYear, setViewingYear] = useState(today.getFullYear());
+  const [viewingMonth, setViewingMonth] = useState(selectedDate.getMonth());
+  const [viewingYear, setViewingYear] = useState(selectedDate.getFullYear());
   const chevronRotation = useSharedValue(0);
 
   // Period edit modal state
@@ -143,29 +142,42 @@ export default function AddLogScreen() {
   const [editModalMonth, setEditModalMonth] = useState(today.getMonth());
   const [editModalYear, setEditModalYear] = useState(today.getFullYear());
 
-  // Reset to target date when screen mounts
+  // Track the last handled param date so we only overwrite context selectedDate when paramDate explicitly changes
+  const lastHandledParamDate = useRef<string | null>(null);
+
   useEffect(() => {
-    let targetDate = new Date();
-    if (paramDate) {
+    if (paramDate && paramDate !== lastHandledParamDate.current) {
+      lastHandledParamDate.current = paramDate;
       const parts = paramDate.split("-");
       if (parts.length === 3) {
-        targetDate = new Date(
+        const d = new Date(
           parseInt(parts[0]),
           parseInt(parts[1]) - 1,
           parseInt(parts[2]),
         );
+        if (!isNaN(d.getTime())) {
+          setSelectedDate(d);
+        }
       }
     }
+  }, [paramDate, setSelectedDate]);
 
-    setSelectedDate(targetDate);
-    setViewingMonth(targetDate.getMonth());
-    setViewingYear(targetDate.getFullYear());
+  // Keep viewing month/year and FlatList scroll position anchored to selectedDate
+  useEffect(() => {
+    setViewingMonth(selectedDate.getMonth());
+    setViewingYear(selectedDate.getFullYear());
 
-    const diffTime =
-      targetDate.getTime() -
-      new Date(new Date().setHours(0, 0, 0, 0)).getTime();
-    const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
-    const targetIndex = 30 + diffDays;
+    const todayMidnight = new Date();
+    todayMidnight.setHours(0, 0, 0, 0);
+
+    const selMidnight = new Date(selectedDate);
+    selMidnight.setHours(0, 0, 0, 0);
+
+    const diffDays = Math.round(
+      (selMidnight.getTime() - todayMidnight.getTime()) / (1000 * 60 * 60 * 24),
+    );
+    const zeroIndex = dates.findIndex((d) => d.isToday);
+    const targetIndex = (zeroIndex >= 0 ? zeroIndex : 60) + diffDays;
 
     if (targetIndex >= 0 && targetIndex < dates.length) {
       setTimeout(() => {
@@ -176,7 +188,7 @@ export default function AddLogScreen() {
         });
       }, 100);
     }
-  }, [paramDate, setSelectedDate, setContextSelectedDate, dates.length]);
+  }, [selectedDate, dates]);
 
   // Toggle calendar
   const toggleCalendar = () => {
