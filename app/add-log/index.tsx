@@ -356,7 +356,6 @@ export default function AddLogScreen() {
   // Handle date selection in edit modal
   const handleEditModalDateSelect = (fullDate: Date) => {
     setSelectedDate(fullDate);
-    setContextSelectedDate(fullDate);
     if (editingPeriodType === "start") {
       setPeriodStart(true);
     } else {
