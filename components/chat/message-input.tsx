@@ -198,9 +198,7 @@ export function MessageInput({ onSendText, onSendImage, onSendVoice }: MessageIn
       </View>
 
       {/* Home indicator */}
-      <View style={styles.indicatorWrap}>
-        <View style={styles.indicator} />
-      </View>
+      <View style={styles.indicatorWrap} />
 
       {/* Camera / Gallery picker modal */}
       <Modal
@@ -290,12 +288,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingTop: 8,
     backgroundColor: '#ff5fa0',
-  },
-  indicator: {
-    width: 134,
-    height: 5,
-    backgroundColor: '#1A1A1A',
-    borderRadius: 3,
   },
   modalOverlay: {
     flex: 1,

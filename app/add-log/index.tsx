@@ -971,15 +971,6 @@ export default function AddLogScreen() {
               Save
             </Text>
           </TouchableOpacity>
-          <View
-            style={{
-              width: 134,
-              height: 5,
-              backgroundColor: "#FF99BC",
-              borderRadius: 100,
-              marginBottom: insets.bottom + 8,
-            }}
-          />
         </View>
       </View>
 

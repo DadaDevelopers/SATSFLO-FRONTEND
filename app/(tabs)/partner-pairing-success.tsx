@@ -151,7 +151,6 @@ export default function PartnerPairingSuccessScreen() {
         className="bg-[#FF3378] items-center justify-end pt-2"
         style={{ paddingBottom: Math.max(insets.bottom, 8) + 3 }}
       >
-        <View className="w-[134px] h-[5px] bg-[#FF99BC] rounded-full" />
       </View>
     </View>
   );

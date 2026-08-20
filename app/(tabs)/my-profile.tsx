@@ -400,16 +400,7 @@ export default function MyProfileScreen() {
           justifyContent: "flex-end",
           paddingBottom: 8,
         }}
-      >
-        <View
-          style={{
-            width: 134,
-            height: 5,
-            backgroundColor: "#FF99BC",
-            borderRadius: 100,
-          }}
-        />
-      </View>
+      />
 
       {/* AVATAR ACTION SHEET */}
       <Modal visible={avatarModalVisible} animationType="slide" transparent>

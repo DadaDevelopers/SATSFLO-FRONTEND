@@ -419,9 +419,7 @@ export default function SendGiftAmountScreen() {
             {creating ? "Creating..." : "Create Invoice"}
           </Text>
         </Pressable>
-        <View className="w-full h-[34px] bg-[#FF3378] items-center justify-center">
-          <View className="w-[134px] h-[5px] bg-[#FF99BC] rounded-full" />
-        </View>
+        <View className="w-full h-[34px] bg-[#FF3378] items-center justify-center" />
       </View>
     </View>
   );

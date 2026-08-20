@@ -194,7 +194,6 @@ export default function SharingInviteScreen() {
         className="bg-[#FF3378] items-center justify-end"
         style={{ paddingBottom: Math.max(insets.bottom, 8) + 3, paddingTop: 8 }}
       >
-        <View className="w-[134px] h-[5px] bg-[#FF99BC] rounded-full" />
       </View>
     </View>
   );

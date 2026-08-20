@@ -255,17 +255,7 @@ export default function SymptomsScreen() {
               justifyContent: "flex-end",
               paddingBottom: 8,
             }}
-          >
-            {/* Home Indicator pill: 134×5, #FF99BC */}
-            <View
-              style={{
-                width: 134,
-                height: 5,
-                backgroundColor: "#FF99BC",
-                borderRadius: 100,
-              }}
-            />
-          </View>
+          />
         </View>
       </View>
     </View>

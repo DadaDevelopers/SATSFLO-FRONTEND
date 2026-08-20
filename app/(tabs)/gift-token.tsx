@@ -90,8 +90,6 @@ export default function GiftTokenScreen() {
               </Text>
             </Pressable>
 
-            {/* Home Indicator */}
-            <View className="w-[134px] h-[5px] bg-[#090909] rounded-full mt-6" />
           </View>
         </View>
       </View>

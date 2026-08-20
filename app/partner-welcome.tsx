@@ -323,16 +323,7 @@ export default function PartnerWelcomeScreen() {
           paddingTop: 8,
           paddingBottom: Math.max(insets.bottom, 8) + 3,
         }}
-      >
-        <View
-          style={{
-            width: 134,
-            height: 5,
-            backgroundColor: "#FF99BC",
-            borderRadius: 100,
-          }}
-        />
-      </View>
+      />
     </View>
   );
 }

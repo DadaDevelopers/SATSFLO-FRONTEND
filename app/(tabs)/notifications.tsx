@@ -263,7 +263,6 @@ export default function NotificationsScreen() {
         className="w-full h-[34px] bg-[#FF3378] items-center justify-center"
         style={{ paddingBottom: insets.bottom }}
       >
-        <View className="w-[134px] h-[5px] bg-[#FF99BC] rounded-full" />
       </View>
     </View>
   );

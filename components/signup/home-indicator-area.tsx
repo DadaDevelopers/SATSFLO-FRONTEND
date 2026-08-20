@@ -12,8 +12,6 @@ export function HomeIndicatorArea() {
     <View
       className="bg-signup-home-indicator-bg justify-end items-center"
       style={{ paddingBottom: bottomPadding, paddingTop: 8 }}
-    >
-      <View className="w-[134px] h-[5px] bg-signup-home-indicator rounded-full" />
-    </View>
+    />
   );
 }
