@@ -101,8 +101,14 @@ export default function CreateInvoiceScreen() {
 
   const [copied, setCopied] = useState(false);
   const [timeLeft, setTimeLeft] = useState(initialSeconds);
-  const [confirming, setConfirming] = useState(false);
+  // Real payment status, sourced from the backend (which knows whether the
+  // recipient's lightning wallet actually received the payment) — never
+  // trust "the user tapped a button" as proof of payment.
+  const [paymentStatus, setPaymentStatus] = useState<"pending" | "completed" | "failed">("pending");
+  const [checkingNow, setCheckingNow] = useState(false);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const navigatedRef = useRef(false);
 
   useEffect(() => {
     if (timeLeft <= 0) return;
@@ -118,54 +124,74 @@ export default function CreateInvoiceScreen() {
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
+  const checkStatus = async (): Promise<"pending" | "completed" | "failed" | null> => {
+    if (!payment_hash) return null;
+    try {
+      const token = await AsyncStorage.getItem("accessToken");
+      if (!token) return null;
+      const { response, data } = await api.get(`/payments/status/${payment_hash}`, token);
+      if (!response.ok) return null;
+      const status = data?.data?.status ?? data?.status;
+      if (status === "completed" || status === "failed") {
+        setPaymentStatus(status);
+      }
+      return status ?? null;
+    } catch {
+      // network error — the next poll will retry
+      return null;
+    }
+  };
+
+  // Poll the backend for the real payment status — this is the only source
+  // of truth we have, since we don't run our own lightning wallet/node.
+  useEffect(() => {
+    if (!payment_hash) return;
+    checkStatus();
+    pollRef.current = setInterval(checkStatus, 3000);
+    return () => { if (pollRef.current) clearInterval(pollRef.current); };
+  }, [payment_hash]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (paymentStatus === "completed" && !navigatedRef.current) {
+      navigatedRef.current = true;
+      if (pollRef.current) clearInterval(pollRef.current);
+      if (timerRef.current) clearInterval(timerRef.current);
+      router.push({
+        pathname: "/gift-token/success",
+        params: { action: "send", category, destination, amount, currency, satsEquivalent, note },
+      });
+    }
+  }, [paymentStatus]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const handleCopy = async () => {
     await Clipboard.setStringAsync(bolt11 || satsEquivalent);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const handleConfirm = async () => {
-    if (timeLeft === 0) {
+  const handleCheckNow = async () => {
+    if (timeLeft === 0 || paymentStatus === "failed") {
       Alert.alert("Invoice Expired", "This invoice has expired. Please go back and create a new one.");
       return;
     }
-    setConfirming(true);
-    try {
-      const token = await AsyncStorage.getItem("accessToken");
-      if (token && payment_hash) {
-        const { response } = await api.post(
-          "/payments/confirm",
-          { payment_hash },
-          token
-        );
-        if (!response.ok && response.status !== 409) {
-          // 409 = already confirmed (treat as success), 410 = expired
-          if (response.status === 410) {
-            Alert.alert("Invoice Expired", "This invoice has expired. Please go back and create a new one.");
-            setConfirming(false);
-            return;
-          }
-          // For other errors, still proceed (manual confirmation)
-        }
-      }
-    } catch {
-      // Network error — still proceed with manual confirmation flow
-    } finally {
-      setConfirming(false);
-    }
+    setCheckingNow(true);
+    const status = await checkStatus();
+    setCheckingNow(false);
 
-    router.push({
-      pathname: "/gift-token/success",
-      params: {
-        action: "send",
-        category,
-        destination,
-        amount,
-        currency,
-        satsEquivalent,
-        note,
-      },
-    });
+    // If the backend has confirmed it, the effect watching paymentStatus
+    // handles navigation. Otherwise, we have no way to independently verify
+    // payment right now (no webhook/LUD-21 wired up on the backend yet), so
+    // fall back to trusting the user's own "I've paid" claim rather than
+    // blocking them entirely.
+    if (status !== "completed" && status !== "failed" && !navigatedRef.current) {
+      navigatedRef.current = true;
+      if (pollRef.current) clearInterval(pollRef.current);
+      if (timerRef.current) clearInterval(timerRef.current);
+      router.push({
+        pathname: "/gift-token/success",
+        params: { action: "send", category, destination, amount, currency, satsEquivalent, note },
+      });
+    }
   };
 
   // Display: bolt11 truncated as wallet address
@@ -180,7 +206,16 @@ export default function CreateInvoiceScreen() {
   // Show the original entered amount in its entered currency
   const enteredDisplay = `${parseFloat(amount || "0").toFixed(2)}`;
 
-  const isExpired = timeLeft === 0;
+  const isExpired = timeLeft === 0 || paymentStatus === "failed";
+
+  // Stop polling once the invoice is dead — no point checking a status
+  // that can no longer change.
+  useEffect(() => {
+    if (isExpired && pollRef.current) {
+      clearInterval(pollRef.current);
+      pollRef.current = null;
+    }
+  }, [isExpired]);
 
   return (
     <View className="flex-1" style={{ backgroundColor: "#FF4081" }}>
@@ -397,13 +432,26 @@ export default function CreateInvoiceScreen() {
           </View>
         </View>
 
-        {/* Bottom: button + home indicator */}
+        {/* Bottom: status + button + home indicator */}
         <View style={{ gap: 20 }}>
+          {/* Live status */}
+          <Text
+            style={{
+              textAlign: "center",
+              fontSize: 12,
+              color: "rgba(255,255,255,0.85)",
+            }}
+          >
+            {isExpired
+              ? "This invoice is no longer valid."
+              : "Once you've paid, tap below to confirm."}
+          </Text>
+
           {/* Button row */}
           <View className="items-center">
             <TouchableOpacity
-              onPress={handleConfirm}
-              disabled={confirming}
+              onPress={handleCheckNow}
+              disabled={checkingNow || isExpired}
               style={{
                 width: 250,
                 height: 50,
@@ -413,7 +461,7 @@ export default function CreateInvoiceScreen() {
                 borderRadius: 1000,
                 alignItems: "center",
                 justifyContent: "center",
-                opacity: confirming ? 0.7 : 1,
+                opacity: checkingNow ? 0.7 : 1,
               }}
             >
               <Text
@@ -425,7 +473,11 @@ export default function CreateInvoiceScreen() {
                   textAlign: "center",
                 }}
               >
-                {confirming ? "Confirming..." : "I have sent the tip"}
+                {isExpired
+                  ? "Invoice expired"
+                  : checkingNow
+                  ? "Confirming..."
+                  : "I have sent the tip"}
               </Text>
             </TouchableOpacity>
           </View>
@@ -440,16 +492,7 @@ export default function CreateInvoiceScreen() {
               justifyContent: "flex-end",
               paddingBottom: 8,
             }}
-          >
-            <View
-              style={{
-                width: 134,
-                height: 5,
-                backgroundColor: "#FF99BC",
-                borderRadius: 100,
-              }}
-            />
-          </View>
+          />
         </View>
       </View>
     </View>

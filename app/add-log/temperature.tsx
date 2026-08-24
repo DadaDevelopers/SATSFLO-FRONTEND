@@ -304,16 +304,7 @@ export default function TemperatureScreen() {
               justifyContent: "flex-end",
               paddingBottom: 8,
             }}
-          >
-            <View
-              style={{
-                width: 134,
-                height: 5,
-                backgroundColor: "#FF99BC",
-                borderRadius: 100,
-              }}
-            />
-          </View>
+          />
         </View>
       </View>
     </View>

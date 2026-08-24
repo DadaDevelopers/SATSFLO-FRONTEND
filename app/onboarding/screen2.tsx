@@ -102,9 +102,7 @@ export default function OnboardingScreen2() {
             paddingBottom: Math.max(insets.bottom, 8) + 3,
             marginHorizontal: -32,
           }}
-        >
-          <View style={{ width: 134, height: 5, backgroundColor: "#FF99BC", borderRadius: 100 }} />
-        </View>
+        />
       </View>
     </View>
   );

@@ -82,7 +82,8 @@
       "expo-audio",
       "expo-asset",
       "expo-web-browser",
-      "expo-notifications"
+      "expo-notifications",
+      "@react-native-google-signin/google-signin"
     ],
     "experiments": {
       "typedRoutes": true,

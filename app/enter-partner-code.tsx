@@ -1,10 +1,12 @@
 import { api } from "@/lib/api";
 import { Feather } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as Clipboard from "expo-clipboard";
 import { router } from "expo-router";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
   Text,
   TextInput,
   TouchableOpacity,
@@ -18,6 +20,21 @@ export default function EnterPartnerCodeScreen() {
   const insets = useSafeAreaInsets();
   const [code, setCode] = useState<string[]>(Array(CODE_LENGTH).fill(""));
   const inputRefs = useRef<(TextInput | null)[]>([]);
+
+  // Check clipboard for a copied invite code on mount
+  useEffect(() => {
+    (async () => {
+      try {
+        const text = await Clipboard.getStringAsync();
+        if (/^[A-Z0-9]{6}$/i.test(text.trim())) {
+          setCode(text.trim().toUpperCase().split(""));
+          Alert.alert("Code pasted", "We found an invite code in your clipboard.");
+        }
+      } catch {
+        // clipboard unavailable — ignore
+      }
+    })();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleChange = (text: string, index: number) => {
     if (text.length > 1) {
@@ -295,16 +312,7 @@ export default function EnterPartnerCodeScreen() {
           paddingTop: 8,
           paddingBottom: Math.max(insets.bottom, 8) + 3,
         }}
-      >
-        <View
-          style={{
-            width: 134,
-            height: 5,
-            backgroundColor: "#FF99BC",
-            borderRadius: 100,
-          }}
-        />
-      </View>
+      />
     </View>
   );
 }

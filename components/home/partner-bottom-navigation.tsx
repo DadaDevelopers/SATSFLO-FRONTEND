@@ -86,9 +86,7 @@ export function PartnerBottomNavigation({ activeTab, onTabPress }: PartnerBottom
             <View
                 className="items-center justify-end"
                 style={{ paddingBottom: bottomPadding, paddingTop: 4, backgroundColor: '#1C0625' }}
-            >
-                <View className="w-[134px] h-[5px] bg-[#3E215D] rounded-full" />
-            </View>
+            />
         </View>
     );
 }

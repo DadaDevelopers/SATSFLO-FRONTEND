@@ -1,10 +1,12 @@
 import { api } from "@/lib/api";
 import { Feather } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as Clipboard from "expo-clipboard";
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
   Text,
   TextInput,
   TouchableOpacity,
@@ -28,6 +30,22 @@ export default function EnterCodeScreen() {
       setCode(filled);
     }
   }, [codeParam]);
+
+  // Check clipboard for a copied invite code (deep link param takes precedence)
+  useEffect(() => {
+    if (codeParam) return;
+    (async () => {
+      try {
+        const text = await Clipboard.getStringAsync();
+        if (/^[A-Z0-9]{6}$/i.test(text.trim())) {
+          setCode(text.trim().toUpperCase().split(""));
+          Alert.alert("Code pasted", "We found an invite code in your clipboard.");
+        }
+      } catch {
+        // clipboard unavailable — ignore
+      }
+    })();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleChange = (text: string, index: number) => {
     // Handle paste: distribute all characters starting from current index
@@ -226,7 +244,6 @@ export default function EnterCodeScreen() {
         className="bg-[#FF3378] items-center justify-end pt-2"
         style={{ paddingBottom: Math.max(insets.bottom, 8) + 3 }}
       >
-        <View className="w-[134px] h-[5px] bg-[#FF99BC] rounded-full" />
       </View>
     </View>
   );

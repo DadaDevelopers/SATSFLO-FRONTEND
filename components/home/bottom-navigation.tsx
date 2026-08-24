@@ -202,9 +202,7 @@ export function BottomNavigation({
       <View
         className="items-center justify-end bg-home-nav-bg"
         style={{ paddingBottom: bottomPadding, paddingTop: 4 }}
-      >
-        <View className="w-[134px] h-[5px] bg-signup-home-indicator rounded-full" />
-      </View>
+      />
     </View>
   );
 }

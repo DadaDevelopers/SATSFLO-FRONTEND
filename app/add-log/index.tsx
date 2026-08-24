@@ -356,7 +356,6 @@ export default function AddLogScreen() {
   // Handle date selection in edit modal
   const handleEditModalDateSelect = (fullDate: Date) => {
     setSelectedDate(fullDate);
-    setContextSelectedDate(fullDate);
     if (editingPeriodType === "start") {
       setPeriodStart(true);
     } else {
@@ -983,15 +982,6 @@ export default function AddLogScreen() {
               Save
             </Text>
           </TouchableOpacity>
-          <View
-            style={{
-              width: 134,
-              height: 5,
-              backgroundColor: "#FF99BC",
-              borderRadius: 100,
-              marginBottom: insets.bottom + 8,
-            }}
-          />
         </View>
       </View>
 

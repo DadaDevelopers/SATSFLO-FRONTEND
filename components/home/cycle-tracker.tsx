@@ -117,7 +117,20 @@ export interface CycleTrackerProps {
   size?: number;
 }
 
-export function CycleTracker({ currentDay, cycleLength = 28, periodLength = 5, cycleStartDate, size = 320 }: CycleTrackerProps) {
+// A non-positive or non-finite cycle/period length (e.g. an unfinished
+// profile returning 0) divides-by-zero into NaN angles below, which
+// react-native-svg's Android implementation crashes on when it hits a
+// NaN in a Path's `d` attribute. Clamp defensively so this component can
+// never produce that regardless of what a caller passes in.
+function toPositiveInt(n: number, fallback: number): number {
+  return Number.isFinite(n) && n > 0 ? Math.round(n) : fallback;
+}
+
+export function CycleTracker(props: CycleTrackerProps) {
+  const { cycleStartDate, size = 320 } = props;
+  const currentDay = toPositiveInt(props.currentDay, 1);
+  const cycleLength = toPositiveInt(props.cycleLength ?? 28, 28);
+  const periodLength = toPositiveInt(props.periodLength ?? 5, 5);
   const scale = size / 320;
   const CX = size / 2;
   const CY = size / 2;

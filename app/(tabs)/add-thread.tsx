@@ -168,7 +168,6 @@ export default function AddThreadScreen() {
           className="w-full h-[34px] bg-[#FBFBFB] items-center justify-center"
           style={{ paddingBottom: insets.bottom }}
         >
-          <View className="w-[134px] h-[5px] bg-[#090909] rounded-full" />
         </View>
       </View>
     </KeyboardAvoidingView>
