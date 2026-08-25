@@ -6,7 +6,7 @@ import { TitleSection } from "@/components/signup/title-section";
 import { api } from "@/lib/api";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Alert, ScrollView, Text, useWindowDimensions, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -31,6 +31,44 @@ export default function LastPeriodScreen() {
     text: string;
     type: "success" | "error";
   } | null>(null);
+  const [periodHistory, setPeriodHistory] = useState<
+    { startDate: string; endDate: string | null; periodEndDate: string | null; periodLength: number | null }[]
+  >([]);
+
+  // Only relevant when editing an existing profile — a brand-new signup has
+  // no logged history yet, so there's nothing real to show on the picker.
+  useEffect(() => {
+    if (!editing) return;
+    (async () => {
+      try {
+        const token = await AsyncStorage.getItem("accessToken");
+        if (!token) return;
+        const today = new Date();
+        const threeMonthsAgo = new Date(today);
+        threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+        const toDateKey = (d: Date) =>
+          `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+        const { response, data } = await api.get(
+          `/cycles?startDate=${toDateKey(threeMonthsAgo)}&endDate=${toDateKey(today)}&limit=100`,
+          token,
+        );
+        if (!response.ok) return;
+        const list = data?.data ?? [];
+        if (Array.isArray(list)) {
+          setPeriodHistory(
+            list.map((c: any) => ({
+              startDate: c.startDate,
+              endDate: c.endDate ?? null,
+              periodEndDate: c.periodEndDate ?? null,
+              periodLength: c.periodLength ?? null,
+            })),
+          );
+        }
+      } catch {
+        // silent — picker just falls back to preview-only behavior
+      }
+    })();
+  }, [editing]);
 
   const handleFinish = async () => {
     // Validation
@@ -162,6 +200,7 @@ export default function LastPeriodScreen() {
                 selectedDate={selectedDate}
                 onDateSelect={setSelectedDate}
                 periodLength={4}
+                periodHistory={periodHistory}
               />
             </View>
 

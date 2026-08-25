@@ -156,12 +156,26 @@ export default function CalendarScreen() {
     lastPeriodDate: todayDate,
   });
 
+  // Actual logged periods for the last 3 months, from GET /cycles — used to
+  // show real history instead of just projecting forward/backward from the
+  // single most recent cycle length (which can't reflect an irregular past
+  // period, e.g. one that ran longer than usual or was manually edited).
+  const [cycleHistory, setCycleHistory] = useState<
+    { startDate: string; endDate: string | null; periodEndDate: string | null; periodLength: number | null }[]
+  >([]);
+
+  const toDateKey = (d: Date) =>
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+
   useFocusEffect(
     useCallback(() => {
       const loadCycleData = async () => {
         const token = await AsyncStorage.getItem("accessToken");
         if (!token) return;
         try {
+          const threeMonthsAgo = new Date(todayDate);
+          threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+
           const { response: profileRes, data: profileData } = await api.get(
             "/cycle-profile",
             token,
@@ -170,6 +184,23 @@ export default function CalendarScreen() {
             "/cycles/current",
             token,
           );
+          const { response: historyRes, data: historyData } = await api.get(
+            `/cycles?startDate=${toDateKey(threeMonthsAgo)}&endDate=${toDateKey(todayDate)}&limit=100`,
+            token,
+          );
+          if (historyRes.ok) {
+            const list = historyData?.data?.cycles ?? historyData?.cycles ?? historyData?.data ?? [];
+            if (Array.isArray(list)) {
+              setCycleHistory(
+                list.map((c: any) => ({
+                  startDate: c.startDate,
+                  endDate: c.endDate ?? null,
+                  periodEndDate: c.periodEndDate ?? null,
+                  periodLength: c.periodLength ?? null,
+                })),
+              );
+            }
+          }
 
           let pLength = 5;
           let cLength = 28;
@@ -228,7 +259,7 @@ export default function CalendarScreen() {
         }
       };
       loadCycleData();
-    }, []),
+    }, []), // eslint-disable-line react-hooks/exhaustive-deps
   );
 
   const generateMonthDays = (month: number, year: number) => {
@@ -264,6 +295,15 @@ export default function CalendarScreen() {
     "December",
   ];
 
+  const parseYMD = (s: string | null | undefined): Date | null => {
+    if (!s) return null;
+    const parts = s.split("-");
+    if (parts.length !== 3) return null;
+    const [y, m, d] = parts.map((p) => parseInt(p, 10));
+    if (!y || !m || !d) return null;
+    return new Date(y, m - 1, d);
+  };
+
   const getDayInfo = (day: number): DayData => {
     if (day === 0)
       return {
@@ -275,6 +315,32 @@ export default function CalendarScreen() {
       };
 
     const cellDate = new Date(currentYear, currentMonthNum, day);
+
+    // Real logged history (last ~3 months) takes priority over the
+    // repeating-cycle prediction below — this is what actually reflects a
+    // period that ran long, was manually ended, or spanned two months,
+    // instead of just projecting the average cycle length backwards.
+    for (const rec of cycleHistory) {
+      const recStart = parseYMD(rec.startDate);
+      if (!recStart) continue;
+      const recEnd =
+        parseYMD(rec.periodEndDate) ??
+        (rec.periodLength ? new Date(recStart.getFullYear(), recStart.getMonth(), recStart.getDate() + rec.periodLength - 1) : null) ??
+        parseYMD(rec.endDate) ??
+        recStart;
+      if (cellDate >= recStart && cellDate <= recEnd) {
+        const cycleDayFromRecord =
+          Math.round((cellDate.getTime() - recStart.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+        return {
+          day,
+          cycleDay: cycleDayFromRecord,
+          isPeriod: true,
+          isFertility: false,
+          isOvulation: false,
+        };
+      }
+    }
+
     const utc1 = Date.UTC(cellDate.getFullYear(), cellDate.getMonth(), cellDate.getDate());
     const utc2 = Date.UTC(
       cycleData.lastPeriodDate.getFullYear(),
@@ -345,6 +411,25 @@ export default function CalendarScreen() {
     });
   };
 
+  // Month browsing — bounded to the last 3 months, matching the window we
+  // actually fetch real period history for. There was previously no way to
+  // view a month other than whichever one selectedDate happened to be in.
+  const minNavDate = new Date(todayDate.getFullYear(), todayDate.getMonth() - 3, 1);
+  const maxNavDate = new Date(todayDate.getFullYear(), todayDate.getMonth(), 1);
+  const currentNavDate = new Date(currentYear, currentMonthNum, 1);
+  const canGoPrevMonth = currentNavDate > minNavDate;
+  const canGoNextMonth = currentNavDate < maxNavDate;
+
+  const handlePrevMonth = () => {
+    if (!canGoPrevMonth) return;
+    setContextSelectedDate(new Date(currentYear, currentMonthNum - 1, 1));
+  };
+
+  const handleNextMonth = () => {
+    if (!canGoNextMonth) return;
+    setContextSelectedDate(new Date(currentYear, currentMonthNum + 1, 1));
+  };
+
   const weekDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
   return (
@@ -359,9 +444,9 @@ export default function CalendarScreen() {
           <FontAwesome5 name="tint" size={20} color="#CC0045" />
         </View>
 
-        {/* Month Title */}
+        {/* Status Label */}
         <View className="items-center">
-          <Text className="text-sm font-inter text-white opacity-80 uppercase tracking-widest mb-1">
+          <Text className="text-sm font-inter text-white opacity-80 uppercase tracking-widest">
             {new Date(
               currentYear,
               currentMonthNum,
@@ -370,15 +455,35 @@ export default function CalendarScreen() {
               ? "Today's Status"
               : "Log Summary"}
           </Text>
-          <Text className="text-2xl font-inter font-bold text-white tracking-tight">
-            {MONTHS[currentMonthNum]} {selectedDate}
-          </Text>
         </View>
 
         {/* Calendar Icon */}
         <View className="w-10 h-10 rounded-full border border-[#FAFAFA] items-center justify-center">
           <Feather name="calendar" size={20} color="#FAFAFA" />
         </View>
+      </View>
+
+      {/* Month navigation — browse up to 3 months back */}
+      <View className="flex-row items-center justify-between px-5 pb-2">
+        <Pressable
+          onPress={handlePrevMonth}
+          disabled={!canGoPrevMonth}
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          style={{ opacity: canGoPrevMonth ? 1 : 0.3 }}
+        >
+          <Feather name="chevron-left" size={22} color="#FFFFFF" />
+        </Pressable>
+        <Text className="text-2xl font-inter font-bold text-white tracking-tight">
+          {MONTHS[currentMonthNum]} {currentYear}
+        </Text>
+        <Pressable
+          onPress={handleNextMonth}
+          disabled={!canGoNextMonth}
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          style={{ opacity: canGoNextMonth ? 1 : 0.3 }}
+        >
+          <Feather name="chevron-right" size={22} color="#FFFFFF" />
+        </Pressable>
       </View>
 
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
