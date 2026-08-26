@@ -49,7 +49,7 @@ const MAX_CONTENT_WIDTH = 480;
 
 export default function SignupScreen() {
   const router = useRouter();
-  const { flow } = useLocalSearchParams<{ flow?: string }>();
+  const { flow, ref } = useLocalSearchParams<{ flow?: string; ref?: string }>();
   const isPartnerFlow = flow === "partner";
   const insets = useSafeAreaInsets();
   const { width: screenWidth } = useWindowDimensions();
@@ -86,6 +86,7 @@ export default function SignupScreen() {
         password,
         confirm_password: confirmPassword,
         acceptTerms: agreeToTerms,
+        ...(ref ? { referral_code: ref } : {}),
       });
       if (response.ok) {
         // Save auth tokens returned by the registration endpoint

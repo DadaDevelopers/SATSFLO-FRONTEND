@@ -205,6 +205,13 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="invite-friend"
+        options={{
+          title: "Invite a Friend",
+          href: null,
+        }}
+      />
+      <Tabs.Screen
         name="sharing-invite"
         options={{
           title: "Sharing Options",
