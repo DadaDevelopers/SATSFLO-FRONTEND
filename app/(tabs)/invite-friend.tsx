@@ -51,7 +51,7 @@ export default function InviteFriendScreen() {
     <View className="flex-1 bg-[#FF4081]" style={{ paddingTop: insets.top }}>
       <StatusBar barStyle="light-content" backgroundColor="#FF4081" />
       <View className="flex-row items-center px-5 pt-7">
-        <TouchableOpacity onPress={() => router.back()} accessibilityLabel="Go back">
+        <TouchableOpacity onPress={() => router.push("/(tabs)/settings" as any)} accessibilityLabel="Go back">
           <Feather name="arrow-left" size={24} color="#FFFFFF" />
         </TouchableOpacity>
         <Text className="flex-1 text-center font-inter font-medium text-xl text-white">Invite a friend</Text>
