@@ -11,6 +11,7 @@ import {
   Modal,
   ScrollView,
   Text,
+  TextInput,
   TouchableOpacity,
   useWindowDimensions,
   View,
@@ -892,9 +893,22 @@ export default function AddLogScreen() {
             title="Drink water"
             onPress={() => router.push("/add-log/drink-water")}
           >
-            <Text className="text-pink-500 text-lg font-semibold mb-3">
-              {dayData.waterIntake}/ {waterTarget} ml
-            </Text>
+            <View className="flex-row items-center mb-3" style={{ gap: 6 }}>
+              <TextInput
+                value={String(dayData.waterIntake)}
+                onChangeText={(text) => {
+                  const n = parseInt(text, 10);
+                  if (!isNaN(n)) setWaterIntake(n);
+                  else if (text === "") setWaterIntake(0);
+                }}
+                keyboardType="numeric"
+                className="text-pink-500 text-lg font-semibold"
+                style={{ minWidth: 40, padding: 0 }}
+              />
+              <Text className="text-pink-500 text-lg font-semibold">
+                / {waterTarget} ml
+              </Text>
+            </View>
             <View className="flex-row justify-around">
               {cups.map((amount, i) => {
                 const cupFilled = dayData.waterIntake >= (i + 1) * amount;

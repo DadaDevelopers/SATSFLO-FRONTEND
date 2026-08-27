@@ -152,7 +152,7 @@ export function AddLogProvider({ children }: { children: ReactNode }) {
     try {
       const token = await AsyncStorage.getItem('accessToken');
       if (token) {
-        const { response, data } = await api.get(`/logs/${dateStr}`, token);
+        const { response, data } = await api.get(`/logs?date=${dateStr}`, token);
         if (response.status === 401) {
           await AsyncStorage.removeItem('accessToken');
           router.replace('/(auth)/login');
@@ -165,13 +165,13 @@ export function AddLogProvider({ children }: { children: ReactNode }) {
             return {
               ...prev,
               [dateStr]: {
-                flowLevel: logData.flow || existing?.flowLevel || null,
+                flowLevel: logData.flow_level || existing?.flowLevel || null,
                 periodStart: logData.period_start ?? existing?.periodStart ?? false,
                 periodEnd: logData.period_end ?? existing?.periodEnd ?? false,
                 symptoms: (logData.symptoms?.length > 0) ? logData.symptoms : (existing?.symptoms ?? []),
-                moods: (logData.mood?.length > 0) ? logData.mood : (existing?.moods ?? []),
+                moods: (logData.moods?.length > 0) ? logData.moods : (existing?.moods ?? []),
                 medicine: (logData.medicine?.length > 0) ? logData.medicine : (existing?.medicine ?? []),
-                note: logData.notes || existing?.note || '',
+                note: logData.note || existing?.note || '',
                 weight: logData.weight || existing?.weight || '',
                 weightUnit: logData.weight_unit || existing?.weightUnit || 'kg',
                 temperature: logData.temperature || existing?.temperature || '',
@@ -381,11 +381,11 @@ export function AddLogProvider({ children }: { children: ReactNode }) {
       if (token) {
         // 1. Sync the daily logs
         const { response: logRes } = await api.put(`/logs/${dateStr}`, {
-          flow: dayData.flowLevel,
+          flow_level: dayData.flowLevel,
           symptoms: dayData.symptoms,
-          mood: dayData.moods,
+          moods: dayData.moods,
           medicine: dayData.medicine,
-          notes: dayData.note,
+          note: dayData.note,
           weight: dayData.weight,
           weight_unit: dayData.weightUnit,
           temperature: dayData.temperature,
