@@ -4,11 +4,23 @@ import { api } from "@/lib/api";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
-import { ActivityIndicator, Alert, Text, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Alert, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Svg, { Circle, Path, Rect } from "react-native-svg";
 
 type CupStyle = "classic" | "tumbler" | "tall" | "mug";
+type VolumeUnit = "ml" | "oz";
+
+const ML_PER_OZ = 29.5735;
+const mlToOz = (ml: number) => Math.round(ml / ML_PER_OZ);
+const ozToMl = (oz: number) => Math.round(oz * ML_PER_OZ);
+
+// Backend already accepts any positive integer for these — these bounds are
+// just sanity limits so a mistyped value (e.g. an extra digit) doesn't save.
+const TARGET_MIN_ML = 200;
+const TARGET_MAX_ML = 10000;
+const CUP_MIN_ML = 30;
+const CUP_MAX_ML = 5000;
 
 const CupIcon = ({ style, selected }: { style: CupStyle; selected: boolean }) => {
   const borderColor = selected ? "#FF4081" : "#FFE6EE";
@@ -82,9 +94,15 @@ export default function DrinkWaterScreen() {
   const [localTarget, setLocalTarget] = useState(waterTarget);
   const [localCupCapacity, setLocalCupCapacity] = useState(cupCapacity);
   const [localCupStyle, setLocalCupStyle] = useState(cupStyle);
+  const [unit, setUnit] = useState<VolumeUnit>("ml");
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // localTarget/localCupCapacity are always stored in ml (matching the
+  // backend); these just format/parse for whichever unit is displayed.
+  const formatForUnit = (ml: number) => (unit === "oz" ? mlToOz(ml) : ml);
+  const parseFromUnit = (value: number) => (unit === "oz" ? ozToMl(value) : value);
 
   useEffect(() => {
     setLocalTarget(waterTarget);
@@ -102,9 +120,9 @@ export default function DrinkWaterScreen() {
         const { response, data } = await api.get("/water-settings", token);
         if (response.ok) {
           const d = data?.data ?? data;
-          if (d?.daily_goal_ml) {
-            setLocalTarget(d.daily_goal_ml);
-            setWaterTarget(d.daily_goal_ml);
+          if (d?.water_target) {
+            setLocalTarget(d.water_target);
+            setWaterTarget(d.water_target);
           }
           if (d?.cup_capacity) {
             setLocalCupCapacity(d.cup_capacity);
@@ -131,12 +149,18 @@ export default function DrinkWaterScreen() {
       Alert.alert("Validation", "Please select a cup style.");
       return;
     }
-    if (!targetOptions.includes(localTarget)) {
-      Alert.alert("Validation", "Please select a valid daily target.");
+    if (!Number.isInteger(localTarget) || localTarget < TARGET_MIN_ML || localTarget > TARGET_MAX_ML) {
+      Alert.alert(
+        "Validation",
+        `Please enter a daily target between ${formatForUnit(TARGET_MIN_ML)} and ${formatForUnit(TARGET_MAX_ML)} ${unit}.`,
+      );
       return;
     }
-    if (!capacityOptions.includes(localCupCapacity)) {
-      Alert.alert("Validation", "Please select a valid cup capacity.");
+    if (!Number.isInteger(localCupCapacity) || localCupCapacity < CUP_MIN_ML || localCupCapacity > CUP_MAX_ML) {
+      Alert.alert(
+        "Validation",
+        `Please enter a cup capacity between ${formatForUnit(CUP_MIN_ML)} and ${formatForUnit(CUP_MAX_ML)} ${unit}.`,
+      );
       return;
     }
 
@@ -152,7 +176,7 @@ export default function DrinkWaterScreen() {
       const { response } = await api.put(
         "/water-settings",
         {
-          daily_goal_ml: localTarget,
+          water_target: localTarget,
           cup_capacity: localCupCapacity,
           cup_style: localCupStyle,
         },
@@ -175,19 +199,24 @@ export default function DrinkWaterScreen() {
 
   const cupStyles: CupStyle[] = ["classic", "tumbler", "tall", "mug"];
 
-  const targetOptions = [2000, 2500, 3000, 3500];
-  const capacityOptions = [200, 250, 300, 500];
+  const targetStep = unit === "oz" ? ozToMl(1) : 50;
+  const cupStep = unit === "oz" ? ozToMl(1) : 25;
 
-  const cycleTarget = () => {
-    const currentIndex = targetOptions.indexOf(localTarget);
-    const nextIndex = (currentIndex + 1) % targetOptions.length;
-    setLocalTarget(targetOptions[nextIndex]);
+  const adjustTarget = (deltaMl: number) => {
+    setLocalTarget((v) => Math.min(TARGET_MAX_ML, Math.max(TARGET_MIN_ML, v + deltaMl)));
   };
-
-  const cycleCapacity = () => {
-    const currentIndex = capacityOptions.indexOf(localCupCapacity);
-    const nextIndex = (currentIndex + 1) % capacityOptions.length;
-    setLocalCupCapacity(capacityOptions[nextIndex]);
+  const adjustCupCapacity = (deltaMl: number) => {
+    setLocalCupCapacity((v) => Math.min(CUP_MAX_ML, Math.max(CUP_MIN_ML, v + deltaMl)));
+  };
+  const handleTargetTextChange = (text: string) => {
+    const n = parseInt(text, 10);
+    if (!isNaN(n)) setLocalTarget(parseFromUnit(n));
+    else if (text === "") setLocalTarget(0);
+  };
+  const handleCupCapacityTextChange = (text: string) => {
+    const n = parseInt(text, 10);
+    if (!isNaN(n)) setLocalCupCapacity(parseFromUnit(n));
+    else if (text === "") setLocalCupCapacity(0);
   };
 
   return (
@@ -241,30 +270,84 @@ export default function DrinkWaterScreen() {
             {/* Capacity Units */}
             <View className="flex-row justify-between items-center py-3">
               <Text className="text-gray-700 text-base">Capacity units</Text>
-              <Text className="text-pink-500 font-medium">ml</Text>
+              <View className="flex-row bg-white rounded-full p-1">
+                {(["ml", "oz"] as VolumeUnit[]).map((u) => (
+                  <TouchableOpacity
+                    key={u}
+                    onPress={() => setUnit(u)}
+                    style={{
+                      paddingHorizontal: 14,
+                      paddingVertical: 6,
+                      borderRadius: 999,
+                      backgroundColor: unit === u ? "#FF4081" : "transparent",
+                    }}
+                  >
+                    <Text
+                      style={{
+                        fontWeight: "600",
+                        color: unit === u ? "#FFFFFF" : "#666666",
+                      }}
+                    >
+                      {u}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
             </View>
 
             {/* Target */}
-            <TouchableOpacity
-              className="flex-row justify-between items-center py-3"
-              onPress={cycleTarget}
-            >
+            <View className="flex-row justify-between items-center py-3">
               <Text className="text-gray-700 text-base">Target</Text>
-              <Text className="text-pink-500 font-medium">
-                {localTarget.toLocaleString()} ml
-              </Text>
-            </TouchableOpacity>
+              <View className="flex-row items-center" style={{ gap: 10 }}>
+                <TouchableOpacity onPress={() => adjustTarget(-targetStep)} hitSlop={8}>
+                  <Text style={{ fontSize: 20, color: "#FF4081", fontWeight: "600" }}>−</Text>
+                </TouchableOpacity>
+                <TextInput
+                  value={String(formatForUnit(localTarget))}
+                  onChangeText={handleTargetTextChange}
+                  keyboardType="numeric"
+                  style={{
+                    minWidth: 48,
+                    textAlign: "center",
+                    color: "#FF4081",
+                    fontWeight: "600",
+                    fontSize: 16,
+                    paddingVertical: 0,
+                  }}
+                />
+                <Text className="text-pink-500 font-medium">{unit}</Text>
+                <TouchableOpacity onPress={() => adjustTarget(targetStep)} hitSlop={8}>
+                  <Text style={{ fontSize: 20, color: "#FF4081", fontWeight: "600" }}>+</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
 
             {/* Cup Capacity */}
-            <TouchableOpacity
-              className="flex-row justify-between items-center py-3"
-              onPress={cycleCapacity}
-            >
+            <View className="flex-row justify-between items-center py-3">
               <Text className="text-gray-700 text-base">Cup capacity</Text>
-              <Text className="text-pink-500 font-medium">
-                {localCupCapacity} ml
-              </Text>
-            </TouchableOpacity>
+              <View className="flex-row items-center" style={{ gap: 10 }}>
+                <TouchableOpacity onPress={() => adjustCupCapacity(-cupStep)} hitSlop={8}>
+                  <Text style={{ fontSize: 20, color: "#FF4081", fontWeight: "600" }}>−</Text>
+                </TouchableOpacity>
+                <TextInput
+                  value={String(formatForUnit(localCupCapacity))}
+                  onChangeText={handleCupCapacityTextChange}
+                  keyboardType="numeric"
+                  style={{
+                    minWidth: 40,
+                    textAlign: "center",
+                    color: "#FF4081",
+                    fontWeight: "600",
+                    fontSize: 16,
+                    paddingVertical: 0,
+                  }}
+                />
+                <Text className="text-pink-500 font-medium">{unit}</Text>
+                <TouchableOpacity onPress={() => adjustCupCapacity(cupStep)} hitSlop={8}>
+                  <Text style={{ fontSize: 20, color: "#FF4081", fontWeight: "600" }}>+</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
           </View>
         </View>
 
