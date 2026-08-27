@@ -705,6 +705,25 @@ export default function SettingsScreen() {
           </SectionCard>
         )}
 
+        {/* General referral is intentionally separate from partner cycle sharing. */}
+        <SectionCard>
+          <Pressable
+            className="flex-row items-center justify-between px-3 py-5"
+            onPress={() => router.push("/(tabs)/invite-friend" as any)}
+          >
+            <View className="flex-row items-center gap-2">
+              <View className="w-8 h-8 rounded-full bg-[#FFE6EE] items-center justify-center">
+                <Feather name="heart" size={16} color="#FF4081" />
+              </View>
+              <View>
+                <Text className="text-sm text-[#1E1E1E] leading-[21px]">Invite a friend</Text>
+                <Text className="text-xs text-[#616161]">Share SATSFLO with a referral link</Text>
+              </View>
+            </View>
+            <Feather name="chevron-right" size={16} color="#666666" />
+          </Pressable>
+        </SectionCard>
+
         {/* Period Settings Card */}
         <SectionCard>
           <SettingRow

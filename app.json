@@ -54,6 +54,11 @@
               "scheme": "https",
               "host": "satsflo.app",
               "pathPrefix": "/invite"
+            },
+            {
+              "scheme": "https",
+              "host": "satsflo.app",
+              "pathPrefix": "/referral"
             }
           ],
           "category": [
