@@ -2,10 +2,22 @@ import React, { useState } from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 
+type PeriodHistoryRecord = {
+  startDate: string;
+  endDate: string | null;
+  periodEndDate: string | null;
+  periodLength: number | null;
+};
+
 type CalendarPickerProps = {
   selectedDate: Date | null;
   onDateSelect: (date: Date) => void;
   periodLength?: number;
+  // Real logged periods (e.g. last 3 months) to highlight, instead of just
+  // previewing periodLength days after whatever date is currently selected.
+  // Optional — omitting it (e.g. during onboarding, before any history
+  // exists) keeps the original preview-only behavior.
+  periodHistory?: PeriodHistoryRecord[];
 };
 
 const DAYS_OF_WEEK = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -41,10 +53,20 @@ function ChevronRight() {
   );
 }
 
+const parseYMD = (s: string | null | undefined): Date | null => {
+  if (!s) return null;
+  const parts = s.split('-');
+  if (parts.length !== 3) return null;
+  const [y, m, d] = parts.map((p) => parseInt(p, 10));
+  if (!y || !m || !d) return null;
+  return new Date(y, m - 1, d);
+};
+
 export function CalendarPicker({
   selectedDate,
   onDateSelect,
   periodLength = 4,
+  periodHistory = [],
 }: CalendarPickerProps) {
   const [currentMonth, setCurrentMonth] = useState(selectedDate || new Date());
 
@@ -72,9 +94,23 @@ export function CalendarPicker({
     selectedDate.getFullYear() === year;
 
   const isPeriodDay = (day: number) => {
+    const cellDate = new Date(year, month, day);
+
+    // Real logged history takes priority over the plain preview heuristic.
+    for (const rec of periodHistory) {
+      const recStart = parseYMD(rec.startDate);
+      if (!recStart) continue;
+      const recEnd =
+        parseYMD(rec.periodEndDate) ??
+        (rec.periodLength ? new Date(recStart.getFullYear(), recStart.getMonth(), recStart.getDate() + rec.periodLength - 1) : null) ??
+        parseYMD(rec.endDate) ??
+        recStart;
+      if (cellDate >= recStart && cellDate <= recEnd) return true;
+    }
+
     if (!selectedDate) return false;
     const diff = Math.floor(
-      (new Date(year, month, day).getTime() - selectedDate.getTime()) / 86400000
+      (cellDate.getTime() - selectedDate.getTime()) / 86400000
     );
     return diff > 0 && diff <= periodLength;
   };
@@ -93,7 +129,7 @@ export function CalendarPicker({
           className="font-inter"
           style={{ fontSize: 25, fontWeight: '400', lineHeight: 30, color: '#090909' }}
         >
-          {MONTHS[month]}
+          {MONTHS[month]} {year}
         </Text>
         <TouchableOpacity
           onPress={goToNextMonth}
