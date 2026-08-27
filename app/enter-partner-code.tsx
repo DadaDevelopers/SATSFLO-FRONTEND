@@ -7,6 +7,8 @@ import { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
+  KeyboardAvoidingView,
+  Platform,
   Text,
   TextInput,
   TouchableOpacity,
@@ -113,6 +115,10 @@ export default function EnterPartnerCodeScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: "#FF4081" }}>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+      >
       {/* Back arrow — top:75px on 852px Figma = insets.top + 16 */}
       <TouchableOpacity
         onPress={() => router.back()}
@@ -313,6 +319,7 @@ export default function EnterPartnerCodeScreen() {
           paddingBottom: Math.max(insets.bottom, 8) + 3,
         }}
       />
+      </KeyboardAvoidingView>
     </View>
   );
 }
