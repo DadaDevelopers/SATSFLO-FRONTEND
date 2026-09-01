@@ -1,5 +1,6 @@
 import { BottomNavigation } from "@/components/home/bottom-navigation";
 import { TermsModal } from "@/components/terms-modal";
+import { useLanguage } from "@/context/language-context";
 import { useTheme } from "@/context/theme-context";
 import { api, clearAuthStorage } from "@/lib/api";
 import { Feather } from "@expo/vector-icons";
@@ -295,6 +296,7 @@ export default function SettingsScreen() {
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [deletePassword, setDeletePassword] = useState("");
   const { selectedTheme, setSelectedTheme } = useTheme();
+  const { t, language } = useLanguage();
   const [user, setUser] = useState<{
     name: string;
     email: string;
@@ -451,7 +453,7 @@ export default function SettingsScreen() {
 
         {/* Page title */}
         <Text className="text-white text-2xl font-medium font-inter tracking-tight">
-          Settings
+          {t("settings.title")}
         </Text>
 
         {/* Notification bell */}
@@ -618,7 +620,7 @@ export default function SettingsScreen() {
                       color: "#1E1E1E",
                     }}
                   >
-                    Switch to my partner{"'"}s cycle
+                    {t("settings.switch_partner_cycle")}
                   </Text>
                 </View>
                 <Feather name="chevron-right" size={16} color="#666666" />
@@ -634,7 +636,7 @@ export default function SettingsScreen() {
                   <Svg width={20} height={20} viewBox="0 0 16 16" fill="none">
                     <Path
                       d="M10.2786 12.2264C10.3278 12.3019 10.3557 12.3892 10.3594 12.4792C10.3631 12.5692 10.3423 12.6585 10.2995 12.7377C10.2566 12.8169 10.1931 12.883 10.1157 12.9291C10.0383 12.9752 9.94993 12.9996 9.85986 12.9996H0.638611C0.548546 12.9996 0.460156 12.9752 0.38278 12.9291C0.305403 12.883 0.241914 12.8169 0.19902 12.7377C0.156125 12.6585 0.135418 12.5692 0.139087 12.4792C0.142755 12.3892 0.170663 12.3019 0.219861 12.2264C0.923677 11.1431 1.95892 10.3163 3.17111 9.86957C2.50098 9.42344 1.99222 8.77349 1.72005 8.01585C1.44788 7.25821 1.42675 6.43309 1.65979 5.66251C1.89284 4.89193 2.36768 4.2168 3.01409 3.73696C3.66051 3.25712 4.44419 2.99805 5.24924 2.99805C6.05428 2.99805 6.83796 3.25712 7.48438 3.73696C8.1308 4.2168 8.60564 4.89193 8.83868 5.66251C9.07172 6.43309 9.0506 7.25821 8.77843 8.01585C8.50625 8.77349 7.99749 9.42344 7.32736 9.86957C8.53955 10.3163 9.57479 11.1431 10.2786 12.2264Z"
-                      fill="#FFB4CD"
+                      fill="#FF4081"
                     />
                     <Path
                       d="M15.773 12.2171C15.069 11.1383 14.0361 10.3151 12.8274 9.86957C13.6185 9.33667 14.1768 8.52232 14.3886 7.59228C14.6005 6.66225 14.45 5.68643 13.9677 4.86346C13.4855 4.04049 12.7078 3.43222 11.7928 3.16246C10.8779 2.89271 9.89458 2.98174 9.04299 3.41144C9.01042 3.42826 8.98195 3.45202 8.9596 3.48106C8.93724 3.5101 8.92154 3.5437 8.91361 3.57948C8.90568 3.61526 8.90571 3.65234 8.9137 3.68811C8.92169 3.72387 8.93745 3.75744 8.95986 3.78644C9.59309 4.57632 9.95675 5.54822 9.99758 6.55976C10.0384 7.57131 9.75425 8.56935 9.18674 9.40769C9.15005 9.46248 9.1365 9.52954 9.14903 9.59427C9.16155 9.659 9.19914 9.71617 9.25361 9.75332C9.99356 10.2697 10.627 10.924 11.1192 11.6802C11.3178 11.9842 11.3989 12.3501 11.3474 12.7096C11.3416 12.7453 11.3436 12.7819 11.3533 12.8168C11.3631 12.8517 11.3803 12.884 11.4038 12.9116C11.4273 12.9392 11.4565 12.9614 11.4893 12.9765C11.5222 12.9917 11.558 12.9996 11.5942 12.9996H15.363C15.4731 12.9996 15.5801 12.9633 15.6675 12.8963C15.7548 12.8293 15.8176 12.7353 15.8461 12.6289C15.8635 12.559 15.866 12.4862 15.8534 12.4152C15.8408 12.3443 15.8134 12.2768 15.773 12.2171Z"
@@ -650,7 +652,7 @@ export default function SettingsScreen() {
                       color: "#1E1E1E",
                     }}
                   >
-                    Partner mode
+                    {t("settings.partner_mode")}
                   </Text>
                 </View>
                 <Feather name="chevron-right" size={16} color="#666666" />
@@ -697,7 +699,7 @@ export default function SettingsScreen() {
               <View className="flex-row items-center gap-1">
                 <InviteIcon />
                 <Text className="text-sm text-[#1E1E1E] leading-[21px]">
-                  Invite my partner/friend
+                  {t("settings.invite_partner_friend")}
                 </Text>
               </View>
               <Feather name="chevron-right" size={16} color="#666666" />
@@ -716,8 +718,8 @@ export default function SettingsScreen() {
                 <Feather name="heart" size={16} color="#FF4081" />
               </View>
               <View>
-                <Text className="text-sm text-[#1E1E1E] leading-[21px]">Invite a friend</Text>
-                <Text className="text-xs text-[#616161]">Share SATSFLO with a referral link</Text>
+                <Text className="text-sm text-[#1E1E1E] leading-[21px]">{t("settings.invite_a_friend")}</Text>
+                <Text className="text-xs text-[#616161]">{t("settings.earn_rewards")}</Text>
               </View>
             </View>
             <Feather name="chevron-right" size={16} color="#666666" />
@@ -751,7 +753,7 @@ export default function SettingsScreen() {
         <SectionCard>
           <SettingRow
             icon={<ReminderIcon />}
-            label="Reminders"
+            label={t("settings.reminders")}
             onPress={() => router.push("/(tabs)/reminders" as any)}
             isLast
           />
@@ -761,23 +763,24 @@ export default function SettingsScreen() {
         <SectionCard>
           <SettingRow
             icon={<SymptomsIcon />}
-            label="Symptoms"
+            label={t("settings.symptoms")}
             onPress={() => router.push("/add-log/symptoms")}
           />
           <SettingRow
             icon={<MoodsIcon />}
-            label="Moods"
+            label={t("settings.moods")}
             onPress={() => router.push("/add-log/moods")}
           />
           <SettingRow
             iconName="eye"
             iconColor="#077845"
-            label="Theme"
+            label={t("settings.theme")}
             onPress={() => setThemeModalVisible(true)}
           />
           <SettingRow
             icon={<LanguageIcon />}
-            label="Language preferences"
+            label={t("settings.language_preferences")}
+            rightText={language}
             onPress={() => router.push("/(tabs)/language-settings" as any)}
             isLast
           />
@@ -785,22 +788,22 @@ export default function SettingsScreen() {
 
         {/* Support & Legal Card */}
         <SectionCard>
-          <SettingRow iconName="help-circle" iconColor="#C62828" label="FAQ" />
-          <SettingRow icon={<ContactSupportIcon />} label="Contact support" />
+          <SettingRow iconName="help-circle" iconColor="#C62828" label={t("settings.faq")} />
+          <SettingRow icon={<ContactSupportIcon />} label={t("settings.contact_support")} />
           <SettingRow
             icon={<PrivacyIcon />}
-            label="Privacy policy"
+            label={t("settings.privacy_policy")}
             onPress={() => setPrivacyModalVisible(true)}
           />
           <SettingRow
             icon={<RateAppIcon />}
-            label="Rate app"
+            label={t("settings.rate_app")}
             onPress={() => setRateAppModalVisible(true)}
           />
           <SettingRow
             iconName="log-out"
             iconColor="#C62828"
-            label="Log out"
+            label={t("settings.logout")}
             onPress={() => setLogoutModalVisible(true)}
             isLast
           />
@@ -814,7 +817,7 @@ export default function SettingsScreen() {
           >
             <Feather name="trash-2" size={16} color="#FF0004" />
             <Text className="text-sm text-[#1E1E1E] leading-[21px]">
-              Delete account
+              {t("settings.delete_account")}
             </Text>
           </Pressable>
         </SectionCard>

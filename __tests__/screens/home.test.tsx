@@ -49,6 +49,21 @@ jest.mock('@/context/add-log-context', () => ({
   useAddLog: () => ({ dayLogs: {}, getCurrentDayData: () => ({}) }),
 }));
 
+jest.mock('@/context/language-context', () => ({
+  useLanguage: () => ({
+    language: 'English',
+    isSwahili: false,
+    setLanguage: jest.fn(),
+    t: (key: string, params?: Record<string, any>) => {
+      if (key === 'home.period_day') return `Period: Day ${params?.day}`;
+      if (key === 'home.gift_token') return 'Gift Token';
+      if (key === 'home.my_journal') return 'My SatsFlow Journal';
+      return key;
+    },
+  }),
+  LanguageProvider: ({ children }: { children: React.ReactNode }) => children,
+}));
+
 jest.mock('@/lib/notifications', () => ({
   registerForPushNotifications: jest.fn().mockResolvedValue(undefined),
 }));

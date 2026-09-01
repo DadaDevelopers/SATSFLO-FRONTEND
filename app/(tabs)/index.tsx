@@ -9,6 +9,7 @@ import { PhaseLegend } from "@/components/home/phase-legend";
 import { ResponsiveScreen } from "@/components/ui/responsive-container";
 import { api } from "@/lib/api";
 import { registerForPushNotifications } from "@/lib/notifications";
+import { useLanguage } from "@/context/language-context";
 import { Feather } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router, useFocusEffect } from "expo-router";
@@ -50,15 +51,26 @@ export function getCycleStatusText(
   periodLength: number,
   cycleLength: number,
   daysUntilPeriod: number,
+  t?: (key: string, params?: Record<string, string | number>) => string,
 ): string {
+  const translate = t || ((key: string, params?: Record<string, string | number>) => {
+    if (key === "home.period_day") return `Period: Day ${params?.day}`;
+    if (key === "home.period_may_start_today") return "Period may start\ntoday";
+    if (key === "home.period_late_singular") return "Period is 1 day\nlate";
+    if (key === "home.period_late_plural") return `Period is ${params?.count} days\nlate`;
+    if (key === "home.period_in_one_day") return "1 day until your\nnext period";
+    if (key === "home.period_in_days") return `${params?.count} days until your\nnext period`;
+    return key;
+  });
+
   // 1. In active period (Menstrual phase: days 1 through periodLength)
   if (currentDay >= 1 && currentDay <= periodLength) {
-    return `Period: Day ${currentDay}`;
+    return translate("home.period_day", { day: currentDay });
   }
 
   // 2. Expected to start today
   if (daysUntilPeriod === 0) {
-    return "Period may start\ntoday";
+    return translate("home.period_may_start_today");
   }
 
   // 3. Period is late / overdue
@@ -67,20 +79,23 @@ export function getCycleStatusText(
       daysUntilPeriod < 0
         ? Math.abs(daysUntilPeriod)
         : Math.max(1, currentDay - cycleLength);
-    return `Period is ${daysLate} ${daysLate === 1 ? "day" : "days"}\nlate`;
+    return daysLate === 1
+      ? translate("home.period_late_singular")
+      : translate("home.period_late_plural", { count: daysLate });
   }
 
   // 4. Period starts tomorrow
   if (daysUntilPeriod === 1) {
-    return "1 day until your\nnext period";
+    return translate("home.period_in_one_day");
   }
 
   // 5. Normal countdown
-  return `${daysUntilPeriod} days until your\nnext period`;
+  return translate("home.period_in_days", { count: daysUntilPeriod });
 }
 
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
+  const { t } = useLanguage();
   const { width: windowWidth } = useWindowDimensions();
   const trackerSize = Math.min(windowWidth - 40, 320);
   const [activeTab, setActiveTab] = useState<TabName>("home");
@@ -366,7 +381,7 @@ export default function HomeScreen() {
             }}
           >
             <Text style={{ fontFamily: "Inter", fontSize: 12, color: "#FAFAFA", marginBottom: 6 }}>
-              Today: {cycleData.currentDate}
+              {t("home.today")}: {cycleData.currentDate}
             </Text>
             <Text
               style={{
@@ -382,6 +397,7 @@ export default function HomeScreen() {
                 cycleData.periodLength,
                 cycleData.cycleLength,
                 cycleData.daysUntilPeriod,
+                t,
               )}
             </Text>
             <TouchableOpacity
@@ -412,8 +428,8 @@ export default function HomeScreen() {
               <Text style={{ fontFamily: "Inter", fontSize: 12, color: "#FFFFFF" }}>
                 {cycleData.daysUntilPeriod <= 0 &&
                 cycleData.currentDay > cycleData.periodLength
-                  ? "Log Period"
-                  : "Edit Period"}
+                  ? t("home.log_period")
+                  : t("home.edit_period")}
               </Text>
             </TouchableOpacity>
           </View>
@@ -441,7 +457,7 @@ export default function HomeScreen() {
             activeOpacity={0.8}
           >
             <Feather name="gift" size={24} color="#FFFFFF" />
-            <Text className="text-white text-md ml-2">Gift Token</Text>
+            <Text className="text-white text-md ml-2">{t("home.gift_token")}</Text>
           </TouchableOpacity>
         </View>
 

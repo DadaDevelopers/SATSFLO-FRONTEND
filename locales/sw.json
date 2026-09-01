@@ -1,0 +1,66 @@
+{
+  "common": {
+    "save": "Hifadhi Mabadiliko",
+    "saving": "Inahifadhi...",
+    "cancel": "Ghairi",
+    "dismiss": "Ondoa",
+    "loading": "Inapakia...",
+    "coming_soon": "Inakuja hivi karibuni",
+    "edit": "Hariri",
+    "back": "Rudi"
+  },
+  "nav": {
+    "home": "Nyumbani",
+    "calendar": "Kalenda",
+    "add": "Ongeza",
+    "chat": "Gumzo",
+    "settings": "Mipangilio"
+  },
+  "home": {
+    "today": "Leo",
+    "period_day": "Hedhi: Siku {{day}}",
+    "period_may_start_today": "Hedhi inaweza kuanza\nleo",
+    "period_late_singular": "Hedhi imechelewa siku 1\n",
+    "period_late_plural": "Hedhi imechelewa siku {{count}}\n",
+    "period_in_one_day": "Siku 1 hadi hedhi\ninayofuata",
+    "period_in_days": "Siku {{count}} hadi hedhi\ninayofuata",
+    "edit_period": "Badilisha Hedhi",
+    "log_period": "Weka Hedhi",
+    "gift_token": "Zawadi ya Tokeni",
+    "my_journal": "Jarida Langu la SatsFlow"
+  },
+  "phases": {
+    "menstrual": "Awamu ya Hedhi",
+    "follicular": "Awamu ya Folikulari",
+    "ovulation": "Awamu ya Upevushaji Mayai",
+    "luteal": "Awamu ya Luteali"
+  },
+  "settings": {
+    "title": "Mipangilio",
+    "invite_partner_friend": "Mwalike mpenzi/rafiki yangu",
+    "invite_a_friend": "Mwalike rafiki",
+    "earn_rewards": "Pata zawadi kwa ajili yako na rafiki yako",
+    "switch_partner_cycle": "Badili kwenda kwenye mzunguko wa mpenzi wangu",
+    "partner_mode": "Hali ya mpenzi",
+    "reminders": "Vikumbusho",
+    "symptoms": "Dalili",
+    "moods": "Hisia",
+    "theme": "Mandhari",
+    "language_preferences": "Mapendeleo ya lugha",
+    "faq": "Maswali Yanayoulizwa Mara kwa Mara",
+    "contact_support": "Wasiliana na usaidizi",
+    "privacy_policy": "Sera ya faragha",
+    "rate_app": "Kadiria programu",
+    "terms_and_conditions": "Vigezo na masharti",
+    "delete_account": "Futa akaunti",
+    "logout": "Ondoka",
+    "logout_confirm_title": "Je, unataka kuondoka?",
+    "logout_confirm_desc": "Una uhakika unataka kuondoka kwenye akaunti yako?",
+    "delete_confirm_title": "Futa Akaunti",
+    "delete_confirm_desc": "Hatua hii haiwezi kutenduliwa. Data zako zote za mzunguko zitafutwa kabisa."
+  },
+  "language": {
+    "title": "Mapendeleo ya Lugha",
+    "save_changes": "Hifadhi Mabadiliko"
+  }
+}

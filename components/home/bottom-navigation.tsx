@@ -1,3 +1,4 @@
+import { useLanguage } from "@/context/language-context";
 import React from "react";
 import { Platform, Text, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -134,6 +135,7 @@ export function BottomNavigation({
   onTabPress,
 }: BottomNavigationProps) {
   const insets = useSafeAreaInsets();
+  const { t } = useLanguage();
   const bottomPadding = Platform.OS === "ios" ? Math.max(insets.bottom, 8) : 8;
 
   return (
@@ -144,7 +146,7 @@ export function BottomNavigation({
           icon={
             <HouseIcon color={activeTab === "home" ? "#FFF0F5" : "#FF99BC"} />
           }
-          label="Home"
+          label={t("nav.home")}
           isActive={activeTab === "home"}
           onPress={() => onTabPress("home")}
         />
@@ -154,7 +156,7 @@ export function BottomNavigation({
           icon={
             <CalendarIcon active={activeTab === "calendar"} color={activeTab === "calendar" ? "#FFF0F5" : "#FF99BC"} />
           }
-          label="Calendar"
+          label={t("nav.calendar")}
           isActive={activeTab === "calendar"}
           onPress={() => onTabPress("calendar")}
         />
@@ -179,7 +181,7 @@ export function BottomNavigation({
               color={activeTab === "chat" ? "#FFF0F5" : "#FF99BC"}
             />
           }
-          label="Chat"
+          label={t("nav.chat")}
           isActive={activeTab === "chat"}
           onPress={() => onTabPress("chat")}
         />
@@ -192,7 +194,7 @@ export function BottomNavigation({
               color={activeTab === "settings" ? "#FFF0F5" : "#FF99BC"}
             />
           }
-          label="Settings"
+          label={t("nav.settings")}
           isActive={activeTab === "settings"}
           onPress={() => onTabPress("settings")}
         />

@@ -1,6 +1,5 @@
-import { api } from "@/lib/api";
+import { useLanguage, SupportedLanguage } from "@/context/language-context";
 import { Feather } from "@expo/vector-icons";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
 import React, { useState } from "react";
 import {
@@ -12,10 +11,10 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-const LANGUAGES = [
-  "English",
+const SUPPORTED_LANGUAGES: SupportedLanguage[] = ["English", "Swahili"];
+
+const OTHER_LANGUAGES = [
   "Spanish",
-  "Swahili",
   "Arabic",
   "Hindi",
   "French",
@@ -29,16 +28,14 @@ const LANGUAGES = [
 
 export default function LanguageSettingsScreen() {
   const insets = useSafeAreaInsets();
-  const [selected, setSelected] = useState("English");
+  const { language, setLanguage, t } = useLanguage();
+  const [selected, setSelected] = useState<SupportedLanguage>(language);
   const [saving, setSaving] = useState(false);
 
   const handleSave = async () => {
     setSaving(true);
     try {
-      const token = await AsyncStorage.getItem("accessToken");
-      if (token) {
-        await api.put("/users/profile", { language: selected }, token);
-      }
+      await setLanguage(selected);
     } catch {}
     setSaving(false);
     router.push("/(tabs)/settings" as any);
@@ -79,7 +76,7 @@ export default function LanguageSettingsScreen() {
             textAlign: "center",
           }}
         >
-          Language Preference
+          {t("language.title")}
         </Text>
 
         {/* Spacer to balance the back arrow */}
@@ -103,7 +100,8 @@ export default function LanguageSettingsScreen() {
             overflow: "hidden",
           }}
         >
-          {LANGUAGES.map((lang, index) => (
+          {/* Active / Supported languages */}
+          {SUPPORTED_LANGUAGES.map((lang, index) => (
             <TouchableOpacity
               key={lang}
               onPress={() => setSelected(lang)}
@@ -114,14 +112,14 @@ export default function LanguageSettingsScreen() {
                 alignItems: "center",
                 paddingHorizontal: 12,
                 height: 53,
-                borderBottomWidth: index < LANGUAGES.length - 1 ? 0.8 : 0,
+                borderBottomWidth: 0.8,
                 borderBottomColor: "#FFD6E4",
               }}
             >
               <Text
                 style={{
                   fontFamily: "Inter",
-                  fontWeight: "400",
+                  fontWeight: selected === lang ? "600" : "400",
                   fontSize: 14,
                   lineHeight: 21,
                   color: "#1E1E1E",
@@ -134,6 +132,55 @@ export default function LanguageSettingsScreen() {
                 <Feather name="check-circle" size={18} color="#4DC721" />
               )}
             </TouchableOpacity>
+          ))}
+
+          {/* Languages coming soon */}
+          {OTHER_LANGUAGES.map((lang, index) => (
+            <View
+              key={lang}
+              style={{
+                flexDirection: "row",
+                justifyContent: "space-between",
+                alignItems: "center",
+                paddingHorizontal: 12,
+                height: 53,
+                borderBottomWidth: index < OTHER_LANGUAGES.length - 1 ? 0.8 : 0,
+                borderBottomColor: "#FFD6E4",
+                opacity: 0.5,
+              }}
+            >
+              <Text
+                style={{
+                  fontFamily: "Inter",
+                  fontWeight: "400",
+                  fontSize: 14,
+                  lineHeight: 21,
+                  color: "#616161",
+                }}
+              >
+                {lang}
+              </Text>
+
+              <View
+                style={{
+                  backgroundColor: "rgba(255,64,129,0.15)",
+                  paddingHorizontal: 8,
+                  paddingVertical: 3,
+                  borderRadius: 10,
+                }}
+              >
+                <Text
+                  style={{
+                    fontFamily: "Inter",
+                    fontSize: 11,
+                    fontWeight: "500",
+                    color: "#FF4081",
+                  }}
+                >
+                  {t("common.coming_soon")}
+                </Text>
+              </View>
+            </View>
           ))}
         </View>
       </ScrollView>
@@ -164,7 +211,7 @@ export default function LanguageSettingsScreen() {
               color: "#FFFFFF",
             }}
           >
-            {saving ? "Saving..." : "Save"}
+            {saving ? t("common.saving") : t("language.save_changes")}
           </Text>
         </TouchableOpacity>
 

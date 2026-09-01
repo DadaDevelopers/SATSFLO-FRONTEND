@@ -1,0 +1,66 @@
+{
+  "common": {
+    "save": "Save Changes",
+    "saving": "Saving...",
+    "cancel": "Cancel",
+    "dismiss": "Dismiss",
+    "loading": "Loading...",
+    "coming_soon": "Coming soon",
+    "edit": "Edit",
+    "back": "Back"
+  },
+  "nav": {
+    "home": "Home",
+    "calendar": "Calendar",
+    "add": "Add",
+    "chat": "Chat",
+    "settings": "Settings"
+  },
+  "home": {
+    "today": "Today",
+    "period_day": "Period: Day {{day}}",
+    "period_may_start_today": "Period may start\ntoday",
+    "period_late_singular": "Period is 1 day\nlate",
+    "period_late_plural": "Period is {{count}} days\nlate",
+    "period_in_one_day": "1 day until your\nnext period",
+    "period_in_days": "{{count}} days until your\nnext period",
+    "edit_period": "Edit Period",
+    "log_period": "Log Period",
+    "gift_token": "Gift Token",
+    "my_journal": "My SatsFlow Journal"
+  },
+  "phases": {
+    "menstrual": "Menstrual Phase",
+    "follicular": "Follicular Phase",
+    "ovulation": "Ovulation Phase",
+    "luteal": "Luteal Phase"
+  },
+  "settings": {
+    "title": "Settings",
+    "invite_partner_friend": "Invite my partner/friend",
+    "invite_a_friend": "Invite a friend",
+    "earn_rewards": "Earn rewards for you and your friend",
+    "switch_partner_cycle": "Switch to my partner's cycle",
+    "partner_mode": "Partner mode",
+    "reminders": "Reminders",
+    "symptoms": "Symptoms",
+    "moods": "Moods",
+    "theme": "Theme",
+    "language_preferences": "Language preferences",
+    "faq": "FAQ",
+    "contact_support": "Contact support",
+    "privacy_policy": "Privacy policy",
+    "rate_app": "Rate app",
+    "terms_and_conditions": "Terms and conditions",
+    "delete_account": "Delete account",
+    "logout": "Logout",
+    "logout_confirm_title": "Log Out?",
+    "logout_confirm_desc": "Are you sure you want to log out of your account?",
+    "delete_confirm_title": "Delete Account",
+    "delete_confirm_desc": "This action cannot be undone. All your cycle data will be permanently deleted."
+  },
+  "language": {
+    "title": "Language Preference",
+    "save_changes": "Save Changes"
+  }
+}
