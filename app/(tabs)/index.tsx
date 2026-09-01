@@ -45,6 +45,40 @@ function getOrdinalSuffix(day: number): string {
   }
 }
 
+export function getCycleStatusText(
+  currentDay: number,
+  periodLength: number,
+  cycleLength: number,
+  daysUntilPeriod: number,
+): string {
+  // 1. In active period (Menstrual phase: days 1 through periodLength)
+  if (currentDay >= 1 && currentDay <= periodLength) {
+    return `Period: Day ${currentDay}`;
+  }
+
+  // 2. Expected to start today
+  if (daysUntilPeriod === 0) {
+    return "Period may start\ntoday";
+  }
+
+  // 3. Period is late / overdue
+  if (currentDay > cycleLength || daysUntilPeriod < 0) {
+    const daysLate =
+      daysUntilPeriod < 0
+        ? Math.abs(daysUntilPeriod)
+        : Math.max(1, currentDay - cycleLength);
+    return `Period is ${daysLate} ${daysLate === 1 ? "day" : "days"}\nlate`;
+  }
+
+  // 4. Period starts tomorrow
+  if (daysUntilPeriod === 1) {
+    return "1 day until your\nnext period";
+  }
+
+  // 5. Normal countdown
+  return `${daysUntilPeriod} days until your\nnext period`;
+}
+
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const { width: windowWidth } = useWindowDimensions();
@@ -309,7 +343,12 @@ export default function HomeScreen() {
                 lineHeight: 30,
               }}
             >
-              {cycleData.daysUntilPeriod} days until your{"\n"}next period
+              {getCycleStatusText(
+                cycleData.currentDay,
+                cycleData.periodLength,
+                cycleData.cycleLength,
+                cycleData.daysUntilPeriod,
+              )}
             </Text>
             <TouchableOpacity
               onPress={handleEditPeriod}
@@ -326,9 +365,21 @@ export default function HomeScreen() {
                 marginTop: 12,
               }}
             >
-              <Feather name="edit-2" size={10} color="#FFFFFF" />
+              <Feather
+                name={
+                  cycleData.daysUntilPeriod <= 0 &&
+                  cycleData.currentDay > cycleData.periodLength
+                    ? "plus"
+                    : "edit-2"
+                }
+                size={10}
+                color="#FFFFFF"
+              />
               <Text style={{ fontFamily: "Inter", fontSize: 12, color: "#FFFFFF" }}>
-                Edit Period
+                {cycleData.daysUntilPeriod <= 0 &&
+                cycleData.currentDay > cycleData.periodLength
+                  ? "Log Period"
+                  : "Edit Period"}
               </Text>
             </TouchableOpacity>
           </View>

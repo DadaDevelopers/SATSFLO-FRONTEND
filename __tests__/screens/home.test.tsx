@@ -155,4 +155,31 @@ describe('HomeScreen', () => {
     fireEvent.press(getByText('Gift Token'));
     expect(router.push).toHaveBeenCalledWith(expect.stringContaining('gift-token'));
   });
+
+  describe('getCycleStatusText', () => {
+    const { getCycleStatusText } = require('@/app/(tabs)/index');
+
+    it('shows Period: Day X when user is in the menstrual phase', () => {
+      expect(getCycleStatusText(1, 5, 28, 27)).toBe('Period: Day 1');
+      expect(getCycleStatusText(4, 5, 28, 24)).toBe('Period: Day 4');
+      expect(getCycleStatusText(5, 5, 28, 23)).toBe('Period: Day 5');
+    });
+
+    it('shows Period may start today when daysUntilPeriod is 0 and not on period', () => {
+      expect(getCycleStatusText(28, 5, 28, 0)).toBe('Period may start\ntoday');
+    });
+
+    it('shows Period is X days late when past cycle length or daysUntilPeriod is negative', () => {
+      expect(getCycleStatusText(29, 5, 28, -1)).toBe('Period is 1 day\nlate');
+      expect(getCycleStatusText(31, 5, 28, -3)).toBe('Period is 3 days\nlate');
+    });
+
+    it('shows 1 day until your next period when daysUntilPeriod is 1', () => {
+      expect(getCycleStatusText(27, 5, 28, 1)).toBe('1 day until your\nnext period');
+    });
+
+    it('shows normal countdown when in other phases', () => {
+      expect(getCycleStatusText(14, 5, 28, 14)).toBe('14 days until your\nnext period');
+    });
+  });
 });
