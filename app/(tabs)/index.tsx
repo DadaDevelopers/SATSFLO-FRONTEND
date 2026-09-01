@@ -158,30 +158,64 @@ export default function HomeScreen() {
           toPositiveNumber(cycleD?.period_length, 5)
         );
 
-        // Days until next period — predictions first, then current cycle
+        // Determine last period start date from profile or current cycle
+        const lastPeriodStartStr =
+          profile?.last_period_start ??
+          cycleD?.last_period_start ??
+          cycleD?.startDate ??
+          null;
+
+        const parseDateString = (dateStr?: string | null): Date | null => {
+          if (!dateStr) return null;
+          const parts = dateStr.split("T")[0].split("-");
+          if (parts.length === 3) {
+            const y = parseInt(parts[0], 10);
+            const m = parseInt(parts[1], 10) - 1;
+            const d = parseInt(parts[2], 10);
+            const parsed = new Date(y, m, d);
+            if (!isNaN(parsed.getTime())) return parsed;
+          }
+          return null;
+        };
+
+        const lastPeriodDate = parseDateString(lastPeriodStartStr);
+
+        let currentDay = 1;
+        let cycleStartDate = today;
+
+        if (lastPeriodDate) {
+          cycleStartDate = lastPeriodDate;
+          const todayZero = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+          const startZero = new Date(lastPeriodDate.getFullYear(), lastPeriodDate.getMonth(), lastPeriodDate.getDate());
+          const diffDays = Math.floor((todayZero.getTime() - startZero.getTime()) / (1000 * 60 * 60 * 24));
+          if (diffDays >= 0) {
+            currentDay = diffDays + 1;
+          }
+        } else if (cycleD?.current_day || profile?.current_day) {
+          currentDay = cycleD?.current_day ?? profile?.current_day ?? 1;
+          const d = new Date(today);
+          d.setDate(today.getDate() - (currentDay - 1));
+          cycleStartDate = d;
+        }
+
+        // Days until next period — predictions first, then cycle calculation
+        const fallbackDaysUntil = Math.max(0, cycleLength - (currentDay - 1));
         const daysUntilPeriod =
           predD?.days_until_next_period ??
           predD?.next_period?.days_until ??
           cycleD?.days_until_next_period ??
           cycleD?.days_until_period ??
           profile?.days_until_period ??
-          0;
+          fallbackDaysUntil;
 
-        const buildCycleStart = (currentDay: number): Date => {
-          const d = new Date(today);
-          d.setDate(today.getDate() - (currentDay - 1));
-          return d;
-        };
-
-        const cd = cycleD?.current_day ?? profile?.current_day ?? 1;
         setCycleData({
-          currentDay: cd,
+          currentDay,
           cycleLength,
           periodLength,
           ovulationDay: cycleD?.ovulation_day ?? Math.round(cycleLength / 2),
           daysUntilPeriod,
           currentDate: formatCurrentDate(today),
-          cycleStartDate: buildCycleStart(cd),
+          cycleStartDate,
         });
       } catch {}
     };
